@@ -1,0 +1,1 @@
+GymLog CRUSH PWA V4 starter. Upload ALL files from this folder to the root of a GitHub Pages repository. Before migration export Backup from Scriptable; after installing the PWA import the JSON. Legacy Scriptable appUpdates are intentionally discarded.

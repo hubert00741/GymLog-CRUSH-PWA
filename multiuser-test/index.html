@@ -599,7 +599,7 @@ hr{border-top-color:var(--lux-line)!important}
 .mu-migrate-wrap{min-height:calc(100vh - 90px);display:flex;align-items:center}.mu-migrate-card{width:100%;padding:20px;border:1px solid rgba(185,30,48,.35);border-radius:24px;background:radial-gradient(circle at 100% 0,rgba(130,11,30,.18),transparent 45%),linear-gradient(145deg,#111113,#070708)}.mu-migrate-card h1{font-size:28px!important}.mu-migrate-count{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0}.mu-migrate-stat{padding:13px;border-radius:16px;background:#0a0a0b;border:1px solid rgba(255,255,255,.07)}.mu-migrate-stat .k{color:#727279;font-size:9px;text-transform:uppercase;letter-spacing:1px}.mu-migrate-stat .v{font-size:25px;font-weight:950;margin-top:5px}.mu-note{color:#77777f;font-size:10px;line-height:1.5}
 
 
-/* ===== MULTI USER 0.62.0 — gender themes + admin + managed users ===== */
+/* ===== MULTI USER 0.62.1 — gender themes + admin + managed users ===== */
 .mu-users-grid{display:grid;gap:10px}
 .mu-user-card{padding:14px;border-radius:17px;background:linear-gradient(145deg,#111113,#09090a);border:1px solid rgba(255,255,255,.07)}
 .mu-user-card.admin{border-color:rgba(180,31,52,.32)}
@@ -620,7 +620,7 @@ hr{border-top-color:var(--lux-line)!important}
 @media(max-width:390px){.mu-admin-form .row2{grid-template-columns:1fr}.mu-managed-plan-row{grid-template-columns:64px 1fr}}
 
 
-/* ===== MULTI USER 0.62.0 — FEMALE / BABY PINK THEME ===== */
+/* ===== MULTI USER 0.62.1 — FEMALE / BABY PINK THEME ===== */
 body.theme-female{--crush-burgundy:#d874a3;--crush-burgundy-active:#e68db5;--lux-line-red:rgba(248,170,205,.46);--lux-red:#d979a5;--lux-red2:#ef95bd;--lux-red3:#ffb1d2;--lux-burgundy:#b95f8d;background:radial-gradient(650px 330px at 82% -8%,rgba(244,162,199,.18),transparent 62%),radial-gradient(500px 420px at -14% 33%,rgba(211,112,158,.12),transparent 60%),linear-gradient(180deg,#030303 0%,#080608 42%,#030303 100%)!important}
 body.theme-female h1:after{background:linear-gradient(90deg,#ffb4d4,#c76a98);box-shadow:0 0 14px rgba(255,177,210,.28)}
 body.theme-female .lux-hero{border-color:rgba(244,158,199,.38);background:linear-gradient(145deg,#2a111e,#0b0508);box-shadow:0 18px 48px rgba(79,25,52,.22)}
@@ -645,6 +645,52 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
 .mu-gender-pill.male{color:#d0d0d4}
 .mu-gender-preview{padding:11px 12px;border-radius:14px;background:#0b0b0d;border:1px solid rgba(255,255,255,.07);color:#77777e;font-size:10px;line-height:1.45}
 .mu-gender-preview.female{border-color:rgba(244,165,201,.23);background:linear-gradient(145deg,rgba(58,21,39,.35),#0b0b0d)}
+
+
+/* ===== 0.62.1 — PLAN EDITOR UX ===== */
+.mu-plan-toolbar{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:12px 0 10px;
+}
+.mu-plan-toolbar button{
+  margin:0!important;
+  min-height:46px;
+}
+.mu-plan-toolbar .clear{
+  background:#141416!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  color:#ff6a78!important;
+}
+.mu-plan-toolbar .paste{
+  background:linear-gradient(135deg,var(--account-accent,#ff2738),#6d0d1a)!important;
+}
+.theme-female .mu-plan-toolbar .paste{
+  background:linear-gradient(135deg,#ffb1d2,#d95f98)!important;
+  color:#241018!important;
+}
+.mu-plan-editor{
+  min-height:420px!important;
+  resize:vertical;
+  scroll-margin-top:100px;
+}
+.mu-plan-save{
+  width:100%;
+  margin-top:12px!important;
+  min-height:52px;
+  font-weight:950;
+  letter-spacing:.5px;
+}
+.mu-plan-format{
+  margin-top:7px;
+  color:#72727a;
+  font-size:9px;
+  line-height:1.45;
+}
+@media(max-width:370px){
+  .mu-plan-toolbar{grid-template-columns:1fr}
+}
 
 </style>
 </head>
@@ -3231,7 +3277,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "PWA BETA 0.62.0 — MULTI USER";
+VERSION = "PWA BETA 0.62.1 — MULTI USER";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -4757,7 +4803,7 @@ window.addEventListener("online",function(){if(GL_AUTH_READY)glPushCloudState();
 
 
 /* ======================================================================
-   MULTI USER 0.62.0 — gender themes + managed users + admin panel
+   MULTI USER 0.62.1 — gender themes + managed users + admin panel
    ====================================================================== */
 function glIsAdmin(){return !!(window.GL_PROFILE&&window.GL_PROFILE.role==="admin");}
 function glIsManagedUser(){return !!(window.GL_PROFILE&&window.GL_PROFILE.role!=="admin");}
@@ -4773,7 +4819,7 @@ function glManagedExercises(planName){
   var arr=glManagedPlans()[planName];if(!Array.isArray(arr))return [];
   return arr.map(function(x){
     var sets=Math.max(1,parseInt(x.sets||3,10)||3),reps=String(x.reps||"8-12"),rest=Math.max(0,parseInt(x.rest||120,10)||120);
-    return {name:String(x.name||"Ćwiczenie"),groups:Array.isArray(x.groups)?x.groups:[],bodyweight:x.bodyweight===true,last:"",plan:sets+" × "+reps+" powt.",rest:rest,managedSets:sets,managedReps:reps,sets:[]};
+    return {name:String(x.name||"Ćwiczenie"),groups:Array.isArray(x.groups)?x.groups:[],bodyweight:x.bodyweight===true,last:"",plan:sets+" × "+reps+" powt.",rest:rest,managedSets:sets,managedReps:reps,managedStarter:String(x.starter||""),sets:[]};
   });
 }
 function glFindPreviousExercise(planName,exerciseName){
@@ -4794,9 +4840,35 @@ function glManagedSetShort(s){
   if((w==null||w==="")&&(r==null||r===""))return "brak";
   return (w==null||w===""?"—":displayNumber(w)+" kg")+" × "+(r==null||r===""?"—":r);
 }
+function glManagedStarterSets(starter,count){
+  starter=String(starter||"").trim();count=Math.max(1,Number(count||3));
+  if(!starter)return [];
+  var m=starter.match(/([0-9]+(?:[.,][0-9]+)?)\s*kg\s*:\s*([0-9,\s]+)/i);
+  if(m){
+    var w=String(m[1]).replace(",",".");
+    return m[2].split(",").map(function(r){return {w:w,r:String(r).trim(),_starter:true};}).filter(function(x){return x.r;});
+  }
+  var only=starter.match(/([0-9]+(?:[.,][0-9]+)?)\s*kg/i);
+  if(only){
+    var w2=String(only[1]).replace(",",".");var arr=[];
+    for(var i=0;i<count;i++)arr.push({w:w2,r:"",_starter:true});
+    return arr;
+  }
+  return [];
+}
 function glManagedPlanRows(e){
-  var prev=glManagedPreviousWorkingSets(current.training,e.name),n=Math.max(1,Number(e.managedSets||3)),html="<div class='mu-managed-plan-rows'>";
-  for(var i=0;i<n;i++)html+="<div class='mu-managed-plan-row'><div class='set'>SERIA "+(i+1)+"</div><div><div class='target'>"+esc(e.managedReps||"zakres")+" powt.</div><div class='last'>Ostatnio: "+esc(glManagedSetShort(prev[i]))+"</div></div></div>";
+  var prev=glManagedPreviousWorkingSets(current.training,e.name);
+  var usingStarter=false;
+  if(!prev.length){
+    prev=glManagedStarterSets(e.managedStarter,e.managedSets);
+    usingStarter=prev.length>0;
+  }
+  var n=Math.max(1,Number(e.managedSets||3)),html="<div class='mu-managed-plan-rows'>";
+  for(var i=0;i<n;i++){
+    var label=glManagedSetShort(prev[i]);
+    if(usingStarter&&prev[i])label+=" • startowe";
+    html+="<div class='mu-managed-plan-row'><div class='set'>SERIA "+(i+1)+"</div><div><div class='target'>"+esc(e.managedReps||"zakres")+" powt.</div><div class='last'>Ostatnio: "+esc(label)+"</div></div></div>";
+  }
   return html+"</div>";
 }
 
@@ -4903,23 +4975,71 @@ window.glAdminCreateUser=async function(){
   try{await glAdminApi({action:"create_user",username:username,display_name:name,password:password,feature_flags:glDefaultManagedFlags(),profile_config:{managedMode:true,managed_plans:{},gender:gender}});alert("Użytkownik utworzony.");glUsersView();}catch(e){alert("Nie udało się utworzyć użytkownika: "+String(e.message||e));}
 };
 function glPlanConfigToText(cfg){
-  var plans=(cfg&&cfg.managed_plans)||{},out=[];Object.keys(plans).forEach(function(name){out.push("["+name+"]");(plans[name]||[]).forEach(function(e){out.push([e.name||"",e.sets||3,e.reps||"8-12",e.rest||120,(e.groups||[]).join(",")].join(" | "));});out.push("");});return out.join("\n").trim();
+  var plans=(cfg&&cfg.managed_plans)||{},out=[];
+  Object.keys(plans).forEach(function(name){
+    out.push("["+name+"]");
+    (plans[name]||[]).forEach(function(e){
+      var row=[e.name||"",e.sets||3,e.reps||"8-12",e.rest||120,(e.groups||[]).join(",")];
+      if(e.starter)row.push(e.starter);
+      out.push(row.join(" | "));
+    });
+    out.push("");
+  });
+  return out.join("\n").trim();
 }
 function glPlanTextToConfig(txt){
-  var plans={},name=null;String(txt||"").split(/\r?\n/).forEach(function(raw){var line=raw.trim();if(!line)return;var m=line.match(/^\[(.+)\]$/);if(m){name=m[1].trim();if(!plans[name])plans[name]=[];return;}if(!name)throw new Error("Najpierw dodaj nazwę planu w nawiasach, np. [Plan A]");var p=line.split("|").map(function(x){return x.trim();});if(p.length<4)throw new Error("Ćwiczenie zapisz: Nazwa | serie | zakres | przerwa | partie");plans[name].push({name:p[0],sets:Math.max(1,parseInt(p[1],10)||3),reps:p[2]||"8-12",rest:Math.max(0,parseInt(p[3],10)||120),groups:(p[4]||"").split(",").map(function(x){return x.trim();}).filter(Boolean)});});return plans;
+  var plans={},name=null;
+  String(txt||"").split(/\r?\n/).forEach(function(raw){
+    var line=raw.trim();if(!line)return;
+    var m=line.match(/^\[(.+)\]$/);
+    if(m){name=m[1].trim();if(!plans[name])plans[name]=[];return;}
+    if(!name)throw new Error("Najpierw dodaj nazwę planu w nawiasach, np. [Plan A]");
+    var p=line.split("|").map(function(x){return x.trim();});
+    if(p.length<4)throw new Error("Ćwiczenie zapisz: Nazwa | serie | zakres | przerwa | partie | opcjonalnie wynik startowy");
+    plans[name].push({
+      name:p[0],
+      sets:Math.max(1,parseInt(p[1],10)||3),
+      reps:p[2]||"8-12",
+      rest:Math.max(0,parseInt(p[3],10)||120),
+      groups:(p[4]||"").split(",").map(function(x){return x.trim();}).filter(Boolean),
+      starter:(p[5]||"").trim()
+    });
+  });
+  return plans;
 }
 window.glAdminOpenUser=async function(uid){
   if(!glIsAdmin())return;render("<h1>Użytkownik</h1><button class='secondary mu-user-back' onclick='glUsersView()'>← Użytkownicy</button><div class='card small'>Ładowanie…</div>"+luxBottomNav("more"));
   try{var r=await glAdminApi({action:"get_user_state",user_id:uid});window.GL_ADMIN_SELECTED=r;var u=r.profile||{},st=glNormalizeState(r.state||{}),flags=u.feature_flags||{},cfg=u.profile_config||{};var history="<div class='mu-history-user'>";(st.logs||[]).slice(0,12).forEach(function(l,i){history+="<article><div class='title'>"+esc(l.training||"Trening")+"</div><div class='meta'>"+esc(l.date||"")+" • "+((l.exercises||[]).length)+" ćwiczeń</div><button class='secondary' onclick='glAdminExportWorkout("+i+")'>Eksportuj trening</button></article>";});if(!(st.logs||[]).length)history+="<div class='mu-managed-empty'>Brak treningów.</div>";history+="</div>";
     var html="<h1>"+esc(u.display_name||u.username)+"</h1><button class='secondary mu-user-back' onclick='glUsersView()'>← Użytkownicy</button>"+
       "<div class='card'><div class='lux-section-title'>Konto</div><div class='mu-admin-form'><div class='row2'><div><label>Login</label><input id='muEditLogin' value='"+esc(u.username||"")+"'></div><div><label>Nazwa</label><input id='muEditName' value='"+esc(u.display_name||"")+"'></div></div>"+(u.role!=="admin"?"<label>Typ konta</label><select id='muEditGender'><option value='male' "+(((cfg.gender||"male")==="male")?"selected":"")+">Mężczyzna</option><option value='female' "+(cfg.gender==="female"?"selected":"")+">Kobieta</option></select><div class='mu-section-note'>Kobieta = baby pink interfejs + baby pink logo + FOR WOMAN. Mężczyzna = obecny styl CRUSH.</div>":"")+"<button onclick='glAdminSaveIdentity()'>Zapisz dane konta</button><label>Nowe hasło</label><input id='muEditPass' type='password' placeholder='minimum 8 znaków'><button class='secondary' onclick='glAdminResetPassword()'>Zmień hasło</button>"+(u.role!=="admin"?"<button class='"+(u.is_active?"danger":"secondary")+"' onclick='glAdminSetActive("+(!u.is_active)+")'>"+(u.is_active?"Wyłącz konto":"Włącz konto")+"</button>":"")+"</div></div>"+
-      (u.role!=="admin"?"<div class='card'><div class='lux-section-title'>Plan treningowy</div><div class='small'>Format każdej linii: Nazwa ćwiczenia | serie | zakres powtórzeń | przerwa w sekundach | partie</div><textarea id='muPlanEditor' class='mu-plan-editor' placeholder='[Plan A]\nChest Press | 3 | 8-12 | 120 | Klatka'>"+esc(glPlanConfigToText(cfg))+"</textarea><button onclick='glAdminSavePlan()'>ZAPISZ PLAN</button></div>":"")+
+      (u.role!=="admin"?"<div class='card'><div class='lux-section-title'>Plan treningowy</div><div class='small'>Edytuj cały plan w jednym polu. Nie musisz zaznaczać starego tekstu ręcznie.</div><div class='mu-plan-toolbar'><button class='clear' onclick='glAdminClearPlanEditor()'>USUŃ ZAWARTOŚĆ POLA</button><button class='paste' onclick='glAdminPastePlanEditor()'>WKLEJ NOWY PLAN</button></div><textarea id='muPlanEditor' class='mu-plan-editor' autocapitalize='off' autocomplete='off' spellcheck='false' placeholder='[Plan A]\nChest Press | 3 | 8-12 | 120 | Klatka | 79 kg: 12,10,8'>"+esc(glPlanConfigToText(cfg))+"</textarea><div class='mu-plan-format'>Format: Nazwa | serie | zakres | przerwa (sek.) | partia | opcjonalny wynik startowy. Wynik startowy działa tylko do pierwszego prawdziwego treningu tego ćwiczenia.</div><button class='mu-plan-save' onclick='glAdminSavePlan()'>ZAPISZ PLAN</button></div>":"")+
       "<div class='card'><div class='lux-section-title'>Historia</div>"+history+"</div>"+luxBottomNav("more");render(html);
   }catch(e){alert("Nie udało się wczytać użytkownika: "+String(e.message||e));glUsersView();}
 };
 window.glAdminSaveIdentity=async function(){var r=window.GL_ADMIN_SELECTED;if(!r)return;try{await glAdminApi({action:"update_user",user_id:r.profile.id,username:document.getElementById("muEditLogin").value,display_name:document.getElementById("muEditName").value});if(r.profile.role!=="admin"){var gender=String((document.getElementById("muEditGender")||{}).value||"male"),flags=Object.assign(glDefaultManagedFlags(),r.profile.feature_flags||{}),cfg=Object.assign({},r.profile.profile_config||{},{managedMode:true,gender:gender});await glAdminApi({action:"set_features",user_id:r.profile.id,feature_flags:flags,profile_config:cfg});}alert("Zapisano.");glAdminOpenUser(r.profile.id);}catch(e){alert(String(e.message||e));}};
 window.glAdminResetPassword=async function(){var r=window.GL_ADMIN_SELECTED,p=String(document.getElementById("muEditPass").value||"");if(p.length<8){alert("Hasło musi mieć minimum 8 znaków.");return;}try{await glAdminApi({action:"reset_password",user_id:r.profile.id,password:p});document.getElementById("muEditPass").value="";alert("Hasło zmienione.");}catch(e){alert(String(e.message||e));}};
 window.glAdminSetActive=async function(v){var r=window.GL_ADMIN_SELECTED;if(!r)return;try{await glAdminApi({action:"set_active",user_id:r.profile.id,is_active:v===true});glAdminOpenUser(r.profile.id);}catch(e){alert(String(e.message||e));}};
+
+window.glAdminClearPlanEditor=function(){
+  var el=document.getElementById("muPlanEditor");if(!el)return;
+  if(el.value&& !confirm("Usunąć całą zawartość pola planu? Zmiana nie zostanie zapisana, dopóki nie klikniesz ZAPISZ PLAN."))return;
+  el.value="";
+  el.focus({preventScroll:true});
+  try{el.setSelectionRange(0,0);}catch(e){}
+};
+window.glAdminPastePlanEditor=async function(){
+  var el=document.getElementById("muPlanEditor");if(!el)return;
+  try{
+    var txt=await navigator.clipboard.readText();
+    if(!txt){alert("Schowek jest pusty.");return;}
+    el.value=txt;
+    el.focus({preventScroll:true});
+    try{el.setSelectionRange(0,0);}catch(e){}
+  }catch(e){
+    var txt=prompt("Wklej nowy plan:");
+    if(txt!==null)el.value=txt;
+  }
+};
 window.glAdminSavePlan=async function(){var r=window.GL_ADMIN_SELECTED;if(!r)return;try{var plans=glPlanTextToConfig(document.getElementById("muPlanEditor").value),cfg=Object.assign({},r.profile.profile_config||{},{managedMode:true,managed_plans:plans}),flags=Object.assign(glDefaultManagedFlags(),r.profile.feature_flags||{});await glAdminApi({action:"set_features",user_id:r.profile.id,feature_flags:flags,profile_config:cfg});alert("Plan zaktualizowany.");glAdminOpenUser(r.profile.id);}catch(e){alert("Błąd planu: "+String(e.message||e));}};
 window.glAdminExportWorkout=function(i){var r=window.GL_ADMIN_SELECTED,log=r&&r.state&&r.state.logs&&r.state.logs[i];if(!log){alert("Nie znaleziono treningu.");return;}var txt="";try{txt=makeReport(log);}catch(e){txt=JSON.stringify(log,null,2);}copyText(txt);alert("Eksport treningu skopiowany.");};
 

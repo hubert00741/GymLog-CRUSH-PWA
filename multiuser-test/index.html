@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="GymLog CRUSH">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="preload" as="image" href="header-logo.png?v=600">
+<link rel="preload" as="image" href="header-logo.png?v=620">
 <title>GymLog CRUSH — Multi User Test</title>
 <style>
 body{margin:0;padding:16px;background:#070707;color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif}
@@ -597,6 +597,54 @@ hr{border-top-color:var(--lux-line)!important}
 .mu-account-card{display:flex;align-items:center;gap:12px}.mu-avatar{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(145deg,#7d1223,#2d080e);border:1px solid rgba(211,43,63,.28);font-weight:950;font-size:18px}.mu-account-name{font-size:17px;font-weight:900}.mu-account-meta{color:#77777e;font-size:10px;margin-top:3px}.mu-cloud-line{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:11px;border-top:1px solid rgba(255,255,255,.06);font-size:10px;color:#77777e}.mu-sync-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;background:#888}.mu-sync-dot.ok{background:#48dc78;box-shadow:0 0 9px rgba(72,220,120,.35)}.mu-sync-dot.pending{background:#ffd21c;box-shadow:0 0 9px rgba(255,210,28,.3)}.mu-sync-dot.bad{background:#ff5364}
 
 .mu-migrate-wrap{min-height:calc(100vh - 90px);display:flex;align-items:center}.mu-migrate-card{width:100%;padding:20px;border:1px solid rgba(185,30,48,.35);border-radius:24px;background:radial-gradient(circle at 100% 0,rgba(130,11,30,.18),transparent 45%),linear-gradient(145deg,#111113,#070708)}.mu-migrate-card h1{font-size:28px!important}.mu-migrate-count{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0}.mu-migrate-stat{padding:13px;border-radius:16px;background:#0a0a0b;border:1px solid rgba(255,255,255,.07)}.mu-migrate-stat .k{color:#727279;font-size:9px;text-transform:uppercase;letter-spacing:1px}.mu-migrate-stat .v{font-size:25px;font-weight:950;margin-top:5px}.mu-note{color:#77777f;font-size:10px;line-height:1.5}
+
+
+/* ===== MULTI USER 0.62.0 — gender themes + admin + managed users ===== */
+.mu-users-grid{display:grid;gap:10px}
+.mu-user-card{padding:14px;border-radius:17px;background:linear-gradient(145deg,#111113,#09090a);border:1px solid rgba(255,255,255,.07)}
+.mu-user-card.admin{border-color:rgba(180,31,52,.32)}
+.mu-user-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mu-user-name{font-size:17px;font-weight:950}.mu-user-meta{margin-top:4px;color:#77777e;font-size:10px}
+.mu-user-status{padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900;background:#0e2618;border:1px solid #245e3b;color:#a9ffc7}
+.mu-user-status.off{background:#2a0e12;border-color:#70232e;color:#ffc1c8}
+.mu-admin-form{display:grid;gap:10px}.mu-admin-form .row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mu-admin-form input,.mu-admin-form textarea,.mu-admin-form select{background:#09090a!important;border:1px solid rgba(255,255,255,.10)!important;border-radius:13px!important}
+.mu-plan-editor{height:270px!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px!important;line-height:1.5!important}
+.mu-history-user{display:grid;gap:9px}.mu-history-user article{padding:13px;border-radius:15px;background:#0b0b0d;border:1px solid rgba(255,255,255,.06)}
+.mu-history-user .title{font-weight:900;font-size:14px}.mu-history-user .meta{color:#73737a;font-size:9px;margin-top:4px}
+.mu-managed-plan-rows{display:grid;gap:7px;margin-top:10px}.mu-managed-plan-row{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center;padding:10px 11px;border-radius:13px;background:#0a0a0c;border:1px solid rgba(255,255,255,.06)}
+.mu-managed-plan-row .set{font-size:10px;color:#8d8d94;font-weight:850}.mu-managed-plan-row .target{font-size:13px;font-weight:900}.mu-managed-plan-row .last{font-size:9px;color:#77777e;margin-top:3px}.mu-managed-empty{padding:16px;text-align:center;color:#77777e;border:1px dashed rgba(255,255,255,.12);border-radius:15px}
+.mu-user-back{width:auto!important;margin:0 0 12px!important;padding:10px 13px!important}
+.mu-section-note{color:#66666d;font-size:10px;line-height:1.5;margin-top:7px}
+.mu-summary-ex{padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06)}.mu-summary-ex:last-child{border-bottom:0}.mu-summary-ex b{display:block;margin-bottom:5px}.mu-summary-set{font-size:10px;color:#aaaab0;line-height:1.55}
+@media(max-width:390px){.mu-admin-form .row2{grid-template-columns:1fr}.mu-managed-plan-row{grid-template-columns:64px 1fr}}
+
+
+/* ===== MULTI USER 0.62.0 — FEMALE / BABY PINK THEME ===== */
+body.theme-female{--crush-burgundy:#d874a3;--crush-burgundy-active:#e68db5;--lux-line-red:rgba(248,170,205,.46);--lux-red:#d979a5;--lux-red2:#ef95bd;--lux-red3:#ffb1d2;--lux-burgundy:#b95f8d;background:radial-gradient(650px 330px at 82% -8%,rgba(244,162,199,.18),transparent 62%),radial-gradient(500px 420px at -14% 33%,rgba(211,112,158,.12),transparent 60%),linear-gradient(180deg,#030303 0%,#080608 42%,#030303 100%)!important}
+body.theme-female h1:after{background:linear-gradient(90deg,#ffb4d4,#c76a98);box-shadow:0 0 14px rgba(255,177,210,.28)}
+body.theme-female .lux-hero{border-color:rgba(244,158,199,.38);background:linear-gradient(145deg,#2a111e,#0b0508);box-shadow:0 18px 48px rgba(79,25,52,.22)}
+body.theme-female .lux-hero:after{background:radial-gradient(circle,rgba(255,179,213,.18),transparent 68%)}
+body.theme-female .lux-hero img{filter:hue-rotate(304deg) saturate(.68) brightness(1.16) contrast(.96)}
+.lux-for-woman{display:none;text-align:center;padding:1px 12px 13px;margin-top:-2px;color:#f3aacb;font-size:9px;font-weight:800;letter-spacing:4.2px;text-transform:uppercase}
+body.theme-female .lux-for-woman{display:block}
+body.theme-female .lux-section-title:before{background:linear-gradient(#ffc0da,#d76e9d);box-shadow:0 0 12px rgba(255,180,211,.28)}
+body.theme-female .lux-icon{background:rgba(240,145,187,.12);border-color:rgba(245,168,202,.24);color:#ffacd0}
+body.theme-female .lux-primary,body.theme-female button:not(.secondary):not(.danger):not(.warn){background:linear-gradient(135deg,#df83ac,#b95f8d)!important;border-color:rgba(255,182,214,.56)!important;color:#fff!important;box-shadow:0 10px 27px rgba(198,92,142,.18)!important}
+body.theme-female input:focus,body.theme-female select:focus,body.theme-female textarea:focus{border-color:rgba(245,165,201,.72)!important;box-shadow:0 0 0 3px rgba(240,145,187,.11)!important}
+body.theme-female .badge{background:rgba(225,126,171,.13)!important;color:#f6c2d9!important;border-color:rgba(244,164,200,.38)!important}
+body.theme-female .lux-bottom-nav button.active{color:#ffafd0!important}
+body.theme-female .lux-bottom-nav .plus{background:linear-gradient(145deg,#d978a5,#a94f79)!important;border-color:rgba(255,181,213,.44)!important}
+body.theme-female .mu-avatar{background:linear-gradient(145deg,#df8db4,#71334f);border-color:rgba(255,183,214,.32)}
+body.theme-female .mu-user-card.admin{border-color:rgba(245,166,201,.32)}
+body.theme-female .lux-muscle-card{border-color:rgba(239,146,188,.28)!important;background:radial-gradient(circle at 50% 25%,rgba(167,66,111,.12),transparent 44%),linear-gradient(160deg,#0b0a0c 0%,#080709 72%,#12070d 100%)!important}
+body.theme-female .lux-muscle-title-text b,body.theme-female .lux-muscle-foot b{color:#ff9fc7}
+body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradient(145deg,rgba(126,45,82,.68),rgba(30,8,18,.88));border-color:rgba(236,144,185,.28)}
+.mu-gender-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;font-size:8px;font-weight:900;letter-spacing:.5px;margin-top:6px;border:1px solid rgba(255,255,255,.08);color:#aaaab0;background:#101012}
+.mu-gender-pill.female{color:#ffc1dd;border-color:rgba(244,165,201,.28);background:rgba(210,105,154,.10)}
+.mu-gender-pill.male{color:#d0d0d4}
+.mu-gender-preview{padding:11px 12px;border-radius:14px;background:#0b0b0d;border:1px solid rgba(255,255,255,.07);color:#77777e;font-size:10px;line-height:1.45}
+.mu-gender-preview.female{border-color:rgba(244,165,201,.23);background:linear-gradient(145deg,rgba(58,21,39,.35),#0b0b0d)}
 
 </style>
 </head>
@@ -3183,7 +3231,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "PWA BETA 0.60.0 — MULTI USER TEST";
+VERSION = "PWA BETA 0.62.0 — MULTI USER";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -3236,7 +3284,7 @@ recomputeLastByExercise = function(){
 };
 
 function pwaBrandHtml(){
-  return "<div class='pwa-brand'><img class='pwa-brand-img' src='./header-logo.png?v=600' alt='GymLog CRUSH'></div>";
+  return "<div class='pwa-brand'><img class='pwa-brand-img' src='./header-logo.png?v=620' alt='GymLog CRUSH'></div>";
 }
 function decoratePwaHome(){
   var app=document.getElementById("app"); if(!app)return;
@@ -3979,8 +4027,7 @@ function luxBottomNav(active){
   "</nav>";
 }
 function luxHero(){
-  return "<div class='lux-hero'><img src='header-logo.png?v=600' alt='GymLog CRUSH'>"+
-    "<div class='lux-hero-foot'><span>TRENUJ. ANALIZUJ. ROZWIJAJ SIĘ.</span></div></div>";
+  return "<div class='lux-hero'><img src='header-logo.png?v=620' alt='GymLog CRUSH'><div class='lux-for-woman'>FOR WOMAN</div></div>";
 }
 function luxFormRow(icon,color,label,control){
   return "<div class='lux-field-row'>"+luxIcon(icon,color)+"<div class='lux-field-copy'><label>"+label+"</label>"+control+"</div></div>";
@@ -4185,7 +4232,7 @@ window.luxMoreView=function(){
   var initials=String(p.display_name||p.username||"U").trim().slice(0,1).toUpperCase();
   var role=p.role==="admin"?"Administrator":"Użytkownik";
   var sync=window.GL_SYNC_STATUS||{state:"pending",text:"Oczekuje na synchronizację"};
-  var account="<div class='card'><div class='mu-account-card'><div class='mu-avatar'>"+esc(initials)+"</div><div><div class='mu-account-name'>"+esc(p.display_name||p.username||"Konto")+"</div><div class='mu-account-meta'>@"+esc(p.username||"—")+" • "+esc(role)+"</div></div></div>"+
+  var account="<div class='card'><div class='mu-account-card'><div class='mu-avatar'>"+esc(initials)+"</div><div><div class='mu-account-name'>"+esc(p.display_name||p.username||"Konto")+"</div><div class='mu-account-meta'>@"+esc(p.username||"—")+" • "+esc(role)+" • "+esc(glGenderLabel((p.profile_config||{}).gender))+"</div></div></div>"+
     "<div class='mu-cloud-line'><span><i class='mu-sync-dot "+esc(sync.state||"pending")+"'></i>Supabase</span><span>"+esc(sync.text||"—")+"</span></div></div>";
   var html="<h1>Więcej</h1>"+account+"<div class='card'><div class='lux-section-title'>GymLog CRUSH</div><div class='small'>"+esc(VERSION)+"</div><div style='margin-top:10px'>"+cloud+"</div></div>"+
     "<div class='lux-action-list'>"+
@@ -4550,7 +4597,7 @@ function glSession(){return glGetJSON(GL_SESSION_KEY);}
 function glSaveSession(s){glSetJSON(GL_SESSION_KEY,s);}
 function glSavedProfile(){return glGetJSON(GL_PROFILE_KEY);}
 function glSaveProfile(p){glSetJSON(GL_PROFILE_KEY,p);}
-function glClearAuth(){try{localStorage.removeItem(GL_SESSION_KEY);localStorage.removeItem(GL_PROFILE_KEY);}catch(e){} window.GL_PROFILE=null;GL_AUTH_READY=false;}
+function glClearAuth(){try{localStorage.removeItem(GL_SESSION_KEY);localStorage.removeItem(GL_PROFILE_KEY);}catch(e){} window.GL_PROFILE=null;GL_AUTH_READY=false;document.body.classList.remove("theme-female");}
 function glUsernameEmail(username){return String(username||"").toLowerCase().trim()+"@users.gymlog-crush.local";}
 function glValidUsername(username){return /^[a-z0-9._-]{2,32}$/i.test(String(username||"").trim());}
 
@@ -4580,7 +4627,7 @@ async function glEnsureSession(){
 async function glFetchProfile(uid){
   var rows=await glApi("/rest/v1/profiles?select=id,username,display_name,role,is_active,feature_flags,profile_config&id=eq."+encodeURIComponent(uid)+"&limit=1",{method:"GET"});
   var p=rows&&rows[0];if(!p)throw new Error("Brak profilu użytkownika");if(p.is_active===false)throw new Error("Konto jest wyłączone");
-  window.GL_PROFILE=p;glSaveProfile(p);return p;
+  window.GL_PROFILE=p;glSaveProfile(p);glApplyProfileTheme();return p;
 }
 async function glFetchRemoteState(uid){
   var rows=await glApi("/rest/v1/user_app_state?select=state,sync_revision,updated_at&user_id=eq."+encodeURIComponent(uid)+"&limit=1",{method:"GET"});
@@ -4619,9 +4666,9 @@ window.glForceCloudSync=async function(){
 function glRenderLogin(message,bad){
   stopTimer();luxStopWorkoutClock();
   var offline=(navigator.onLine?"":"<div class='auth-offline'>Brak internetu. Pierwsze logowanie wymaga połączenia z siecią.</div>");
-  render("<div class='auth-shell'><div class='auth-brand'><img src='header-logo.png?v=600' alt='GymLog CRUSH'></div>"+
+  render("<div class='auth-shell'><div class='auth-brand'><img src='header-logo.png?v=620' alt='GymLog CRUSH'></div>"+
     "<div class='auth-card'><div class='auth-kicker'>MULTI USER</div><div class='auth-title'>Zaloguj się</div><div class='auth-sub'>Każde konto ma własną historię, cele, statystyki i ustawienia. Nie ma publicznej rejestracji.</div>"+offline+
-    "<div class='auth-field'><label>Login</label><input id='glLoginUser' autocomplete='username' autocapitalize='none' spellcheck='false' placeholder='np. hubert'></div>"+
+    "<div class='auth-field'><label>Login</label><input id='glLoginUser' autocomplete='username' autocapitalize='none' spellcheck='false' placeholder=''></div>"+
     "<div class='auth-field'><label>Hasło</label><input id='glLoginPass' type='password' autocomplete='current-password' placeholder='••••••••'></div>"+
     "<button class='auth-login-btn' onclick='glLogin()'>ZALOGUJ SIĘ</button>"+
     "<div id='glLoginMsg' class='auth-msg "+(message?"show "+(bad?"bad":"ok"):"")+"'>"+esc(message||"")+"</div>"+
@@ -4671,7 +4718,7 @@ async function glAfterAuthenticated(s,fromLogin){
   if(!s||!s.user||!s.user.id){glRenderLogin();return;}
   try{
     var p;
-    if(navigator.onLine){p=await glFetchProfile(s.user.id);}else{p=glSavedProfile();window.GL_PROFILE=p;}
+    if(navigator.onLine){p=await glFetchProfile(s.user.id);}else{p=glSavedProfile();window.GL_PROFILE=p;glApplyProfileTheme();}
     if(!p)throw new Error("Brak profilu offline");
     STORE=glUserStore(s.user.id);data=glNormalizeState(safeLoad());
     GL_AUTH_READY=true;
@@ -4706,6 +4753,185 @@ window.glAuthBootstrap=async function(){
   await glAfterAuthenticated(s,false);
 };
 window.addEventListener("online",function(){if(GL_AUTH_READY)glPushCloudState();});
+
+
+
+/* ======================================================================
+   MULTI USER 0.62.0 — gender themes + managed users + admin panel
+   ====================================================================== */
+function glIsAdmin(){return !!(window.GL_PROFILE&&window.GL_PROFILE.role==="admin");}
+function glIsManagedUser(){return !!(window.GL_PROFILE&&window.GL_PROFILE.role!=="admin");}
+function glFlags(){return (window.GL_PROFILE&&window.GL_PROFILE.feature_flags)||{};}
+function glProfileConfig(){return (window.GL_PROFILE&&window.GL_PROFILE.profile_config)||{};}
+function glGender(){var g=String((glProfileConfig().gender)||"male").toLowerCase();return g==="female"?"female":"male";}
+function glApplyProfileTheme(){var female=glGender()==="female";document.body.classList.toggle("theme-female",female);document.documentElement.style.setProperty("--account-accent",female?"#ffb1d2":"#ff2738");}
+function glGenderLabel(g){return String(g||"").toLowerCase()==="female"?"Kobieta":"Mężczyzna";}
+function glManagedPlans(){var c=glProfileConfig();return (c.managed_plans&&typeof c.managed_plans==="object")?c.managed_plans:{};}
+function glDefaultManagedFlags(){return {managedMode:true,gymSelection:false,chatReport:false,footTracking:false,muscleMap:true,bodyWeight:true,adminUsers:false};}
+function glManagedPlanNames(){return Object.keys(glManagedPlans());}
+function glManagedExercises(planName){
+  var arr=glManagedPlans()[planName];if(!Array.isArray(arr))return [];
+  return arr.map(function(x){
+    var sets=Math.max(1,parseInt(x.sets||3,10)||3),reps=String(x.reps||"8-12"),rest=Math.max(0,parseInt(x.rest||120,10)||120);
+    return {name:String(x.name||"Ćwiczenie"),groups:Array.isArray(x.groups)?x.groups:[],bodyweight:x.bodyweight===true,last:"",plan:sets+" × "+reps+" powt.",rest:rest,managedSets:sets,managedReps:reps,sets:[]};
+  });
+}
+function glFindPreviousExercise(planName,exerciseName){
+  var logs=data.logs||[];
+  for(var i=0;i<logs.length;i++){
+    var l=logs[i];if(!l||l.training!==planName)continue;
+    var ex=(l.exercises||[]).find(function(e){return e&&e.name===exerciseName;});
+    if(ex)return ex;
+  }
+  return null;
+}
+function glManagedPreviousWorkingSets(planName,exerciseName){
+  var ex=glFindPreviousExercise(planName,exerciseName);if(!ex)return [];
+  return (ex.sets||[]).filter(function(s){try{return isWorkingSet(s);}catch(e){return String(s&&s.s||"").toLowerCase()!=="rozgrzewka";}});
+}
+function glManagedSetShort(s){
+  if(!s)return "brak";var w=s.w!=null?s.w:s.weight,r=s.r!=null?s.r:s.reps;
+  if((w==null||w==="")&&(r==null||r===""))return "brak";
+  return (w==null||w===""?"—":displayNumber(w)+" kg")+" × "+(r==null||r===""?"—":r);
+}
+function glManagedPlanRows(e){
+  var prev=glManagedPreviousWorkingSets(current.training,e.name),n=Math.max(1,Number(e.managedSets||3)),html="<div class='mu-managed-plan-rows'>";
+  for(var i=0;i<n;i++)html+="<div class='mu-managed-plan-row'><div class='set'>SERIA "+(i+1)+"</div><div><div class='target'>"+esc(e.managedReps||"zakres")+" powt.</div><div class='last'>Ostatnio: "+esc(glManagedSetShort(prev[i]))+"</div></div></div>";
+  return html+"</div>";
+}
+
+/* GitHub cloud is retired in Multi User. Supabase is the live cloud. */
+window.ghPushV403=function(){return Promise.resolve(false);};
+window.backupView=function(){
+  var json=JSON.stringify(data,null,2);
+  render("<h1>Eksport / import</h1><button class='secondary topMenu' onclick='luxMoreView()'>← Więcej</button>"+
+    "<div class='card'><h2>Eksport awaryjny</h2><div class='small'>Supabase synchronizuje konto automatycznie. Ten JSON jest dodatkową kopią ręczną.</div><textarea id='backupText' style='height:240px'>"+esc(json)+"</textarea><button onclick='copyBackup()'>Kopiuj backup</button></div>"+
+    "<div class='card'><h2>Import ręczny</h2><textarea id='importText' placeholder='Wklej backup tutaj'></textarea><button class='warn' onclick='importBackup()'>Importuj backup</button></div>"+luxBottomNav("more"));
+};
+
+/* Keep admin's original start screen, but managed accounts get plan-only start. */
+var glAdminHome0610=window.home;
+window.home=function(){
+  glApplyProfileTheme();
+  if(!glIsManagedUser())return glAdminHome0610();
+  stopTimer();luxStopWorkoutClock();
+  var names=glManagedPlanNames(),opts="";names.forEach(function(n){opts+="<option value='"+esc(n)+"'>"+esc(n)+"</option>";});
+  var lm=data.lastMeta||{},draftBox="";
+  if(data.draft)draftBox="<div class='card lux-draft'><div class='lux-kicker'>ROZPOCZĘTY TRENING</div><h2>"+esc(data.draft.training)+"</h2><div class='small'>"+esc(data.draft.date)+"</div><div class='row'><button onclick='resumeDraft()'>Kontynuuj</button><button class='danger' onclick='deleteDraft()'>Usuń</button></div></div>";
+  var planControl=names.length?"<select id='tr'>"+opts+"</select>":"<div class='mu-managed-empty'>Administrator nie dodał jeszcze planu treningowego.</div>";
+  var weight=glFlags().bodyWeight===false?"":luxFormRow("scale","gray","Waga","<input id='weight' type='text' inputmode='decimal' value='"+esc(lm.weight||"")+"' placeholder=''>");
+  var html=luxHero()+draftBox+"<section class='card lux-start-card'><div class='lux-section-title'>Nowy trening</div><div class='lux-form-list'>"+
+    luxFormRow("train","","Plan",planControl)+"</div><div class='lux-grid'>"+
+    luxFormRow("calendar","","Data","<input id='date' value='"+today()+"'>")+
+    luxFormRow("moon","yellow","Sen","<input id='sleep' type='text' inputmode='decimal' value='"+esc(lm.sleep||"")+"' placeholder=''>")+
+    weight+
+    luxFormRow("mood","green","Samopoczucie","<input id='mood' type='text' inputmode='numeric' value='"+esc(lm.mood||"")+"' placeholder='1-10'>")+
+    luxFormRow("note","gray","Uwagi","<textarea id='notes' placeholder='Dodaj notatkę...'></textarea>")+"</div>"+
+    (names.length?"<button class='lux-primary' onclick='glManagedStartWorkout()'><span class='lux-primary-inner'>START TRENINGU <span class='lux-chevron'>›</span></span></button>":"")+"</section><div id='pwa-version'>"+esc(VERSION)+"</div>"+luxBottomNav("start");
+  render(html);
+};
+home=window.home;
+window.glManagedStartWorkout=function(){
+  var tr=document.getElementById("tr");if(!tr){alert("Brak planu treningowego.");return;}
+  var plan=tr.value,ex=glManagedExercises(plan);if(!ex.length){alert("Ten plan nie ma ćwiczeń.");return;}
+  current={date:(document.getElementById("date").value||today()),training:plan,gym:"CityFit",testMode:false,sleep:(document.getElementById("sleep").value||""),weight:(document.getElementById("weight")?document.getElementById("weight").value:""),mood:(document.getElementById("mood").value||""),footWalk:"",footPush:"",rehab:"",notes:(document.getElementById("notes").value||""),exercises:ex,createdAt:new Date().toISOString()};
+  data.lastMeta={sleep:current.sleep,weight:current.weight,mood:current.mood,footWalk:"",footPush:"",rehab:"",gym:"CityFit"};data.draft=current;safeSave();idx=0;exercise();
+};
+
+/* Managed active workout: range plan + previous load per set. */
+var glAdminExercise0610=window.exercise;
+window.exercise=function(){
+  if(!glIsManagedUser())return glAdminExercise0610();
+  stopTimer();if(!current){home();return;}current.gym="CityFit";current.index=idx;data.draft=current;safeSave();
+  var e=current.exercises[idx],sg=getSuggestion(e);if(sg&&sg.s)sg.s=statusMapNew(sg.s);
+  var statusOptions=["","rozgrzewka","zapas 2-3","zapas 1","zapas 0-1","upadek techniczny","FAIL","ból / przerwane"],statusHtml="";statusOptions.forEach(function(o){statusHtml+="<option"+selected(sg.s,o)+">"+esc(o)+"</option>";});
+  var sets="";(e.sets||[]).forEach(function(s,i){sets+="<div class='lux-set-row'><span class='lux-set-number'>"+(i+1)+"</span><span class='lux-set-text'>"+esc(getSetLine(s))+"</span></div>";});if(!sets)sets="<div class='small'>Brak wpisanych serii.</div>";
+  var pct=Math.round(((idx+1)/Math.max(1,current.exercises.length))*100),mood=luxNum(current.mood),ready=mood==null?null:Math.max(0,Math.min(100,Math.round(mood*10)));
+  var html="<div class='lux-active-top'><div><div class='lux-kicker'>TRENING AKTYWNY</div><div class='lux-active-title'>"+esc(current.training)+"</div><div class='lux-subline'>"+esc(current.date)+"</div></div><button class='secondary' style='width:auto;margin:0;padding:10px 12px' onclick='luxMoreView()'>•••</button></div>"+
+    "<div class='lux-active-meta'><div class='lux-stat-card red'><div class='lux-stat-label'>Czas treningu</div><div id='luxWorkoutClock' class='lux-big-yellow'>"+luxElapsedText()+"</div><div class='lux-stat-note'>Aktywny czas</div></div><div class='lux-stat-card green'><div class='lux-stat-label'>Gotowość</div><div class='lux-big-green'>"+(ready==null?"—":ready+"%")+"</div><div class='lux-stat-note'>Samopoczucie: "+esc(current.mood||"—")+"/10</div></div></div>"+
+    "<div class='card'><div class='lux-kicker'>POSTĘP TRENINGU</div><div class='small'>Ćwiczenie "+(idx+1)+" / "+current.exercises.length+"</div><div class='lux-progress-track'><div class='lux-progress-fill red' style='width:"+pct+"%'></div></div></div>"+
+    "<div class='card lux-current-card'><div class='lux-kicker'>AKTUALNE ĆWICZENIE</div><div class='lux-ex-name'>"+esc(e.name)+"</div><div class='lux-ex-meta'><span class='lux-pill'>"+esc(e.managedSets)+" serie</span><span class='lux-pill gray'>Przerwa: "+esc(restDescription(e))+"</span></div><div class='lux-plan-always'><div class='lux-plan-title'>Plan zakresowy + ostatnie obciążenie</div>"+glManagedPlanRows(e)+"</div></div>"+
+    "<div class='card lux-set-entry'><div class='lux-section-title'>Wpisz serię</div><div class='row3'><div><label>Ciężar</label><input id='sw' type='text' inputmode='decimal' value='"+esc(sg.w||"")+"'></div><div><label>Powt.</label><input id='sr' type='text' inputmode='numeric' value='"+esc(sg.r||"")+"'></div><div><label>Status</label><select id='ss'>"+statusHtml+"</select></div></div><label>Notatka tej serii</label><input id='sn' value='' placeholder='opcjonalnie'><button class='lux-save-set' onclick='saveSet()'>ZAPISZ SERIĘ + START PRZERWY</button></div>"+
+    "<div class='card lux-rest-card'><div><div class='lux-kicker'>ODPOCZYNEK</div><div id='timer' class='timer'>00:00</div></div><div class='lux-rest-actions'><button class='secondary' onclick='restartTimer()'>Restart</button><button class='secondary' onclick='stopTimer()'>Stop</button></div></div>"+
+    "<div class='card'><div class='lux-section-title'>Zrobione serie</div><div class='lux-set-list'>"+sets+"</div><button class='danger lux-muted-action' onclick='deleteLastSet()'>Usuń ostatnią serię</button></div>"+
+    "<div class='lux-nav-row'><button class='secondary' onclick='prevExercise()'>‹ Poprzednie</button><button onclick='nextExercise()'>Następne ›</button></div><button class='lux-finish' onclick='confirmFinishWorkout()'>ZAKOŃCZ TRENING</button>"+luxBottomNav("start");
+  render(html);luxStartWorkoutClock();
+};
+exercise=window.exercise;
+
+/* Managed finish: summary only. No ChatGPT code and no clipboard report. */
+var glAdminFinish0610=window.finishWorkout;
+window.finishWorkout=function(){
+  if(!glIsManagedUser())return glAdminFinish0610.apply(this,arguments);
+  if(!current)return;current.gym="CityFit";current.finishedAt=new Date().toISOString();
+  var done=current,summary=volumeSummaryText(done),details="";
+  (done.exercises||[]).forEach(function(e){details+="<div class='mu-summary-ex'><b>"+esc(e.name)+"</b>"+((e.sets||[]).length?(e.sets||[]).map(function(s,i){return "<div class='mu-summary-set'>Seria "+(i+1)+": "+esc(getSetLine(s))+"</div>";}).join(""):"<div class='mu-summary-set'>Brak wpisanych serii</div>")+"</div>";});
+  data.logs.unshift(done);data.draft=null;recomputeLastByExercise();safeSave();current=null;
+  var map=(glFlags().muscleMap!==false&&window.muscleVisualHtml)?window.muscleVisualHtml(done):"";
+  render("<h1>Trening zakończony</h1><div class='badge'>Zapisano</div><div class='card'><h2>Podsumowanie</h2><div class='box'>"+esc(summary)+"</div></div>"+map+"<div class='card'><h2>Ćwiczenia</h2>"+details+"</div><button onclick='home()'>MENU</button>"+luxBottomNav("start"));
+};
+
+/* Managed history hides gym and foot fields. */
+var glAdminHistory0610=window.historyView;
+window.historyView=function(filter,page){
+  if(!glIsManagedUser())return glAdminHistory0610.apply(this,arguments);
+  stopTimer();luxStopWorkoutClock();filter=filter||window._historyCurrentFilter||"Wszystkie";var all=["Wszystkie"];glManagedPlanNames().forEach(function(n){all.push(n);});(data.logs||[]).forEach(function(l){if(l.training&&all.indexOf(l.training)<0)all.push(l.training);});
+  var opts="";all.forEach(function(n){opts+="<option value='"+esc(n)+"'"+selected(filter,n)+">"+esc(n)+"</option>";});var matches=[];(data.logs||[]).forEach(function(l,i){if(filter==="Wszystkie"||l.training===filter)matches.push({log:l,index:i});});var per=4,total=Math.max(1,Math.ceil(matches.length/per));page=Math.max(0,Math.min(Number(page||0),total-1));var visible=matches.slice(page*per,page*per+per);
+  var html="<div class='lux-history-head'><h1>Historia</h1><select class='lux-filter' onchange='historyView(this.value,0)'>"+opts+"</select></div><div class='lux-history-list'>";
+  visible.forEach(function(x){var l=x.log,real=0;try{real=realWorkingSetsCount(l)||0;}catch(e){}html+="<article class='lux-history-card'><div class='lux-history-main'><div class='lux-history-icon'>II</div><div><div class='lux-history-name'>"+esc(l.training)+"</div><div class='lux-history-meta'>"+esc(l.date)+"</div></div></div><div class='lux-history-stats'><span>⚖ "+esc(l.weight||"—")+" kg</span><span>☾ "+esc(l.sleep||"—")+" h</span><span>Serie: "+real+"</span></div><div class='lux-history-actions'><button onclick='historyDetailsView("+x.index+",\""+esc(filter)+"\")'>Szczegóły</button></div></article>";});
+  if(!matches.length)html+="<div class='card small'>Brak treningów.</div>";html+="</div>";if(matches.length>per)html+="<div class='historyPager'>"+(page>0?"<button class='secondary' onclick='historyView(\""+esc(filter)+"\","+(page-1)+")'>← Poprzednia</button>":"<span></span>")+"<div class='pageNo'>"+(page+1)+" / "+total+"</div>"+(page<total-1?"<button onclick='historyView(\""+esc(filter)+"\","+(page+1)+")'>Następna →</button>":"<span></span>")+"</div>";html+=luxBottomNav("history");render(html);
+};
+
+/* Admin API */
+async function glAdminApi(payload){
+  if(!glIsAdmin())throw new Error("Brak uprawnień administratora");var s=await glEnsureSession();if(!s)throw new Error("Brak sesji");
+  return glApi("/functions/v1/admin-users",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)},s);
+}
+window.GL_ADMIN_USERS=[];window.GL_ADMIN_SELECTED=null;
+window.glUsersView=async function(){
+  if(!glIsAdmin()){luxMoreView();return;}stopTimer();luxStopWorkoutClock();
+  render("<h1>Użytkownicy</h1><button class='secondary mu-user-back' onclick='luxMoreView()'>← Więcej</button><div class='card'><div class='small'>Ładowanie użytkowników…</div></div>"+luxBottomNav("more"));
+  try{var r=await glAdminApi({action:"list_users"});window.GL_ADMIN_USERS=r.users||[];var html="<h1>Użytkownicy</h1><button class='secondary mu-user-back' onclick='luxMoreView()'>← Więcej</button><div class='card'><div class='lux-section-title'>Dodaj użytkownika</div><div class='mu-admin-form'><div class='row2'><div><label>Login</label><input id='muNewLogin' autocapitalize='none'></div><div><label>Imię / nazwa</label><input id='muNewName'></div></div><label>Typ konta</label><select id='muNewGender' onchange='glGenderPreviewNew()'><option value='male'>Mężczyzna</option><option value='female'>Kobieta</option></select><div id='muNewGenderPreview' class='mu-gender-preview'>Męskie konto korzysta z obecnego czarno-bordowego stylu GymLog CRUSH.</div><label>Hasło</label><input id='muNewPass' type='password' placeholder='minimum 8 znaków'><button onclick='glAdminCreateUser()'>DODAJ UŻYTKOWNIKA</button><div class='mu-section-note'>Nowe konto dostaje uproszczony tryb treningowy: bez wyboru siłowni, bez kodu do ChatGPT, plan zakresowy i ostatnie obciążenie każdej serii.</div></div></div><div class='lux-kicker' style='margin:14px 1px 9px'>KONTA</div><div class='mu-users-grid'>";
+    (window.GL_ADMIN_USERS||[]).forEach(function(u){html+="<div class='mu-user-card "+(u.role==="admin"?"admin":"")+"'><div class='mu-user-head'><div><div class='mu-user-name'>"+esc(u.display_name||u.username)+"</div><div class='mu-user-meta'>@"+esc(u.username)+" • "+esc(u.role==="admin"?"administrator":"użytkownik")+"</div><span class='mu-gender-pill "+(((u.profile_config||{}).gender)==="female"?"female":"male")+"'>"+esc(glGenderLabel((u.profile_config||{}).gender))+"</span></div><span class='mu-user-status "+(u.is_active?"":"off")+"'>"+(u.is_active?"AKTYWNY":"WYŁĄCZONY")+"</span></div><button class='secondary' onclick='glAdminOpenUser(\""+esc(u.id)+"\")'>Otwórz</button></div>";});
+    html+="</div>"+luxBottomNav("more");render(html);
+  }catch(e){render("<h1>Użytkownicy</h1><button class='secondary mu-user-back' onclick='luxMoreView()'>← Więcej</button><div class='err'>"+esc(e.message||e)+"</div>"+luxBottomNav("more"));}
+};
+window.glGenderPreviewNew=function(){var s=document.getElementById("muNewGender"),p=document.getElementById("muNewGenderPreview");if(!s||!p)return;var f=s.value==="female";p.className="mu-gender-preview"+(f?" female":"");p.textContent=f?"Kobiece konto dostanie baby pink interfejs, baby pink logo i delikatny napis FOR WOMAN pod logo.":"Męskie konto korzysta z obecnego czarno-bordowego stylu GymLog CRUSH.";};
+window.glAdminCreateUser=async function(){
+  var username=String(document.getElementById("muNewLogin").value||"").trim().toLowerCase(),name=String(document.getElementById("muNewName").value||username).trim(),password=String(document.getElementById("muNewPass").value||""),gender=String((document.getElementById("muNewGender")||{}).value||"male");
+  if(password.length<8){alert("Hasło musi mieć minimum 8 znaków.");return;}
+  try{await glAdminApi({action:"create_user",username:username,display_name:name,password:password,feature_flags:glDefaultManagedFlags(),profile_config:{managedMode:true,managed_plans:{},gender:gender}});alert("Użytkownik utworzony.");glUsersView();}catch(e){alert("Nie udało się utworzyć użytkownika: "+String(e.message||e));}
+};
+function glPlanConfigToText(cfg){
+  var plans=(cfg&&cfg.managed_plans)||{},out=[];Object.keys(plans).forEach(function(name){out.push("["+name+"]");(plans[name]||[]).forEach(function(e){out.push([e.name||"",e.sets||3,e.reps||"8-12",e.rest||120,(e.groups||[]).join(",")].join(" | "));});out.push("");});return out.join("\n").trim();
+}
+function glPlanTextToConfig(txt){
+  var plans={},name=null;String(txt||"").split(/\r?\n/).forEach(function(raw){var line=raw.trim();if(!line)return;var m=line.match(/^\[(.+)\]$/);if(m){name=m[1].trim();if(!plans[name])plans[name]=[];return;}if(!name)throw new Error("Najpierw dodaj nazwę planu w nawiasach, np. [Plan A]");var p=line.split("|").map(function(x){return x.trim();});if(p.length<4)throw new Error("Ćwiczenie zapisz: Nazwa | serie | zakres | przerwa | partie");plans[name].push({name:p[0],sets:Math.max(1,parseInt(p[1],10)||3),reps:p[2]||"8-12",rest:Math.max(0,parseInt(p[3],10)||120),groups:(p[4]||"").split(",").map(function(x){return x.trim();}).filter(Boolean)});});return plans;
+}
+window.glAdminOpenUser=async function(uid){
+  if(!glIsAdmin())return;render("<h1>Użytkownik</h1><button class='secondary mu-user-back' onclick='glUsersView()'>← Użytkownicy</button><div class='card small'>Ładowanie…</div>"+luxBottomNav("more"));
+  try{var r=await glAdminApi({action:"get_user_state",user_id:uid});window.GL_ADMIN_SELECTED=r;var u=r.profile||{},st=glNormalizeState(r.state||{}),flags=u.feature_flags||{},cfg=u.profile_config||{};var history="<div class='mu-history-user'>";(st.logs||[]).slice(0,12).forEach(function(l,i){history+="<article><div class='title'>"+esc(l.training||"Trening")+"</div><div class='meta'>"+esc(l.date||"")+" • "+((l.exercises||[]).length)+" ćwiczeń</div><button class='secondary' onclick='glAdminExportWorkout("+i+")'>Eksportuj trening</button></article>";});if(!(st.logs||[]).length)history+="<div class='mu-managed-empty'>Brak treningów.</div>";history+="</div>";
+    var html="<h1>"+esc(u.display_name||u.username)+"</h1><button class='secondary mu-user-back' onclick='glUsersView()'>← Użytkownicy</button>"+
+      "<div class='card'><div class='lux-section-title'>Konto</div><div class='mu-admin-form'><div class='row2'><div><label>Login</label><input id='muEditLogin' value='"+esc(u.username||"")+"'></div><div><label>Nazwa</label><input id='muEditName' value='"+esc(u.display_name||"")+"'></div></div>"+(u.role!=="admin"?"<label>Typ konta</label><select id='muEditGender'><option value='male' "+(((cfg.gender||"male")==="male")?"selected":"")+">Mężczyzna</option><option value='female' "+(cfg.gender==="female"?"selected":"")+">Kobieta</option></select><div class='mu-section-note'>Kobieta = baby pink interfejs + baby pink logo + FOR WOMAN. Mężczyzna = obecny styl CRUSH.</div>":"")+"<button onclick='glAdminSaveIdentity()'>Zapisz dane konta</button><label>Nowe hasło</label><input id='muEditPass' type='password' placeholder='minimum 8 znaków'><button class='secondary' onclick='glAdminResetPassword()'>Zmień hasło</button>"+(u.role!=="admin"?"<button class='"+(u.is_active?"danger":"secondary")+"' onclick='glAdminSetActive("+(!u.is_active)+")'>"+(u.is_active?"Wyłącz konto":"Włącz konto")+"</button>":"")+"</div></div>"+
+      (u.role!=="admin"?"<div class='card'><div class='lux-section-title'>Plan treningowy</div><div class='small'>Format każdej linii: Nazwa ćwiczenia | serie | zakres powtórzeń | przerwa w sekundach | partie</div><textarea id='muPlanEditor' class='mu-plan-editor' placeholder='[Plan A]\nChest Press | 3 | 8-12 | 120 | Klatka'>"+esc(glPlanConfigToText(cfg))+"</textarea><button onclick='glAdminSavePlan()'>ZAPISZ PLAN</button></div>":"")+
+      "<div class='card'><div class='lux-section-title'>Historia</div>"+history+"</div>"+luxBottomNav("more");render(html);
+  }catch(e){alert("Nie udało się wczytać użytkownika: "+String(e.message||e));glUsersView();}
+};
+window.glAdminSaveIdentity=async function(){var r=window.GL_ADMIN_SELECTED;if(!r)return;try{await glAdminApi({action:"update_user",user_id:r.profile.id,username:document.getElementById("muEditLogin").value,display_name:document.getElementById("muEditName").value});if(r.profile.role!=="admin"){var gender=String((document.getElementById("muEditGender")||{}).value||"male"),flags=Object.assign(glDefaultManagedFlags(),r.profile.feature_flags||{}),cfg=Object.assign({},r.profile.profile_config||{},{managedMode:true,gender:gender});await glAdminApi({action:"set_features",user_id:r.profile.id,feature_flags:flags,profile_config:cfg});}alert("Zapisano.");glAdminOpenUser(r.profile.id);}catch(e){alert(String(e.message||e));}};
+window.glAdminResetPassword=async function(){var r=window.GL_ADMIN_SELECTED,p=String(document.getElementById("muEditPass").value||"");if(p.length<8){alert("Hasło musi mieć minimum 8 znaków.");return;}try{await glAdminApi({action:"reset_password",user_id:r.profile.id,password:p});document.getElementById("muEditPass").value="";alert("Hasło zmienione.");}catch(e){alert(String(e.message||e));}};
+window.glAdminSetActive=async function(v){var r=window.GL_ADMIN_SELECTED;if(!r)return;try{await glAdminApi({action:"set_active",user_id:r.profile.id,is_active:v===true});glAdminOpenUser(r.profile.id);}catch(e){alert(String(e.message||e));}};
+window.glAdminSavePlan=async function(){var r=window.GL_ADMIN_SELECTED;if(!r)return;try{var plans=glPlanTextToConfig(document.getElementById("muPlanEditor").value),cfg=Object.assign({},r.profile.profile_config||{},{managedMode:true,managed_plans:plans}),flags=Object.assign(glDefaultManagedFlags(),r.profile.feature_flags||{});await glAdminApi({action:"set_features",user_id:r.profile.id,feature_flags:flags,profile_config:cfg});alert("Plan zaktualizowany.");glAdminOpenUser(r.profile.id);}catch(e){alert("Błąd planu: "+String(e.message||e));}};
+window.glAdminExportWorkout=function(i){var r=window.GL_ADMIN_SELECTED,log=r&&r.state&&r.state.logs&&r.state.logs[i];if(!log){alert("Nie znaleziono treningu.");return;}var txt="";try{txt=makeReport(log);}catch(e){txt=JSON.stringify(log,null,2);}copyText(txt);alert("Eksport treningu skopiowany.");};
+
+/* More: Users only for admin. No GitHub. */
+window.luxMoreView=function(){
+  stopTimer();luxStopWorkoutClock();var p=window.GL_PROFILE||{},initials=String(p.display_name||p.username||"U").trim().slice(0,1).toUpperCase(),role=p.role==="admin"?"Administrator":"Użytkownik",sync=window.GL_SYNC_STATUS||{state:"pending",text:"Oczekuje"};
+  var account="<div class='card'><div class='mu-account-card'><div class='mu-avatar'>"+esc(initials)+"</div><div><div class='mu-account-name'>"+esc(p.display_name||p.username||"Konto")+"</div><div class='mu-account-meta'>@"+esc(p.username||"—")+" • "+esc(role)+"</div></div></div><div class='mu-cloud-line'><span><i class='mu-sync-dot "+esc(sync.state||"pending")+"'></i>Supabase</span><span>"+esc(sync.text||"—")+"</span></div></div>";
+  var actions="<div class='lux-action-list'>";
+  if(glIsAdmin())actions+="<button onclick='glUsersView()'><span>👥 Użytkownicy</span><span>›</span></button><button onclick='goalsView()'><span>◎ Aktualizuj cele</span><span>›</span></button>";
+  actions+="<button onclick='backupView()'><span>⇩ Eksport / import awaryjny</span><span>›</span></button><button onclick='helpView()'><span>? Pomoc</span><span>›</span></button><button class='secondary' onclick='glForceCloudSync()'><span>↻ Synchronizuj Supabase</span><span>›</span></button><button class='secondary' onclick='glLogout()'><span>Wyloguj się</span><span>›</span></button></div>";
+  render("<h1>Więcej</h1>"+account+"<div class='card'><div class='lux-section-title'>GymLog CRUSH</div><div class='small'>"+esc(VERSION)+"</div></div>"+actions+luxBottomNav("more"));
+};
 
 
 runInstalledAppUpdates();

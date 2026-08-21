@@ -1,7 +1,7 @@
 {
-  "name": "GymLog CRUSH — Multi User Test",
+  "name": "GymLog CRUSH — Multi User",
   "short_name": "GymLog CRUSH",
-  "description": "GymLog CRUSH multi-user test build",
+  "description": "GymLog CRUSH multi-user build with account themes",
   "id": "./",
   "start_url": "./",
   "scope": "./",

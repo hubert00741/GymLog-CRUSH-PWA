@@ -751,6 +751,53 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
 }
 .theme-female .mu-starter-banner b{color:#ffb1d2}
 
+
+
+/* ===== 0.63.0 — HISTORY / ADMIN / MANAGED CONTROLS ===== */
+.mu-history-actions-063{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin-top:10px;
+}
+.mu-history-actions-063 button{margin:0!important;min-height:42px;padding:10px 8px!important;font-size:10px!important}
+.mu-history-actions-063 .danger{grid-column:1/-1}
+.mu-admin-history-actions-063{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  margin-top:9px;
+}
+.mu-admin-history-actions-063 button{margin:0!important;min-height:40px;padding:9px 7px!important;font-size:9px!important}
+.mu-admin-history-actions-063 .danger{grid-column:1/-1}
+.mu-feature-row-063{
+  margin-top:12px;
+  padding:12px;
+  border-radius:14px;
+  background:#0d0d0f;
+  border:1px solid rgba(255,255,255,.07);
+}
+.mu-feature-row-063 label{margin-top:0!important}
+.mu-edit-ex-063{padding:14px!important}
+.mu-edit-ex-063 textarea{min-height:130px!important}
+.mu-detail-ex-063{margin-top:9px}
+.mu-detail-ex-063 h3{margin:0 0 8px}
+.mu-workout-tools-063{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:0 0 12px;
+}
+.mu-workout-tools-063 button{margin:0!important;min-height:46px;font-size:10px!important}
+.mu-workout-tools-063 .skip{background:#171719!important;color:#d8c58e!important;border:1px solid rgba(181,139,42,.28)!important}
+.mu-workout-tools-063 .swap{background:#171719!important;color:#ffc05d!important;border:1px solid rgba(255,180,0,.28)!important}
+.theme-female .mu-workout-tools-063 .swap{color:#ffb1d2!important;border-color:rgba(255,177,210,.28)!important}
+.mu-admin-toggle-note-063{margin-top:6px;color:#74747b;font-size:9px;line-height:1.4}
+@media(max-width:390px){
+  .mu-history-actions-063{grid-template-columns:1fr 1fr}
+  .mu-history-actions-063 .danger{grid-column:1/-1}
+}
+
 </style>
 </head>
 
@@ -3336,7 +3383,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "PWA BETA 0.62.3 — MULTI USER";
+VERSION = "PWA BETA 0.63.0 — MULTI USER";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -5155,6 +5202,388 @@ window.luxMoreView=function(){
   actions+="<button onclick='backupView()'><span>⇩ Eksport / import awaryjny</span><span>›</span></button><button onclick='helpView()'><span>? Pomoc</span><span>›</span></button><button class='secondary' onclick='glForceCloudSync()'><span>↻ Synchronizuj Supabase</span><span>›</span></button><button class='secondary' onclick='glLogout()'><span>Wyloguj się</span><span>›</span></button></div>";
   render("<h1>Więcej</h1>"+account+"<div class='card'><div class='lux-section-title'>GymLog CRUSH</div><div class='small'>"+esc(VERSION)+"</div></div>"+actions+luxBottomNav("more"));
 };
+
+
+
+/* ======================================================================
+   MULTI USER 0.63.0 — editable history, admin history control,
+   per-account mannequin toggle, managed exercise skip/substitution.
+   ====================================================================== */
+var gl063BaseHistoryView=window.historyView;
+var gl063BaseHistoryDetails=window.historyDetailsView;
+var gl063BaseEditHistory=window.editHistory;
+var gl063BaseConfirmFinish=window.confirmFinishWorkout;
+var gl063BaseExercise=window.exercise;
+var gl063BaseSubView=window.substituteExerciseView;
+var gl063BaseApplySub=window.applyExerciseSubstitution;
+var gl063BaseUndoSub=window.undoExerciseSubstitution;
+
+/* ---------- managed finish confirmation: never mentions copying a report ---------- */
+window.confirmFinishWorkout=function(){
+  if(!glIsManagedUser())return gl063BaseConfirmFinish.apply(this,arguments);
+  if(!current){home();return;}
+  var e=current.exercises&&current.exercises[idx];
+  render(
+    "<h1>Potwierdź zakończenie</h1>"+
+    "<div class='card'><h2>Czy na pewno zakończyć trening?</h2>"+
+    "<div class='box'>Trening: "+esc(current.training||"")+"\\nAktualne ćwiczenie: "+esc(e?e.name:"")+"</div>"+
+    "<button class='danger' onclick='finishWorkout()'>TAK, ZAKOŃCZ TRENING</button>"+
+    "<button class='secondary' onclick='exercise()'>NIE, WRÓĆ DO TRENINGU</button></div>"+
+    luxBottomNav("start")
+  );
+};
+
+/* ---------- managed exercise: skip + substitute ---------- */
+window.glManagedSkipExerciseView=function(){
+  if(!current||!current.exercises||!current.exercises[idx]){home();return;}
+  var e=current.exercises[idx];
+  render(
+    "<h1>Pomiń ćwiczenie</h1>"+
+    "<div class='card'><h2>"+esc(e.name)+"</h2>"+
+    "<label>Powód</label><select id='muSkipReason'>"+
+      "<option>zajęta maszyna</option><option>ból / dyskomfort</option><option>brak czasu</option><option>zmiana planu</option><option>inne</option>"+
+    "</select>"+
+    "<label>Dopisek</label><input id='muSkipNote' placeholder='opcjonalnie'>"+
+    "<button class='warn' onclick='glManagedSaveSkipExercise()'>POMIŃ ĆWICZENIE</button>"+
+    "<button class='secondary' onclick='exercise()'>ANULUJ</button></div>"+
+    luxBottomNav("start")
+  );
+};
+window.glManagedSaveSkipExercise=function(){
+  if(!current||!current.exercises||!current.exercises[idx])return;
+  var e=current.exercises[idx],reason=String(document.getElementById("muSkipReason").value||"inne"),note=String(document.getElementById("muSkipNote").value||"").trim();
+  var line="pominięte — "+reason+(note?" | "+note:"");
+  e.sets=e.sets||[];
+  e.sets.push({line:line,w:"",r:"",s:"pominięte",n:reason+(note?" | "+note:""),skipped:true,createdAt:new Date().toISOString()});
+  current.index=idx;data.draft=current;safeSave();
+  if(idx<current.exercises.length-1){idx++;exercise();}else{confirmFinishWorkout();}
+};
+
+window.substituteExerciseView=function(){
+  if(!glIsManagedUser())return gl063BaseSubView.apply(this,arguments);
+  if(!current||!current.exercises||!current.exercises[idx]){home();return;}
+  var e=current.exercises[idx];
+  var original=e.substituteOriginal||{
+    name:e.name,groups:e.groups||[],plan:e.plan||"",last:e.last||"",rest:e.rest||120,bodyweight:!!e.bodyweight,
+    managedSets:e.managedSets,managedReps:e.managedReps,managedStarter:e.managedStarter||""
+  };
+  var currentName=(window.isSubstituteExercise&&window.isSubstituteExercise(e))?e.name:"";
+  var currentGroups=(e.groups&&e.groups.length?e.groups:original.groups||[]).join(", ");
+  var defaultType=isBodyweightExercise(e)?"bodyweight":"kg";
+  render(
+    "<h1>Zamień ćwiczenie</h1>"+
+    "<div class='card'><h2>"+esc(original.name)+"</h2>"+
+    "<div class='box'>Zamiennik zachowuje liczbę serii i zakres z planu. Domyślna przerwa zamiennika: 02:00. Wynik zamiennika nie zastępuje progresji oryginalnego ćwiczenia.</div>"+
+    "<label>Nazwa zamiennika</label><input id='subName' value='"+esc(currentName)+"' placeholder='np. Hammer Chest Press'>"+
+    "<label>Partie</label><input id='subGroups' value='"+esc(currentGroups)+"' placeholder='np. Klatka'>"+
+    "<label>Typ ciężaru</label><select id='subType'><option value='kg'"+selected(defaultType,"kg")+">zwykły ciężar w kg</option><option value='bodyweight'"+selected(defaultType,"bodyweight")+">masa ciała / asysta</option></select>"+
+    "<button class='warn' onclick='applyExerciseSubstitution()'>ZAPISZ ZAMIANĘ</button>"+
+    ((window.isSubstituteExercise&&window.isSubstituteExercise(e))?"<button class='danger' onclick='undoExerciseSubstitution()'>COFNIJ ZAMIANĘ</button>":"")+
+    "<button class='secondary' onclick='exercise()'>ANULUJ</button></div>"+
+    luxBottomNav("start")
+  );
+};
+window.applyExerciseSubstitution=function(){
+  if(!glIsManagedUser())return gl063BaseApplySub.apply(this,arguments);
+  if(!current||!current.exercises||!current.exercises[idx])return;
+  var e=current.exercises[idx],newName=String(document.getElementById("subName").value||"").trim();
+  var groupsText=String(document.getElementById("subGroups").value||"").trim(),type=String(document.getElementById("subType").value||"kg");
+  if(!newName){alert("Wpisz nazwę zamiennika.");return;}
+  if(!e.substituteOriginal){
+    e.substituteOriginal={
+      name:e.name,groups:(e.groups||[]).slice(),plan:e.plan||"",last:e.last||"",rest:e.rest||120,bodyweight:!!e.bodyweight,
+      managedSets:e.managedSets,managedReps:e.managedReps,managedStarter:e.managedStarter||""
+    };
+  }
+  var original=e.substituteOriginal;
+  e.name=newName;
+  e.groups=window.parseSubGroups?window.parseSubGroups(groupsText,original.groups):(groupsText?groupsText.split(",").map(function(x){return x.trim();}).filter(Boolean):(original.groups||[]));
+  e.bodyweight=type==="bodyweight";
+  e.rest=120;
+  e.managedSets=original.managedSets||e.managedSets||3;
+  e.managedReps=original.managedReps||e.managedReps||"8-12";
+  e.managedStarter="";
+  e.plan=e.managedSets+" × "+e.managedReps+" powt. — zamiana za: "+original.name;
+  e.isSubstitute=true;e.excludeProgression=true;e.substituteFor=original.name;e.reportLast="Zamiana ćwiczenia — nie liczona do progresji.";
+  e.sets=e.sets||[];
+  current.index=idx;data.draft=current;safeSave();exercise();
+};
+window.undoExerciseSubstitution=function(){
+  if(!glIsManagedUser())return gl063BaseUndoSub.apply(this,arguments);
+  if(!current||!current.exercises||!current.exercises[idx])return;
+  var e=current.exercises[idx],o=e.substituteOriginal;if(!o){exercise();return;}
+  e.name=o.name;e.groups=(o.groups||[]).slice();e.plan=o.plan||"";e.last=o.last||"";e.rest=o.rest||120;e.bodyweight=!!o.bodyweight;
+  e.managedSets=o.managedSets||e.managedSets||3;e.managedReps=o.managedReps||e.managedReps||"8-12";e.managedStarter=o.managedStarter||"";
+  delete e.isSubstitute;delete e.excludeProgression;delete e.substituteFor;delete e.reportLast;delete e.substituteOriginal;
+  current.index=idx;data.draft=current;safeSave();exercise();
+};
+
+/* Re-render the managed active workout with the two requested controls. */
+window.exercise=function(){
+  if(!glIsManagedUser())return gl063BaseExercise.apply(this,arguments);
+  stopTimer();if(!current){home();return;}current.gym="CityFit";current.index=idx;data.draft=current;safeSave();
+  var e=current.exercises[idx],sg=getSuggestion(e);if(sg&&sg.s)sg.s=statusMapNew(sg.s);
+  var statusOptions=["","rozgrzewka","zapas 2-3","zapas 1","zapas 0-1","upadek techniczny","FAIL","ból / przerwane"],statusHtml="";
+  statusOptions.forEach(function(o){statusHtml+="<option"+selected(sg.s,o)+">"+esc(o)+"</option>";});
+  var sets="";(e.sets||[]).forEach(function(s,i){sets+="<div class='lux-set-row'><span class='lux-set-number'>"+(i+1)+"</span><span class='lux-set-text'>"+esc(getSetLine(s))+"</span></div>";});
+  if(!sets)sets="<div class='small'>Brak wpisanych serii.</div>";
+  var pct=Math.round(((idx+1)/Math.max(1,current.exercises.length))*100),mood=luxNum(current.mood),ready=mood==null?null:Math.max(0,Math.min(100,Math.round(mood*10)));
+  var isSub=window.isSubstituteExercise&&window.isSubstituteExercise(e);
+  var subNote=isSub?"<div class='mu-starter-banner'><b>ZAMIANA ĆWICZENIA</b> — zamiast: "+esc(e.substituteFor||"")+". Ten wynik nie zastępuje progresji oryginalnego ćwiczenia.</div>":"";
+  var html="<div class='lux-active-top'><div><div class='lux-kicker'>TRENING AKTYWNY</div><div class='lux-active-title'>"+esc(current.training)+"</div><div class='lux-subline'>"+esc(current.date)+"</div></div><button class='secondary' style='width:auto;margin:0;padding:10px 12px' onclick='luxMoreView()'>•••</button></div>"+
+    "<div class='lux-active-meta'><div class='lux-stat-card red'><div class='lux-stat-label'>Czas treningu</div><div id='luxWorkoutClock' class='lux-big-yellow'>"+luxElapsedText()+"</div><div class='lux-stat-note'>Aktywny czas</div></div><div class='lux-stat-card green'><div class='lux-stat-label'>Gotowość</div><div class='lux-big-green'>"+(ready==null?"—":ready+"%")+"</div><div class='lux-stat-note'>Samopoczucie: "+esc(current.mood||"—")+"/10</div></div></div>"+
+    "<div class='card'><div class='lux-kicker'>POSTĘP TRENINGU</div><div class='small'>Ćwiczenie "+(idx+1)+" / "+current.exercises.length+"</div><div class='lux-progress-track'><div class='lux-progress-fill red' style='width:"+pct+"%'></div></div></div>"+
+    "<div class='card lux-current-card'><div class='lux-kicker'>AKTUALNE ĆWICZENIE</div><div class='lux-ex-name'>"+esc(e.name)+"</div><div class='lux-ex-meta'><span class='lux-pill'>"+esc(e.managedSets)+" serie</span><span class='lux-pill gray'>Przerwa: "+esc(restDescription(e))+"</span></div>"+subNote+"<div class='lux-plan-always'><div class='lux-plan-title'>Plan zakresowy + ostatnie obciążenie</div>"+glManagedPlanRows(e)+"</div></div>"+
+    "<div class='mu-workout-tools-063'><button class='skip' onclick='glManagedSkipExerciseView()'>POMIŃ ĆWICZENIE</button><button class='swap' onclick='substituteExerciseView()'>"+(isSub?"EDYTUJ ZAMIANĘ":"ZAMIEŃ ĆWICZENIE")+"</button></div>"+
+    "<div class='card lux-set-entry'><div class='lux-section-title'>Wpisz serię</div><div class='row3'><div><label>Ciężar</label><input id='sw' type='text' inputmode='decimal' value='"+esc(sg.w||"")+"'></div><div><label>Powt.</label><input id='sr' type='text' inputmode='numeric' value='"+esc(sg.r||"")+"'></div><div><label>Status</label><select id='ss'>"+statusHtml+"</select></div></div><label>Notatka tej serii</label><input id='sn' value='' placeholder='opcjonalnie'><button class='lux-save-set' onclick='saveSet()'>ZAPISZ SERIĘ + START PRZERWY</button></div>"+
+    "<div class='card lux-rest-card'><div><div class='lux-kicker'>ODPOCZYNEK</div><div id='timer' class='timer'>00:00</div></div><div class='lux-rest-actions'><button class='secondary' onclick='restartTimer()'>Restart</button><button class='secondary' onclick='stopTimer()'>Stop</button></div></div>"+
+    "<div class='card'><div class='lux-section-title'>Zrobione serie</div><div class='lux-set-list'>"+sets+"</div><button class='danger lux-muted-action' onclick='deleteLastSet()'>Usuń ostatnią serię</button></div>"+
+    "<div class='lux-nav-row'><button class='secondary' onclick='prevExercise()'>‹ Poprzednie</button><button onclick='nextExercise()'>Następne ›</button></div>"+
+    "<button class='lux-finish' onclick='confirmFinishWorkout()'>ZAKOŃCZ TRENING</button>"+luxBottomNav("start");
+  render(html);luxStartWorkoutClock();
+};
+exercise=window.exercise;
+
+/* ---------- managed user history: details / edit / delete ---------- */
+window.historyView=function(filter,page){
+  if(!glIsManagedUser())return gl063BaseHistoryView.apply(this,arguments);
+  stopTimer();luxStopWorkoutClock();
+  filter=filter||window._historyCurrentFilter||"Wszystkie";window._historyCurrentFilter=filter;
+  var all=["Wszystkie"];glManagedPlanNames().forEach(function(n){if(all.indexOf(n)<0)all.push(n);});
+  (data.logs||[]).forEach(function(l){if(l.training&&all.indexOf(l.training)<0)all.push(l.training);});
+  var opts="";all.forEach(function(n){opts+="<option value='"+esc(n)+"'"+selected(filter,n)+">"+esc(n)+"</option>";});
+  var matches=[];(data.logs||[]).forEach(function(l,i){if(filter==="Wszystkie"||l.training===filter)matches.push({log:l,index:i});});
+  var per=4,total=Math.max(1,Math.ceil(matches.length/per));page=Math.max(0,Math.min(Number(page||0),total-1));window._pwaHistoryPage=page;
+  var visible=matches.slice(page*per,page*per+per),html="<div class='lux-history-head'><h1>Historia</h1><select class='lux-filter' onchange='historyView(this.value,0)'>"+opts+"</select></div><div class='lux-history-list'>";
+  visible.forEach(function(x){
+    var l=x.log,real=0;try{real=realWorkingSetsCount(l)||0;}catch(e){}
+    html+="<article class='lux-history-card'><div class='lux-history-main'><div class='lux-history-icon'>II</div><div><div class='lux-history-name'>"+esc(l.training||"Trening")+"</div><div class='lux-history-meta'>"+esc(l.date||"")+"</div></div></div>"+
+      "<div class='lux-history-stats'><span>⚖ "+esc(l.weight||"—")+" kg</span><span>☾ "+esc(l.sleep||"—")+" h</span><span>Serie: "+real+"</span></div>"+
+      "<div class='mu-history-actions-063'><button onclick='glManagedHistoryDetails("+x.index+",\""+esc(filter)+"\","+page+")'>Szczegóły</button><button class='secondary' onclick='glManagedEditWorkout("+x.index+",\""+esc(filter)+"\","+page+")'>Edytuj</button><button class='danger' onclick='glManagedDeleteWorkout("+x.index+",\""+esc(filter)+"\","+page+")'>Usuń trening</button></div></article>";
+  });
+  if(!matches.length)html+="<div class='card small'>Brak treningów.</div>";
+  html+="</div>";
+  if(matches.length>per)html+="<div class='historyPager'>"+(page>0?"<button class='secondary' onclick='historyView(\""+esc(filter)+"\","+(page-1)+")'>← Poprzednia</button>":"<span></span>")+"<div class='pageNo'>"+(page+1)+" / "+total+"</div>"+(page<total-1?"<button onclick='historyView(\""+esc(filter)+"\","+(page+1)+")'>Następna →</button>":"<span></span>")+"</div>";
+  html+=luxBottomNav("history");render(html);
+};
+
+window.glManagedHistoryDetails=function(i,filter,page){
+  var l=data.logs&&data.logs[i];if(!l)return historyView(filter,page);
+  var exercises="";
+  (l.exercises||[]).forEach(function(e,ei){
+    var sets="";(e.sets||[]).forEach(function(s,si){sets+="<div class='historySet'><b>"+(si+1)+".</b> "+esc(getSetLine(s))+"</div>";});
+    if(!sets)sets="<div class='small'>Brak wpisanych serii.</div>";
+    exercises+="<div class='card mu-detail-ex-063'><h3>"+(ei+1)+". "+esc(e.name)+"</h3>"+sets+"</div>";
+  });
+  var map=(glFlags().muscleMap!==false&&window.muscleVisualHtml)?window.muscleVisualHtml(l):"";
+  render(
+    "<h1>Szczegóły treningu</h1><button class='secondary topMenu' onclick='historyView(\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>← Historia</button>"+
+    "<div class='card'><h2>"+esc(l.date||"")+" — "+esc(l.training||"")+"</h2>"+
+    "<div class='metricGrid'><div><span>Sen</span><b>"+esc(l.sleep||"—")+"</b></div><div><span>Waga</span><b>"+esc(l.weight||"—")+"</b></div><div><span>Samopoczucie</span><b>"+esc(l.mood||"—")+"</b></div><div><span>Serie robocze</span><b>"+(function(){try{return realWorkingSetsCount(l)}catch(e){return "—"}})()+"</b></div></div>"+
+    "<div class='box' style='margin-top:10px'>Uwagi: "+esc(l.notes||"brak")+"</div>"+
+    "<div class='mu-history-actions-063'><button class='secondary' onclick='glManagedEditWorkout("+i+",\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>Edytuj</button><button class='danger' onclick='glManagedDeleteWorkout("+i+",\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>Usuń trening</button></div></div>"+
+    map+exercises+luxBottomNav("history")
+  );
+};
+window.historyDetailsView=function(i,filter){
+  if(glIsManagedUser())return glManagedHistoryDetails(i,filter,window._pwaHistoryPage||0);
+  return gl063BaseHistoryDetails.apply(this,arguments);
+};
+
+window.glManagedDeleteWorkout=function(i,filter,page){
+  var l=data.logs&&data.logs[i];if(!l)return historyView(filter,page);
+  if(!confirm("Czy na pewno chcesz usunąć trening "+(l.date||"")+" — "+(l.training||"")+"?\\n\\nTej operacji nie wykonamy przypadkowo bez tego potwierdzenia."))return;
+  data.logs.splice(i,1);data.draft=null;
+  try{recomputeLastByExercise();}catch(e){safeSave();}
+  safeSave();historyView(filter||"Wszystkie",page||0);
+};
+
+window.glManagedEditWorkout=function(i,filter,page){
+  var l=data.logs&&data.logs[i];if(!l)return historyView(filter,page);
+  window.GL_MANAGED_EDIT_CTX={index:i,filter:filter||"Wszystkie",page:Number(page||0)};
+  var exHtml="";
+  (l.exercises||[]).forEach(function(e,ei){
+    var setsText=(e.sets||[]).map(function(s){return getSetLine(s);}).join("\\n");
+    exHtml+="<div class='card mu-edit-ex-063'><div class='lux-section-title'>"+(ei+1)+". Ćwiczenie</div><label>Nazwa</label><input id='muEditExName_"+ei+"' value='"+esc(e.name)+"'><label>Serie — jedna linia = jedna seria</label><textarea id='muEditExSets_"+ei+"'>"+esc(setsText)+"</textarea></div>";
+  });
+  var weightField=glFlags().bodyWeight===false?"":"<label>Waga</label><input id='muEditWeight' value='"+esc(l.weight||"")+"'>";
+  render(
+    "<h1>Edytuj trening</h1><button class='secondary topMenu' onclick='glManagedHistoryDetails("+i+",\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>← Szczegóły</button>"+
+    "<div class='card'><label>Data</label><input id='muEditDate' value='"+esc(l.date||"")+"'><label>Nazwa treningu</label><input id='muEditTraining' value='"+esc(l.training||"")+"'>"+
+    "<div class='row2'><div><label>Sen</label><input id='muEditSleep' value='"+esc(l.sleep||"")+"'></div><div><label>Samopoczucie</label><input id='muEditMood' value='"+esc(l.mood||"")+"'></div></div>"+
+    weightField+"<label>Uwagi</label><textarea id='muEditNotes'>"+esc(l.notes||"")+"</textarea></div>"+exHtml+
+    "<button onclick='glManagedSaveEditedWorkout()'>ZAPISZ ZMIANY</button><button class='secondary' onclick='glManagedHistoryDetails("+i+",\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>ANULUJ</button>"+luxBottomNav("history")
+  );
+};
+window.glManagedSaveEditedWorkout=function(){
+  var c=window.GL_MANAGED_EDIT_CTX;if(!c)return;var l=data.logs&&data.logs[c.index];if(!l)return;
+  l.date=String(document.getElementById("muEditDate").value||"");l.training=String(document.getElementById("muEditTraining").value||"");
+  l.sleep=String(document.getElementById("muEditSleep").value||"");l.mood=String(document.getElementById("muEditMood").value||"");
+  if(document.getElementById("muEditWeight"))l.weight=String(document.getElementById("muEditWeight").value||"");
+  l.notes=String(document.getElementById("muEditNotes").value||"");
+  (l.exercises||[]).forEach(function(e,ei){
+    e.name=String(document.getElementById("muEditExName_"+ei).value||e.name).trim()||e.name;
+    var txt=String(document.getElementById("muEditExSets_"+ei).value||"");
+    e.sets=txt.split(/\\r?\\n/).map(function(x){return x.trim();}).filter(Boolean).map(function(line){return parseSetLine(line,e);});
+  });
+  data.logs[c.index]=l;try{recomputeLastByExercise();}catch(e){safeSave();}safeSave();
+  alert("Trening zapisany po edycji.");glManagedHistoryDetails(c.index,c.filter,c.page);
+};
+
+/* ---------- pure recompute helper for an OTHER user's state ---------- */
+function glAdminRecomputeManagedState(st){
+  st=glNormalizeState(st||{});var last={},lastSets={};
+  (st.logs||[]).forEach(function(log){
+    if(!log||!Array.isArray(log.exercises))return;
+    log.exercises.forEach(function(e){
+      if(window.isSubstituteExercise&&window.isSubstituteExercise(e))return;
+      if(last[e.name])return;
+      var valid=(e.sets||[]).filter(function(s){
+        var line=String(getSetLine(s)||"").toLowerCase();
+        return line&&line.indexOf("pominięte")<0&&line.indexOf("pominiete")<0;
+      });
+      if(!valid.length)return;
+      last[e.name]=(log.date||"")+": "+valid.map(function(s){return getSetLine(s);}).join("; ");
+      lastSets[e.name]=valid.map(function(s){
+        var o=typeof s==="string"?parseSetLine(s,e):JSON.parse(JSON.stringify(s));
+        if(!o.line)o.line=makeSetLine(e,o.w,o.r,o.s,o.n);
+        return o;
+      });
+    });
+  });
+  st.lastByExercise=last;st.lastSetsByExercise=lastSets;
+  return st;
+}
+async function glAdminWriteSelectedState(auditAction){
+  var r=window.GL_ADMIN_SELECTED;if(!r||!r.profile)throw new Error("Brak wybranego użytkownika");
+  r.state=glAdminRecomputeManagedState(r.state||{});
+  var res=await glAdminApi({action:"set_user_state",user_id:r.profile.id,state:r.state,audit_action:auditAction||"admin_edit_state"});
+  if(res&&res.sync_revision!=null)r.sync_revision=res.sync_revision;
+  return res;
+}
+
+/* ---------- admin user card + history ---------- */
+function glAdminRenderSelectedUser(page){
+  var r=window.GL_ADMIN_SELECTED;if(!r||!r.profile){glUsersView();return;}
+  var u=r.profile||{},st=glNormalizeState(r.state||{}),flags=Object.assign(glDefaultManagedFlags(),u.feature_flags||{}),cfg=u.profile_config||{};
+  page=Math.max(0,Number(page||0));window.GL_ADMIN_USER_PAGE=page;
+  var logs=st.logs||[],per=6,total=Math.max(1,Math.ceil(logs.length/per));page=Math.min(page,total-1);window.GL_ADMIN_USER_PAGE=page;
+  var history="<div class='mu-history-user'>";
+  logs.slice(page*per,page*per+per).forEach(function(l,offset){
+    var i=page*per+offset;
+    history+="<article><div class='title'>"+esc(l.training||"Trening")+"</div><div class='meta'>"+esc(l.date||"")+" • "+((l.exercises||[]).length)+" ćwiczeń</div>"+
+      "<div class='mu-admin-history-actions-063'><button onclick='glAdminWorkoutDetails("+i+","+page+")'>Szczegóły</button><button class='secondary' onclick='glAdminEditWorkout("+i+","+page+")'>Edytuj</button><button class='secondary' onclick='glAdminExportWorkout("+i+")'>Eksportuj</button><button class='danger' onclick='glAdminDeleteWorkout("+i+","+page+")'>Usuń trening</button></div></article>";
+  });
+  if(!logs.length)history+="<div class='mu-managed-empty'>Brak treningów.</div>";
+  history+="</div>";
+  if(logs.length>per)history+="<div class='historyPager'>"+(page>0?"<button class='secondary' onclick='glAdminRenderSelectedUser("+(page-1)+")'>← Poprzednia</button>":"<span></span>")+"<div class='pageNo'>"+(page+1)+" / "+total+"</div>"+(page<total-1?"<button onclick='glAdminRenderSelectedUser("+(page+1)+")'>Następna →</button>":"<span></span>")+"</div>";
+  var settings=(u.role!=="admin"?
+    "<label>Typ konta</label><select id='muEditGender'><option value='male' "+(((cfg.gender||"male")==="male")?"selected":"")+">Mężczyzna</option><option value='female' "+(cfg.gender==="female"?"selected":"")+">Kobieta</option></select>"+
+    "<div class='mu-feature-row-063'><label>Manekin mięśni po treningu</label><select id='muEditMuscleMap'><option value='true' "+(flags.muscleMap!==false?"selected":"")+">Włączony</option><option value='false' "+(flags.muscleMap===false?"selected":"")+">Wyłączony</option></select><div class='mu-admin-toggle-note-063'>Wyłączenie ukrywa manekina w podsumowaniu i szczegółach treningu tego konta.</div></div>":"");
+  var html="<h1>"+esc(u.display_name||u.username)+"</h1><button class='secondary mu-user-back' onclick='glUsersView()'>← Użytkownicy</button>"+
+    "<div class='card'><div class='lux-section-title'>Konto</div><div class='mu-admin-form'><div class='row2'><div><label>Login</label><input id='muEditLogin' value='"+esc(u.username||"")+"'></div><div><label>Nazwa</label><input id='muEditName' value='"+esc(u.display_name||"")+"'></div></div>"+settings+
+    "<button onclick='glAdminSaveIdentity()'>ZAPISZ USTAWIENIA KONTA</button><label>Nowe hasło</label><input id='muEditPass' type='password' placeholder='minimum 8 znaków'><button class='secondary' onclick='glAdminResetPassword()'>Zmień hasło</button>"+
+    (u.role!=="admin"?"<button class='"+(u.is_active?"danger":"secondary")+"' onclick='glAdminSetActive("+(!u.is_active)+")'>"+(u.is_active?"Wyłącz konto":"Włącz konto")+"</button>":"")+"</div></div>"+
+    (u.role!=="admin"?"<div class='card'><div class='lux-section-title'>Plan treningowy</div><div class='small'>Edytuj cały plan w jednym polu.</div><div class='mu-plan-toolbar'><button class='clear' onclick='glAdminClearPlanEditor()'>USUŃ ZAWARTOŚĆ POLA</button><button class='paste' onclick='glAdminPastePlanEditor()'>WKLEJ NOWY PLAN</button></div><textarea id='muPlanEditor' class='mu-plan-editor' autocapitalize='off' autocomplete='off' spellcheck='false'>"+esc(glPlanConfigToText(cfg))+"</textarea><div class='mu-plan-format'>Nazwa | serie | zakres | przerwa | partia | opcjonalny wynik startowy</div><button class='mu-plan-save' onclick='glAdminSavePlan()'>ZAPISZ PLAN</button></div>":"")+
+    "<div class='card'><div class='lux-section-title'>Historia użytkownika</div>"+history+"</div>"+luxBottomNav("more");
+  render(html);
+}
+window.glAdminRenderSelectedUser=glAdminRenderSelectedUser;
+
+window.glAdminOpenUser=async function(uid,page){
+  if(!glIsAdmin())return;render("<h1>Użytkownik</h1><button class='secondary mu-user-back' onclick='glUsersView()'>← Użytkownicy</button><div class='card small'>Ładowanie…</div>"+luxBottomNav("more"));
+  try{var r=await glAdminApi({action:"get_user_state",user_id:uid});window.GL_ADMIN_SELECTED=r;r.state=glNormalizeState(r.state||{});glAdminRenderSelectedUser(page||0);}
+  catch(e){alert("Nie udało się wczytać użytkownika: "+String(e.message||e));glUsersView();}
+};
+
+window.glAdminSaveIdentity=async function(){
+  var r=window.GL_ADMIN_SELECTED;if(!r)return;
+  try{
+    await glAdminApi({action:"update_user",user_id:r.profile.id,username:document.getElementById("muEditLogin").value,display_name:document.getElementById("muEditName").value});
+    if(r.profile.role!=="admin"){
+      var gender=String((document.getElementById("muEditGender")||{}).value||"male");
+      var flags=Object.assign(glDefaultManagedFlags(),r.profile.feature_flags||{});
+      flags.muscleMap=String((document.getElementById("muEditMuscleMap")||{}).value||"true")==="true";
+      var cfg=Object.assign({},r.profile.profile_config||{},{managedMode:true,gender:gender});
+      await glAdminApi({action:"set_features",user_id:r.profile.id,feature_flags:flags,profile_config:cfg});
+    }
+    alert("Ustawienia konta zapisane.");glAdminOpenUser(r.profile.id,window.GL_ADMIN_USER_PAGE||0);
+  }catch(e){alert(String(e.message||e));}
+};
+
+window.glAdminWorkoutDetails=function(i,page){
+  var r=window.GL_ADMIN_SELECTED,l=r&&r.state&&r.state.logs&&r.state.logs[i];if(!l)return;
+  var exercises="";
+  (l.exercises||[]).forEach(function(e,ei){
+    var sets="";(e.sets||[]).forEach(function(s,si){sets+="<div class='historySet'><b>"+(si+1)+".</b> "+esc(getSetLine(s))+"</div>";});
+    if(!sets)sets="<div class='small'>Brak wpisanych serii.</div>";
+    exercises+="<div class='card mu-detail-ex-063'><h3>"+(ei+1)+". "+esc(e.name)+"</h3>"+sets+"</div>";
+  });
+  var flags=(r.profile&&r.profile.feature_flags)||{},map=(flags.muscleMap!==false&&window.muscleVisualHtml)?window.muscleVisualHtml(l):"";
+  render(
+    "<h1>Szczegóły treningu</h1><button class='secondary topMenu' onclick='glAdminRenderSelectedUser("+Number(page||0)+")'>← "+esc((r.profile||{}).display_name||"Użytkownik")+"</button>"+
+    "<div class='card'><h2>"+esc(l.date||"")+" — "+esc(l.training||"")+"</h2><div class='metricGrid'><div><span>Sen</span><b>"+esc(l.sleep||"—")+"</b></div><div><span>Waga</span><b>"+esc(l.weight||"—")+"</b></div><div><span>Samopoczucie</span><b>"+esc(l.mood||"—")+"</b></div><div><span>Ćwiczenia</span><b>"+((l.exercises||[]).length)+"</b></div></div><div class='box' style='margin-top:10px'>Uwagi: "+esc(l.notes||"brak")+"</div>"+
+    "<div class='mu-history-actions-063'><button onclick='glAdminExportWorkout("+i+")'>Eksportuj</button><button class='secondary' onclick='glAdminEditWorkout("+i+","+Number(page||0)+")'>Edytuj</button><button class='danger' onclick='glAdminDeleteWorkout("+i+","+Number(page||0)+")'>Usuń trening</button></div></div>"+
+    map+exercises+luxBottomNav("more")
+  );
+};
+
+window.glAdminDeleteWorkout=async function(i,page){
+  var r=window.GL_ADMIN_SELECTED,l=r&&r.state&&r.state.logs&&r.state.logs[i];if(!l)return;
+  if(!confirm("Czy na pewno chcesz usunąć trening użytkownika?\\n\\n"+(l.date||"")+" — "+(l.training||"")+"\\n\\nPo potwierdzeniu zmiana zostanie zapisana w chmurze."))return;
+  try{
+    r.state.logs.splice(i,1);await glAdminWriteSelectedState("admin_delete_workout");alert("Trening usunięty.");glAdminOpenUser(r.profile.id,page||0);
+  }catch(e){alert("Nie udało się usunąć treningu: "+String(e.message||e));}
+};
+
+window.glAdminEditWorkout=function(i,page){
+  var r=window.GL_ADMIN_SELECTED,l=r&&r.state&&r.state.logs&&r.state.logs[i];if(!l)return;
+  window.GL_ADMIN_EDIT_CTX={index:i,page:Number(page||0)};
+  var exHtml="";
+  (l.exercises||[]).forEach(function(e,ei){
+    var setsText=(e.sets||[]).map(function(s){return getSetLine(s);}).join("\\n");
+    exHtml+="<div class='card mu-edit-ex-063'><div class='lux-section-title'>"+(ei+1)+". Ćwiczenie</div><label>Nazwa</label><input id='admEditExName_"+ei+"' value='"+esc(e.name)+"'><label>Serie — jedna linia = jedna seria</label><textarea id='admEditExSets_"+ei+"'>"+esc(setsText)+"</textarea></div>";
+  });
+  render(
+    "<h1>Edytuj trening</h1><button class='secondary topMenu' onclick='glAdminWorkoutDetails("+i+","+Number(page||0)+")'>← Szczegóły</button>"+
+    "<div class='card'><label>Data</label><input id='admEditDate' value='"+esc(l.date||"")+"'><label>Nazwa treningu</label><input id='admEditTraining' value='"+esc(l.training||"")+"'>"+
+    "<div class='row2'><div><label>Sen</label><input id='admEditSleep' value='"+esc(l.sleep||"")+"'></div><div><label>Samopoczucie</label><input id='admEditMood' value='"+esc(l.mood||"")+"'></div></div>"+
+    "<label>Waga</label><input id='admEditWeight' value='"+esc(l.weight||"")+"'><label>Uwagi</label><textarea id='admEditNotes'>"+esc(l.notes||"")+"</textarea></div>"+exHtml+
+    "<button onclick='glAdminSaveEditedWorkout()'>ZAPISZ ZMIANY W CHMURZE</button><button class='secondary' onclick='glAdminWorkoutDetails("+i+","+Number(page||0)+")'>ANULUJ</button>"+luxBottomNav("more")
+  );
+};
+window.glAdminSaveEditedWorkout=async function(){
+  var c=window.GL_ADMIN_EDIT_CTX,r=window.GL_ADMIN_SELECTED;if(!c||!r)return;var l=r.state&&r.state.logs&&r.state.logs[c.index];if(!l)return;
+  try{
+    l.date=String(document.getElementById("admEditDate").value||"");l.training=String(document.getElementById("admEditTraining").value||"");
+    l.sleep=String(document.getElementById("admEditSleep").value||"");l.mood=String(document.getElementById("admEditMood").value||"");
+    l.weight=String(document.getElementById("admEditWeight").value||"");l.notes=String(document.getElementById("admEditNotes").value||"");
+    (l.exercises||[]).forEach(function(e,ei){
+      e.name=String(document.getElementById("admEditExName_"+ei).value||e.name).trim()||e.name;
+      var txt=String(document.getElementById("admEditExSets_"+ei).value||"");
+      e.sets=txt.split(/\\r?\\n/).map(function(x){return x.trim();}).filter(Boolean).map(function(line){return parseSetLine(line,e);});
+    });
+    r.state.logs[c.index]=l;await glAdminWriteSelectedState("admin_edit_workout");alert("Trening zapisany.");glAdminOpenUser(r.profile.id,c.page);
+  }catch(e){alert("Nie udało się zapisać treningu: "+String(e.message||e));}
+};
+
+/* If an admin changes another user's cloud history while that user's app is closed/backgrounded,
+   pull the newer cloud revision the next time the managed app becomes visible. */
+window.addEventListener("visibilitychange",function(){
+  if(document.visibilityState!=="visible"||!GL_AUTH_READY||!glIsManagedUser()||current||!navigator.onLine)return;
+  (async function(){
+    try{
+      var s=await glEnsureSession();if(!s||!s.user)return;
+      var dirty=localStorage.getItem(glDirtyKey(s.user.id))==="1";if(dirty)return;
+      var remote=await glFetchRemoteState(s.user.id),localRev=Number(localStorage.getItem(glRevisionKey(s.user.id))||0);
+      if(Number(remote.sync_revision||0)>localRev){
+        GL_CLOUD_APPLYING=true;data=glNormalizeState(remote.state||{});
+        localStorage.setItem(STORE,JSON.stringify(data));localStorage.setItem(glDirtyKey(s.user.id),"0");localStorage.setItem(glRevisionKey(s.user.id),String(remote.sync_revision||0));
+        GL_CLOUD_APPLYING=false;glSetSync("ok","Zsynchronizowano");home();
+      }
+    }catch(e){console.log("Cloud revision refresh:",e);}
+  })();
+});
 
 
 runInstalledAppUpdates();

@@ -599,7 +599,7 @@ hr{border-top-color:var(--lux-line)!important}
 .mu-migrate-wrap{min-height:calc(100vh - 90px);display:flex;align-items:center}.mu-migrate-card{width:100%;padding:20px;border:1px solid rgba(185,30,48,.35);border-radius:24px;background:radial-gradient(circle at 100% 0,rgba(130,11,30,.18),transparent 45%),linear-gradient(145deg,#111113,#070708)}.mu-migrate-card h1{font-size:28px!important}.mu-migrate-count{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:16px 0}.mu-migrate-stat{padding:13px;border-radius:16px;background:#0a0a0b;border:1px solid rgba(255,255,255,.07)}.mu-migrate-stat .k{color:#727279;font-size:9px;text-transform:uppercase;letter-spacing:1px}.mu-migrate-stat .v{font-size:25px;font-weight:950;margin-top:5px}.mu-note{color:#77777f;font-size:10px;line-height:1.5}
 
 
-/* ===== MULTI USER 0.62.1 — gender themes + admin + managed users ===== */
+/* ===== MULTI USER 0.62.3 — gender themes + admin + managed users ===== */
 .mu-users-grid{display:grid;gap:10px}
 .mu-user-card{padding:14px;border-radius:17px;background:linear-gradient(145deg,#111113,#09090a);border:1px solid rgba(255,255,255,.07)}
 .mu-user-card.admin{border-color:rgba(180,31,52,.32)}
@@ -620,7 +620,7 @@ hr{border-top-color:var(--lux-line)!important}
 @media(max-width:390px){.mu-admin-form .row2{grid-template-columns:1fr}.mu-managed-plan-row{grid-template-columns:64px 1fr}}
 
 
-/* ===== MULTI USER 0.62.1 — FEMALE / BABY PINK THEME ===== */
+/* ===== MULTI USER 0.62.3 — FEMALE / BABY PINK THEME ===== */
 body.theme-female{--crush-burgundy:#d874a3;--crush-burgundy-active:#e68db5;--lux-line-red:rgba(248,170,205,.46);--lux-red:#d979a5;--lux-red2:#ef95bd;--lux-red3:#ffb1d2;--lux-burgundy:#b95f8d;background:radial-gradient(650px 330px at 82% -8%,rgba(244,162,199,.18),transparent 62%),radial-gradient(500px 420px at -14% 33%,rgba(211,112,158,.12),transparent 60%),linear-gradient(180deg,#030303 0%,#080608 42%,#030303 100%)!important}
 body.theme-female h1:after{background:linear-gradient(90deg,#ffb4d4,#c76a98);box-shadow:0 0 14px rgba(255,177,210,.28)}
 body.theme-female .lux-hero{border-color:rgba(244,158,199,.38);background:linear-gradient(145deg,#2a111e,#0b0508);box-shadow:0 18px 48px rgba(79,25,52,.22)}
@@ -691,6 +691,65 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
 @media(max-width:370px){
   .mu-plan-toolbar{grid-template-columns:1fr}
 }
+
+
+/* ===== 0.62.2 — STARTER / LAST LOAD VISIBILITY ===== */
+.mu-plan-preview{
+  margin-top:12px;
+  display:grid;
+  gap:8px;
+}
+.mu-plan-preview-card{
+  padding:11px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(145deg,#101012,#09090a);
+}
+.mu-plan-preview-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+.mu-plan-preview-name{
+  font-size:13px;
+  font-weight:900;
+  line-height:1.25;
+}
+.mu-plan-preview-range{
+  flex:0 0 auto;
+  padding:4px 7px;
+  border-radius:999px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  color:#c6c6cc;
+  font-size:8px;
+  font-weight:850;
+}
+.mu-plan-preview-last{
+  margin-top:7px;
+  color:#818188;
+  font-size:9px;
+  line-height:1.4;
+}
+.mu-plan-preview-last b{color:#ff6676}
+.theme-female .mu-plan-preview-last b{color:#ffb1d2}
+.mu-starter-banner{
+  margin:10px 0 0;
+  padding:10px 11px;
+  border-radius:12px;
+  border:1px solid rgba(255,43,67,.20);
+  background:rgba(92,11,26,.18);
+  color:#9d9da4;
+  font-size:9px;
+  line-height:1.45;
+}
+.mu-starter-banner b{color:#ff5b6d}
+.theme-female .mu-starter-banner{
+  border-color:rgba(255,177,210,.26);
+  background:rgba(112,38,71,.18);
+}
+.theme-female .mu-starter-banner b{color:#ffb1d2}
 
 </style>
 </head>
@@ -3277,7 +3336,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "PWA BETA 0.62.1 — MULTI USER";
+VERSION = "PWA BETA 0.62.3 — MULTI USER";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -4793,6 +4852,20 @@ async function glAfterAuthenticated(s,fromLogin){
     await glPushCloudState();home();
   }catch(e){console.log("Auth bootstrap:",e);glClearAuth();glRenderLogin("Nie udało się wczytać konta. Zaloguj się ponownie.",true);}
 }
+
+window.addEventListener("visibilitychange",function(){
+  if(document.visibilityState!=="visible"||!window.GL_PROFILE)return;
+  (async function(){
+    try{
+      var s=await glEnsureSession();
+      if(!s||!navigator.onLine)return;
+      var oldCfg=JSON.stringify((window.GL_PROFILE&&window.GL_PROFILE.profile_config)||{});
+      await glFetchProfile(s.user.id);
+      var newCfg=JSON.stringify((window.GL_PROFILE&&window.GL_PROFILE.profile_config)||{});
+      if(oldCfg!==newCfg && !current){ home(); }
+    }catch(e){}
+  })();
+});
 window.glAuthBootstrap=async function(){
   var s=await glEnsureSession();
   if(!s){glRenderLogin();return;}
@@ -4803,7 +4876,7 @@ window.addEventListener("online",function(){if(GL_AUTH_READY)glPushCloudState();
 
 
 /* ======================================================================
-   MULTI USER 0.62.1 — gender themes + managed users + admin panel
+   MULTI USER 0.62.3 — gender themes + managed users + admin panel
    ====================================================================== */
 function glIsAdmin(){return !!(window.GL_PROFILE&&window.GL_PROFILE.role==="admin");}
 function glIsManagedUser(){return !!(window.GL_PROFILE&&window.GL_PROFILE.role!=="admin");}
@@ -4856,6 +4929,32 @@ function glManagedStarterSets(starter,count){
   }
   return [];
 }
+
+function glManagedLastOrStarterText(planName,e){
+  var prev=glManagedPreviousWorkingSets(planName,e.name);
+  if(prev.length){
+    return {source:"last", text:prev.slice(0,Math.max(1,Number(e.managedSets||3))).map(glManagedSetShort).join(" • ")};
+  }
+  var starter=glManagedStarterSets(e.managedStarter,e.managedSets);
+  if(starter.length){
+    return {source:"starter", text:starter.slice(0,Math.max(1,Number(e.managedSets||3))).map(glManagedSetShort).join(" • ")};
+  }
+  return {source:"none", text:"Brak poprzedniego wyniku"};
+}
+function glManagedPlanPreviewHtml(planName){
+  var ex=glManagedExercises(planName),html="<div class='mu-plan-preview'>";
+  ex.forEach(function(e){
+    var ref=glManagedLastOrStarterText(planName,e);
+    var prefix=ref.source==="starter"?"Startowo":(ref.source==="last"?"Ostatni trening":"Poprzednio");
+    html+="<div class='mu-plan-preview-card'><div class='mu-plan-preview-top'><div class='mu-plan-preview-name'>"+esc(e.name)+"</div><div class='mu-plan-preview-range'>"+esc(e.managedSets+" × "+e.managedReps)+"</div></div><div class='mu-plan-preview-last'><b>"+prefix+":</b> "+esc(ref.text)+"</div></div>";
+  });
+  return html+"</div>";
+}
+window.glManagedRefreshPlanPreview=function(){
+  var tr=document.getElementById("tr"),box=document.getElementById("muPlanPreviewBox");
+  if(!tr||!box)return;
+  box.innerHTML=glManagedPlanPreviewHtml(tr.value);
+};
 function glManagedPlanRows(e){
   var prev=glManagedPreviousWorkingSets(current.training,e.name);
   var usingStarter=false;
@@ -4863,11 +4962,15 @@ function glManagedPlanRows(e){
     prev=glManagedStarterSets(e.managedStarter,e.managedSets);
     usingStarter=prev.length>0;
   }
-  var n=Math.max(1,Number(e.managedSets||3)),html="<div class='mu-managed-plan-rows'>";
+  var n=Math.max(1,Number(e.managedSets||3)),html="";
+  if(usingStarter){
+    html+="<div class='mu-starter-banner'><b>DANE STARTOWE</b> — widzisz je tylko przy tym ćwiczeniu podczas treningu. Po pierwszym zakończonym treningu zostaną automatycznie zastąpione wynikiem z ostatniego treningu.</div>";
+  }
+  html+="<div class='mu-managed-plan-rows'>";
   for(var i=0;i<n;i++){
     var label=glManagedSetShort(prev[i]);
-    if(usingStarter&&prev[i])label+=" • startowe";
-    html+="<div class='mu-managed-plan-row'><div class='set'>SERIA "+(i+1)+"</div><div><div class='target'>"+esc(e.managedReps||"zakres")+" powt.</div><div class='last'>Ostatnio: "+esc(label)+"</div></div></div>";
+    var prefix=usingStarter?"Startowo":"Ostatnio";
+    html+="<div class='mu-managed-plan-row'><div class='set'>SERIA "+(i+1)+"</div><div><div class='target'>"+esc(e.managedReps||"zakres")+" powt.</div><div class='last'>"+prefix+": "+esc(label)+"</div></div></div>";
   }
   return html+"</div>";
 }

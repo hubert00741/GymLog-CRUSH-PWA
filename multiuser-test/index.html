@@ -3506,7 +3506,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.67.0";
+VERSION = "BETA 0.67.1";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -6496,27 +6496,43 @@ function gl067GlowLine(ctx,x1,y1,x2,y2,color,width,blur){
 }
 function gl067Arrow(ctx,x,y,size,color){
   ctx.save();
+
+  // Clean single-stroke NE arrow. No overlapping filled polygon = no glitch.
+  var sx=x-size*.30;
+  var sy=y+size*.26;
+  var ex=x+size*.24;
+  var ey=y-size*.28;
+  var head=size*.24;
+
   ctx.strokeStyle=color;
-  ctx.fillStyle=color;
-  ctx.lineWidth=Math.max(8,size*.13);
+  ctx.lineWidth=Math.max(8,size*.115);
   ctx.lineCap="round";
   ctx.lineJoin="round";
   ctx.shadowColor=color;
-  ctx.shadowBlur=24;
+  ctx.shadowBlur=18;
+
+  // Main shaft.
   ctx.beginPath();
-  ctx.moveTo(x-size*.35,y+size*.2);
-  ctx.lineTo(x+size*.1,y-size*.25);
-  ctx.lineTo(x+size*.1,y+size*.02);
+  ctx.moveTo(sx,sy);
+  ctx.lineTo(ex,ey);
   ctx.stroke();
+
+  // Arrow head.
   ctx.beginPath();
-  ctx.moveTo(x-size*.02,y-size*.33);
-  ctx.lineTo(x+size*.37,y-size*.33);
-  ctx.lineTo(x+size*.37,y+size*.06);
-  ctx.lineTo(x+size*.22,y-.08*size);
-  ctx.lineTo(x+size*.22,y-size*.17);
-  ctx.lineTo(x+size*.1,y-size*.17);
-  ctx.closePath();
-  ctx.fill();
+  ctx.moveTo(ex-head,ey);
+  ctx.lineTo(ex,ey);
+  ctx.lineTo(ex,ey+head);
+  ctx.stroke();
+
+  // Very subtle inner highlight for a cleaner neon finish.
+  ctx.shadowBlur=0;
+  ctx.strokeStyle="rgba(255,255,255,.22)";
+  ctx.lineWidth=Math.max(2,size*.025);
+  ctx.beginPath();
+  ctx.moveTo(sx+size*.03,sy-size*.02);
+  ctx.lineTo(ex-size*.02,ey+size*.02);
+  ctx.stroke();
+
   ctx.restore();
 }
 function gl067Bar(ctx,x,y,w,h,pct,accent){

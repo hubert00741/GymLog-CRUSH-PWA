@@ -798,6 +798,57 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
   .mu-history-actions-063 .danger{grid-column:1/-1}
 }
 
+
+
+/* ===== 0.64.0 — PLAN EDITOR / MOOD FLAGS / BODY MEASUREMENTS ===== */
+.gl-weight-wrap-064{position:relative}
+.gl-weight-save-064{
+  position:absolute;right:0;bottom:0;width:42px!important;height:42px;min-height:42px!important;
+  margin:0!important;padding:0!important;border-radius:12px!important;
+  display:grid!important;place-items:center;font-size:20px!important;font-weight:950!important;
+  background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.10)!important;color:#dedee3!important
+}
+.gl-weight-wrap-064 input{padding-right:50px!important}
+.gl-weight-save-064.saved{color:#78e6a0!important;border-color:rgba(86,218,132,.38)!important;background:rgba(30,118,62,.16)!important}
+.gl-easy-plan-head-064{display:flex;gap:8px;align-items:center;margin:10px 0}
+.gl-easy-plan-head-064 select{margin:0!important;flex:1}
+.gl-easy-plan-head-064 button{width:auto!important;margin:0!important;padding:11px 12px!important}
+.gl-plan-ex-card-064{padding:13px!important}
+.gl-plan-ex-title-064{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.gl-plan-ex-title-064 b{font-size:13px}
+.gl-plan-ex-actions-064{display:flex;gap:5px}
+.gl-plan-ex-actions-064 button{width:auto!important;margin:0!important;padding:7px 9px!important;min-height:34px;font-size:9px!important}
+.gl-plan-grid-064{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gl-plan-grid-064 .wide{grid-column:1/-1}
+.gl-plan-editor-actions-064{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.gl-plan-editor-actions-064 button{margin:0!important}
+.gl-code-editor-064{min-height:420px!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px!important}
+.gl-measure-summary-064{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.gl-measure-history-064{display:grid;gap:9px}
+.gl-measure-card-064{
+  background:linear-gradient(145deg,#101012,#09090a);border:1px solid rgba(255,255,255,.07);
+  border-radius:16px;padding:12px
+}
+.gl-measure-card-064 .date{font-size:13px;font-weight:900}
+.gl-measure-card-064 .vals{display:flex;gap:9px;flex-wrap:wrap;color:#97979e;font-size:10px;margin-top:7px}
+.gl-measure-actions-064{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:9px}
+.gl-measure-actions-064 button{margin:0!important;padding:9px 7px!important;font-size:9px!important}
+.gl-measure-form-064{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gl-measure-form-064 .wide{grid-column:1/-1}
+.gl-feature-stack-064{display:grid;gap:9px;margin-top:12px}
+.gl-feature-item-064{
+  padding:11px;border-radius:13px;background:#0d0d0f;border:1px solid rgba(255,255,255,.07)
+}
+.gl-feature-item-064 label{margin-top:0!important}
+.gl-plan-user-list-064{display:grid;gap:8px}
+.gl-plan-user-list-064 button{text-align:left!important;margin:0!important}
+.theme-female .gl-weight-save-064.saved{color:#ffb1d2!important;border-color:rgba(255,177,210,.4)!important}
+@media(max-width:390px){
+  .gl-plan-grid-064,.gl-measure-form-064{grid-template-columns:1fr}
+  .gl-plan-grid-064 .wide,.gl-measure-form-064 .wide{grid-column:auto}
+  .gl-plan-editor-actions-064{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 
@@ -3383,7 +3434,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "PWA BETA 0.63.0 — MULTI USER";
+VERSION = "PWA BETA 0.64.0 — MULTI USER";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -5582,6 +5633,464 @@ window.addEventListener("visibilitychange",function(){
         GL_CLOUD_APPLYING=false;glSetSync("ok","Zsynchronizowano");home();
       }
     }catch(e){console.log("Cloud revision refresh:",e);}
+  })();
+});
+
+
+
+/* ======================================================================
+   MULTI USER 0.64.0
+   - mood per-account flag
+   - per-account plan editing permission
+   - easy plan editor + optional code mode
+   - body measurements + history
+   - instant weight save from start screen
+   ====================================================================== */
+
+var gl064BaseNormalizeState=glNormalizeState;
+glNormalizeState=function(d){
+  d=gl064BaseNormalizeState(d);
+  if(!Array.isArray(d.bodyMeasurements))d.bodyMeasurements=[];
+  return d;
+};
+data=glNormalizeState(data);
+
+glDefaultManagedFlags=function(){
+  return {
+    managedMode:true,gymSelection:false,chatReport:false,footTracking:false,
+    muscleMap:true,bodyWeight:true,adminUsers:false,mood:true,planEdit:false
+  };
+};
+function gl064MoodEnabled(){
+  return !glIsManagedUser() || glFlags().mood!==false;
+}
+function gl064PlanEditEnabled(){
+  return glIsAdmin() || (glIsManagedUser() && glFlags().planEdit===true);
+}
+
+/* Better starter parser: supports both old syntax and different weight per set,
+   e.g. "80 kg: 10, 75 kg: 10,10,10". */
+glManagedStarterSets=function(starter,count){
+  starter=String(starter||"").trim();count=Math.max(1,Number(count||3));
+  if(!starter)return [];
+  var marks=[],rx=/([0-9]+(?:[.,][0-9]+)?)\s*kg\s*:/gi,m;
+  while((m=rx.exec(starter))){
+    marks.push({w:String(m[1]).replace(",","."),start:m.index,end:rx.lastIndex});
+  }
+  if(marks.length){
+    var out=[];
+    marks.forEach(function(mark,i){
+      var end=i+1<marks.length?marks[i+1].start:starter.length;
+      var chunk=starter.slice(mark.end,end).replace(/^[,;\s]+|[,;\s]+$/g,"");
+      var reps=chunk.match(/[0-9]+/g)||[];
+      reps.forEach(function(r){out.push({w:mark.w,r:String(r),_starter:true});});
+    });
+    if(out.length)return out.slice(0,count);
+  }
+  var only=starter.match(/([0-9]+(?:[.,][0-9]+)?)\s*kg/i);
+  if(only){
+    var w=String(only[1]).replace(",",".");
+    var arr=[];for(var j=0;j<count;j++)arr.push({w:w,r:"",_starter:true});
+    return arr;
+  }
+  return [];
+};
+
+/* ---------- Body measurements ---------- */
+var GL064_BODY_FIELDS=[
+  ["bodyFat","Tkanka tłuszczowa","%"],
+  ["neck","Szyja","cm"],
+  ["shoulders","Barki / obręcz","cm"],
+  ["chest","Klatka piersiowa","cm"],
+  ["waist","Talia","cm"],
+  ["abdomen","Brzuch","cm"],
+  ["hips","Biodra / pośladki","cm"],
+  ["armL","Ramię lewe","cm"],
+  ["armR","Ramię prawe","cm"],
+  ["forearmL","Przedramię lewe","cm"],
+  ["forearmR","Przedramię prawe","cm"],
+  ["thighL","Udo lewe","cm"],
+  ["thighR","Udo prawe","cm"],
+  ["calfL","Łydka lewa","cm"],
+  ["calfR","Łydka prawa","cm"]
+];
+function gl064EnsureMeasurements(){
+  if(!Array.isArray(data.bodyMeasurements))data.bodyMeasurements=[];
+}
+function gl064MeasurementById(id){
+  gl064EnsureMeasurements();
+  return data.bodyMeasurements.find(function(x){return x&&x.id===id;})||null;
+}
+function gl064LatestMeasurement(){
+  gl064EnsureMeasurements();
+  return data.bodyMeasurements.slice().sort(function(a,b){
+    return String(b.date||"").localeCompare(String(a.date||"")) || String(b.updatedAt||b.createdAt||"").localeCompare(String(a.updatedAt||a.createdAt||""));
+  })[0]||null;
+}
+window.glSaveQuickWeight=function(btn){
+  gl064EnsureMeasurements();
+  var input=document.getElementById("weight"),dateEl=document.getElementById("date");
+  var weight=String(input&&input.value||"").trim(),date=String(dateEl&&dateEl.value||today()).trim()||today();
+  if(!weight){alert("Najpierw wpisz wagę.");return;}
+  var rec=data.bodyMeasurements.find(function(x){return x&&x.date===date;});
+  if(!rec){
+    rec={id:"bm_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),date:date,createdAt:new Date().toISOString(),source:"quickWeight"};
+    data.bodyMeasurements.push(rec);
+  }
+  rec.weight=weight;rec.updatedAt=new Date().toISOString();
+  if(!data.lastMeta)data.lastMeta={};
+  data.lastMeta.weight=weight;
+  safeSave();
+  if(btn){btn.classList.add("saved");btn.textContent="✓";setTimeout(function(){btn.classList.remove("saved");},1200);}
+};
+window.glBodyMeasurementsView=function(){
+  stopTimer();luxStopWorkoutClock();gl064EnsureMeasurements();
+  var arr=data.bodyMeasurements.slice().sort(function(a,b){
+    return String(b.date||"").localeCompare(String(a.date||"")) || String(b.updatedAt||b.createdAt||"").localeCompare(String(a.updatedAt||a.createdAt||""));
+  });
+  var latest=arr[0]||{},hist="<div class='gl-measure-history-064'>";
+  arr.forEach(function(m){
+    var vals=[];
+    if(m.weight)vals.push("⚖ "+esc(m.weight)+" kg");
+    if(m.bodyFat)vals.push("BF "+esc(m.bodyFat)+"%");
+    if(m.waist)vals.push("Talia "+esc(m.waist)+" cm");
+    if(m.chest)vals.push("Klatka "+esc(m.chest)+" cm");
+    if(m.hips)vals.push("Biodra "+esc(m.hips)+" cm");
+    hist+="<div class='gl-measure-card-064'><div class='date'>"+esc(m.date||"—")+"</div><div class='vals'>"+(vals.length?vals.join("<span>•</span>"):"Tylko zapis pomocniczy")+"</div>"+
+      "<div class='gl-measure-actions-064'><button onclick='glBodyMeasurementDetails(\""+esc(m.id)+"\")'>Szczegóły</button><button class='secondary' onclick='glBodyMeasurementEdit(\""+esc(m.id)+"\")'>Edytuj</button><button class='danger' onclick='glBodyMeasurementDelete(\""+esc(m.id)+"\")'>Usuń</button></div></div>";
+  });
+  if(!arr.length)hist+="<div class='card small'>Brak zapisanych pomiarów.</div>";
+  hist+="</div>";
+  render(
+    "<h1>Pomiary ciała</h1><button class='secondary topMenu' onclick='luxMoreView()'>← Więcej</button>"+
+    "<div class='gl-measure-summary-064'><div class='lux-stat-card red'><div class='lux-stat-label'>Aktualna waga</div><div class='lux-summary-value'>"+esc((data.lastMeta||{}).weight||latest.weight||"—")+"</div><div class='lux-stat-note'>kg</div></div>"+
+    "<div class='lux-stat-card'><div class='lux-stat-label'>Ostatni pomiar</div><div class='lux-summary-value' style='font-size:16px'>"+esc(latest.date||"—")+"</div><div class='lux-stat-note'>"+arr.length+" zapisów</div></div></div>"+
+    "<button onclick='glBodyMeasurementEdit(\"\")'>+ DODAJ POMIAR</button>"+hist+luxBottomNav("more")
+  );
+};
+window.glBodyMeasurementEdit=function(id){
+  gl064EnsureMeasurements();var m=id?gl064MeasurementById(id):null;m=m||{};
+  var fields="<div class='gl-measure-form-064'>";
+  var weightAllowed=glFlags().bodyWeight!==false || glIsAdmin();
+  if(weightAllowed)fields+="<div><label>Waga</label><input id='bm_weight' inputmode='decimal' value='"+esc(m.weight||"")+"' placeholder='kg'></div>";
+  fields+="<div><label>Data</label><input id='bm_date' value='"+esc(m.date||today())+"'></div>";
+  GL064_BODY_FIELDS.forEach(function(f){
+    fields+="<div><label>"+esc(f[1])+"</label><input id='bm_"+f[0]+"' inputmode='decimal' value='"+esc(m[f[0]]||"")+"' placeholder='"+esc(f[2])+"'></div>";
+  });
+  fields+="<div class='wide'><label>Notatka</label><textarea id='bm_notes'>"+esc(m.notes||"")+"</textarea></div></div>";
+  render("<h1>"+(id?"Edytuj pomiar":"Nowy pomiar")+"</h1><button class='secondary topMenu' onclick='glBodyMeasurementsView()'>← Pomiary</button>"+
+    "<div class='card'>"+fields+"<button onclick='glBodyMeasurementSave(\""+esc(id||"")+"\")'>ZAPISZ POMIAR</button></div>"+luxBottomNav("more"));
+};
+window.glBodyMeasurementSave=function(id){
+  gl064EnsureMeasurements();var m=id?gl064MeasurementById(id):null;
+  var date=String((document.getElementById("bm_date")||{}).value||today()).trim()||today();
+  if(!m){
+    m=data.bodyMeasurements.find(function(x){return x&&x.date===date;})||null;
+    if(!m){m={id:"bm_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),createdAt:new Date().toISOString()};data.bodyMeasurements.push(m);}
+  }
+  m.date=date;m.updatedAt=new Date().toISOString();m.source="bodyMeasurement";
+  var w=document.getElementById("bm_weight");if(w)m.weight=String(w.value||"").trim();
+  GL064_BODY_FIELDS.forEach(function(f){var el=document.getElementById("bm_"+f[0]);m[f[0]]=String(el&&el.value||"").trim();});
+  m.notes=String((document.getElementById("bm_notes")||{}).value||"").trim();
+  if(m.weight){if(!data.lastMeta)data.lastMeta={};data.lastMeta.weight=m.weight;}
+  safeSave();glBodyMeasurementsView();
+};
+window.glBodyMeasurementDetails=function(id){
+  var m=gl064MeasurementById(id);if(!m)return glBodyMeasurementsView();
+  var rows="";
+  if(m.weight)rows+="<div class='historySet'><b>Waga:</b> "+esc(m.weight)+" kg</div>";
+  GL064_BODY_FIELDS.forEach(function(f){if(m[f[0]])rows+="<div class='historySet'><b>"+esc(f[1])+":</b> "+esc(m[f[0]])+" "+esc(f[2])+"</div>";});
+  if(!rows)rows="<div class='small'>Brak dodatkowych obwodów.</div>";
+  render("<h1>Szczegóły pomiaru</h1><button class='secondary topMenu' onclick='glBodyMeasurementsView()'>← Pomiary</button>"+
+    "<div class='card'><h2>"+esc(m.date||"—")+"</h2>"+rows+(m.notes?"<div class='box' style='margin-top:10px'>"+esc(m.notes)+"</div>":"")+
+    "<div class='gl-measure-actions-064'><button class='secondary' onclick='glBodyMeasurementEdit(\""+esc(id)+"\")'>Edytuj</button><button class='danger' onclick='glBodyMeasurementDelete(\""+esc(id)+"\")'>Usuń</button></div></div>"+luxBottomNav("more"));
+};
+window.glBodyMeasurementDelete=function(id){
+  var m=gl064MeasurementById(id);if(!m)return;
+  if(!confirm("Czy na pewno usunąć pomiar z "+(m.date||"tego dnia")+"?"))return;
+  data.bodyMeasurements=data.bodyMeasurements.filter(function(x){return x&&x.id!==id;});safeSave();glBodyMeasurementsView();
+};
+
+/* Add a tiny ✓ next to weight and hide mood when the account has mood disabled. */
+function gl064EnhanceHome(){
+  var weight=document.getElementById("weight");
+  if(weight&&!document.getElementById("glQuickWeightSave064")){
+    var copy=weight.parentElement;if(copy){
+      copy.classList.add("gl-weight-wrap-064");
+      var b=document.createElement("button");b.id="glQuickWeightSave064";b.type="button";b.className="gl-weight-save-064";b.textContent="✓";
+      b.setAttribute("aria-label","Zapisz wagę teraz");b.onclick=function(ev){ev.preventDefault();glSaveQuickWeight(b);};
+      copy.appendChild(b);
+    }
+  }
+  if(glIsManagedUser()&&!gl064MoodEnabled()){
+    var mood=document.getElementById("mood"),row=mood&&mood.closest(".lux-field-row");if(row)row.style.display="none";
+  }
+}
+var gl064BaseHome=window.home;
+window.home=function(){
+  var r=gl064BaseHome.apply(this,arguments);
+  requestAnimationFrame(gl064EnhanceHome);return r;
+};
+home=window.home;
+
+var gl064BaseManagedStart=window.glManagedStartWorkout;
+window.glManagedStartWorkout=function(){
+  if(glIsManagedUser()&&!gl064MoodEnabled()&&!document.getElementById("mood")){
+    var h=document.createElement("input");h.type="hidden";h.id="mood";h.value="";document.getElementById("app").appendChild(h);
+  }
+  return gl064BaseManagedStart.apply(this,arguments);
+};
+
+/* Hide readiness/mood in active managed workout when disabled. */
+var gl064BaseExercise=window.exercise;
+window.exercise=function(){
+  var r=gl064BaseExercise.apply(this,arguments);
+  if(glIsManagedUser()&&!gl064MoodEnabled()){
+    requestAnimationFrame(function(){
+      document.querySelectorAll(".lux-active-meta .lux-stat-card").forEach(function(card){
+        if(String(card.textContent||"").toLowerCase().indexOf("samopoczucie")>=0 || String(card.textContent||"").toLowerCase().indexOf("gotowość")>=0)card.style.display="none";
+      });
+    });
+  }
+  return r;
+};
+exercise=window.exercise;
+
+/* Hide mood from managed details/edit/stat screens, while keeping hidden values intact. */
+function gl064HideMoodPieces(){
+  if(!glIsManagedUser()||gl064MoodEnabled())return;
+  document.querySelectorAll(".metricGrid > div,.lux-metric,.lux-current-card,.lux-stat-card").forEach(function(el){
+    var t=String(el.textContent||"").toLowerCase();if(t.indexOf("samopoczucie")>=0||t.indexOf("gotowość")>=0)el.style.display="none";
+  });
+  var mi=document.getElementById("muEditMood");if(mi&&mi.parentElement)mi.parentElement.style.display="none";
+}
+var gl064BaseManagedDetails=window.glManagedHistoryDetails;
+window.glManagedHistoryDetails=function(){var r=gl064BaseManagedDetails.apply(this,arguments);requestAnimationFrame(gl064HideMoodPieces);return r;};
+var gl064BaseManagedEdit=window.glManagedEditWorkout;
+window.glManagedEditWorkout=function(){var r=gl064BaseManagedEdit.apply(this,arguments);requestAnimationFrame(gl064HideMoodPieces);return r;};
+if(typeof window.statsView==="function"){
+  var gl064BaseStats=window.statsView;
+  window.statsView=function(){var r=gl064BaseStats.apply(this,arguments);requestAnimationFrame(gl064HideMoodPieces);return r;};
+}
+
+/* ---------- Plan editor shared helpers ---------- */
+async function gl064PlanApi(payload){
+  var s=await glEnsureSession();if(!s)throw new Error("Brak sesji");
+  return glApi("/functions/v1/admin-users",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)},s);
+}
+function gl064ClonePlans(plans){try{return JSON.parse(JSON.stringify(plans||{}));}catch(e){return {};}}
+window.GL064_PLAN_CTX=null;
+
+window.glPlanEditorHub=async function(){
+  if(glIsAdmin())return glAdminPlanUsersView();
+  if(!glIsManagedUser()||!gl064PlanEditEnabled()){alert("Edycja planu jest wyłączona na tym koncie.");return luxMoreView();}
+  var p=window.GL_PROFILE||{},plans=((p.profile_config||{}).managed_plans)||{};
+  gl064OpenEasyPlanEditor({mode:"self",profile:p,plans:plans,back:"luxMoreView()"});
+};
+
+window.glAdminPlanUsersView=async function(){
+  if(!glIsAdmin())return luxMoreView();
+  render("<h1>Edycja planów</h1><button class='secondary topMenu' onclick='luxMoreView()'>← Więcej</button><div class='card small'>Ładowanie…</div>"+luxBottomNav("more"));
+  try{
+    var r=await glAdminApi({action:"list_users"}),users=(r.users||[]).filter(function(u){return u.role!=="admin";});
+    var list="<div class='gl-plan-user-list-064'>";
+    users.forEach(function(u){list+="<button onclick='glAdminOpenEasyPlanUser(\""+esc(u.id)+"\")'><span>"+esc(u.display_name||u.username)+"</span><span>›</span></button>";});
+    if(!users.length)list+="<div class='small'>Brak zwykłych użytkowników.</div>";
+    list+="</div>";
+    render("<h1>Edycja planów</h1><button class='secondary topMenu' onclick='luxMoreView()'>← Więcej</button><div class='card'><div class='lux-section-title'>Wybierz użytkownika</div>"+list+"</div>"+luxBottomNav("more"));
+  }catch(e){alert(String(e.message||e));luxMoreView();}
+};
+window.glAdminOpenEasyPlanUser=async function(uid){
+  try{
+    var r=await glAdminApi({action:"get_user_state",user_id:uid});window.GL_ADMIN_SELECTED=r;
+    gl064OpenEasyPlanEditor({mode:"admin",profile:r.profile,plans:((r.profile.profile_config||{}).managed_plans)||{},back:"glAdminPlanUsersView()"});
+  }catch(e){alert(String(e.message||e));glAdminPlanUsersView();}
+};
+function gl064OpenEasyPlanEditor(opts){
+  var plans=gl064ClonePlans(opts.plans||{}),names=Object.keys(plans),first=names[0]||"";
+  window.GL064_PLAN_CTX={mode:opts.mode,profile:opts.profile,plans:plans,planName:first,back:opts.back||"luxMoreView()"};
+  gl064RenderEasyPlanEditor();
+}
+window.gl064OpenEasyPlanEditor=gl064OpenEasyPlanEditor;
+
+function gl064CapturePlan(){
+  var c=window.GL064_PLAN_CTX;if(!c||!c.planName)return;
+  var list=c.plans[c.planName]||[];
+  list.forEach(function(e,i){
+    var q=function(id){return document.getElementById(id+"_"+i);};
+    if(q("pe_name"))e.name=String(q("pe_name").value||"").trim();
+    if(q("pe_sets"))e.sets=Math.max(1,parseInt(q("pe_sets").value,10)||1);
+    if(q("pe_reps"))e.reps=String(q("pe_reps").value||"8-12").trim();
+    if(q("pe_rest"))e.rest=Math.max(0,parseInt(q("pe_rest").value,10)||0);
+    if(q("pe_groups"))e.groups=String(q("pe_groups").value||"").split(",").map(function(x){return x.trim();}).filter(Boolean);
+    if(q("pe_starter"))e.starter=String(q("pe_starter").value||"").trim();
+  });
+}
+function gl064RenderEasyPlanEditor(){
+  var c=window.GL064_PLAN_CTX;if(!c)return luxMoreView();
+  var names=Object.keys(c.plans);
+  if(!c.planName&&names.length)c.planName=names[0];
+  if(c.planName&&!c.plans[c.planName])c.planName=names[0]||"";
+  var opts="";names.forEach(function(n){opts+="<option value='"+esc(n)+"'"+selected(c.planName,n)+">"+esc(n)+"</option>";});
+  var exHtml="";
+  (c.plans[c.planName]||[]).forEach(function(e,i){
+    exHtml+="<div class='card gl-plan-ex-card-064'><div class='gl-plan-ex-title-064'><b>"+(i+1)+". "+esc(e.name||"Ćwiczenie")+"</b><div class='gl-plan-ex-actions-064'>"+
+      "<button class='secondary' onclick='gl064MoveExercise("+i+",-1)'>↑</button><button class='secondary' onclick='gl064MoveExercise("+i+",1)'>↓</button><button class='danger' onclick='gl064DeleteExercise("+i+")'>Usuń</button></div></div>"+
+      "<div class='gl-plan-grid-064'><div class='wide'><label>Nazwa ćwiczenia</label><input id='pe_name_"+i+"' value='"+esc(e.name||"")+"'></div>"+
+      "<div><label>Serie</label><input id='pe_sets_"+i+"' inputmode='numeric' value='"+esc(e.sets||3)+"'></div>"+
+      "<div><label>Zakres powtórzeń</label><input id='pe_reps_"+i+"' value='"+esc(e.reps||"8-12")+"'></div>"+
+      "<div><label>Przerwa (sek.)</label><input id='pe_rest_"+i+"' inputmode='numeric' value='"+esc(e.rest||120)+"'></div>"+
+      "<div><label>Partie</label><input id='pe_groups_"+i+"' value='"+esc((e.groups||[]).join(", "))+"'></div>"+
+      "<div class='wide'><label>Dane startowe — opcjonalnie</label><input id='pe_starter_"+i+"' value='"+esc(e.starter||"")+"' placeholder='np. 80 kg: 10, 75 kg: 10,10,10'></div></div></div>";
+  });
+  if(!c.planName)exHtml="<div class='card small'>Nie ma jeszcze żadnego dnia treningowego. Dodaj pierwszy plan.</div>";
+  var who=c.profile&&c.profile.display_name?(" — "+esc(c.profile.display_name)):"";
+  render(
+    "<h1>Edycja planów"+who+"</h1><button class='secondary topMenu' onclick='"+esc(c.back)+"'>← Wróć</button>"+
+    "<div class='card'><div class='lux-section-title'>Dzień treningowy</div><div class='gl-easy-plan-head-064'>"+
+      (names.length?"<select id='pe_plan_select' onchange='gl064SwitchPlan(this.value)'>"+opts+"</select>":"<div class='small' style='flex:1'>Brak planów</div>")+
+      "<button onclick='gl064AddPlan()'>+ Dzień</button>"+
+      (c.planName?"<button class='danger' onclick='gl064DeletePlan()'>Usuń dzień</button>":"")+"</div>"+
+      (c.planName?"<button class='secondary' onclick='gl064AddExercise()'>+ DODAJ ĆWICZENIE</button>":"")+"</div>"+
+    exHtml+
+    "<div class='gl-plan-editor-actions-064'><button onclick='gl064SavePlans()'>ZAPISZ ZMIANY PLANU</button><button class='secondary' onclick='gl064PlanCodeView()'>WPROWADŹ PLAN KODEM</button></div>"+luxBottomNav("more")
+  );
+}
+window.gl064SwitchPlan=function(name){gl064CapturePlan();window.GL064_PLAN_CTX.planName=name;gl064RenderEasyPlanEditor();};
+window.gl064AddPlan=function(){
+  gl064CapturePlan();var c=window.GL064_PLAN_CTX,name=prompt("Nazwa nowego dnia treningowego, np. PUSH:");
+  name=String(name||"").trim();if(!name)return;if(c.plans[name]){alert("Taki plan już istnieje.");return;}
+  c.plans[name]=[];c.planName=name;gl064RenderEasyPlanEditor();
+};
+window.gl064DeletePlan=function(){
+  var c=window.GL064_PLAN_CTX;if(!c||!c.planName)return;
+  if(!confirm("Czy na pewno usunąć cały plan „"+c.planName+"”?"))return;
+  delete c.plans[c.planName];c.planName=Object.keys(c.plans)[0]||"";gl064RenderEasyPlanEditor();
+};
+window.gl064AddExercise=function(){
+  gl064CapturePlan();var c=window.GL064_PLAN_CTX;if(!c||!c.planName)return;
+  c.plans[c.planName].push({name:"Nowe ćwiczenie",sets:3,reps:"8-12",rest:120,groups:[],starter:""});gl064RenderEasyPlanEditor();
+};
+window.gl064DeleteExercise=function(i){
+  gl064CapturePlan();var c=window.GL064_PLAN_CTX;if(!c||!c.planName)return;
+  if(!confirm("Usunąć to ćwiczenie z planu?"))return;c.plans[c.planName].splice(i,1);gl064RenderEasyPlanEditor();
+};
+window.gl064MoveExercise=function(i,dir){
+  gl064CapturePlan();var c=window.GL064_PLAN_CTX,list=c&&c.plans[c.planName];if(!list)return;var j=i+dir;if(j<0||j>=list.length)return;
+  var t=list[i];list[i]=list[j];list[j]=t;gl064RenderEasyPlanEditor();
+};
+window.gl064SavePlans=async function(){
+  gl064CapturePlan();var c=window.GL064_PLAN_CTX;if(!c)return;
+  try{
+    if(c.mode==="self"){
+      var r=await gl064PlanApi({action:"self_set_plans",plans:c.plans});
+      window.GL_PROFILE.profile_config=r.profile_config||Object.assign({},window.GL_PROFILE.profile_config||{},{managed_plans:c.plans});
+      glSaveProfile(window.GL_PROFILE);
+    }else{
+      var flags=Object.assign(glDefaultManagedFlags(),c.profile.feature_flags||{});
+      var cfg=Object.assign({},c.profile.profile_config||{},{managedMode:true,managed_plans:c.plans});
+      await glAdminApi({action:"set_features",user_id:c.profile.id,feature_flags:flags,profile_config:cfg});
+      c.profile.profile_config=cfg;if(window.GL_ADMIN_SELECTED&&window.GL_ADMIN_SELECTED.profile&&window.GL_ADMIN_SELECTED.profile.id===c.profile.id)window.GL_ADMIN_SELECTED.profile.profile_config=cfg;
+    }
+    alert("Plan zapisany.");gl064RenderEasyPlanEditor();
+  }catch(e){alert("Nie udało się zapisać planu: "+String(e.message||e));}
+};
+window.gl064PlanCodeView=function(){
+  gl064CapturePlan();var c=window.GL064_PLAN_CTX;if(!c)return;
+  var txt=glPlanConfigToText({managed_plans:c.plans});
+  render("<h1>Plan kodem</h1><button class='secondary topMenu' onclick='gl064RenderEasyPlanEditor()'>← Edycja planów</button>"+
+    "<div class='card'><div class='small'>Możesz wkleić cały plan przygotowany w ChatGPT. Kod zastąpi bieżącą roboczą wersję planów po zatwierdzeniu.</div>"+
+    "<div class='mu-plan-toolbar'><button class='clear' onclick='document.getElementById(\"pe_code_064\").value=\"\"'>USUŃ ZAWARTOŚĆ</button><button class='paste' onclick='gl064PastePlanCode()'>WKLEJ KOD</button></div>"+
+    "<textarea id='pe_code_064' class='gl-code-editor-064'>"+esc(txt)+"</textarea><button onclick='gl064ApplyPlanCode()'>ZASTOSUJ KOD</button></div>"+luxBottomNav("more"));
+};
+window.gl064RenderEasyPlanEditor=gl064RenderEasyPlanEditor;
+window.gl064PastePlanCode=async function(){
+  var el=document.getElementById("pe_code_064");if(!el)return;
+  try{var t=await navigator.clipboard.readText();if(t)el.value=t;else alert("Schowek jest pusty.");}
+  catch(e){var t=prompt("Wklej kod planu:");if(t!==null)el.value=t;}
+};
+window.gl064ApplyPlanCode=function(){
+  try{
+    var c=window.GL064_PLAN_CTX,plans=glPlanTextToConfig(document.getElementById("pe_code_064").value);
+    c.plans=plans;c.planName=Object.keys(plans)[0]||"";gl064RenderEasyPlanEditor();
+  }catch(e){alert("Błąd kodu planu: "+String(e.message||e));}
+};
+
+/* ---------- Admin account toggles + easy editor button ---------- */
+var gl064BaseAdminRender=window.glAdminRenderSelectedUser;
+window.glAdminRenderSelectedUser=function(page){
+  var r=gl064BaseAdminRender.apply(this,arguments);
+  requestAnimationFrame(function(){
+    var sel=window.GL_ADMIN_SELECTED&&window.GL_ADMIN_SELECTED.profile;if(!sel||sel.role==="admin")return;
+    var flags=Object.assign(glDefaultManagedFlags(),sel.feature_flags||{});
+    var muscle=document.getElementById("muEditMuscleMap");
+    var host=muscle&&muscle.closest(".mu-feature-row-063");
+    if(host&&!document.getElementById("muEditMoodEnabled")){
+      var box=document.createElement("div");box.className="gl-feature-stack-064";
+      box.innerHTML=
+        "<div class='gl-feature-item-064'><label>Samopoczucie</label><select id='muEditMoodEnabled'><option value='true' "+(flags.mood!==false?"selected":"")+">Włączone</option><option value='false' "+(flags.mood===false?"selected":"")+">Wyłączone</option></select><div class='mu-admin-toggle-note-063'>Wyłączenie usuwa pole samopoczucia i gotowość z interfejsu tego konta.</div></div>"+
+        "<div class='gl-feature-item-064'><label>Edycja planu przez użytkownika</label><select id='muEditPlanEdit'><option value='true' "+(flags.planEdit===true?"selected":"")+">Włączona</option><option value='false' "+(flags.planEdit!==true?"selected":"")+">Wyłączona</option></select><div class='mu-admin-toggle-note-063'>Gdy wyłączona, zakładka Edycja planów nie jest widoczna na koncie użytkownika.</div></div>";
+      host.parentElement.insertBefore(box,host.nextSibling);
+    }
+    var ta=document.getElementById("muPlanEditor");
+    if(ta&&!document.getElementById("glAdminEasyPlanBtn064")){
+      var b=document.createElement("button");b.id="glAdminEasyPlanBtn064";b.className="secondary";b.textContent="EDYTUJ PLAN FORMULARZEM";
+      b.onclick=function(){gl064OpenEasyPlanEditor({mode:"admin",profile:sel,plans:((sel.profile_config||{}).managed_plans)||{},back:"glAdminRenderSelectedUser("+Number(window.GL_ADMIN_USER_PAGE||0)+")"});};
+      ta.parentElement.insertBefore(b,ta.parentElement.querySelector(".mu-plan-toolbar")||ta);
+    }
+  });
+  return r;
+};
+
+window.glAdminSaveIdentity=async function(){
+  var r=window.GL_ADMIN_SELECTED;if(!r)return;
+  try{
+    await glAdminApi({action:"update_user",user_id:r.profile.id,username:document.getElementById("muEditLogin").value,display_name:document.getElementById("muEditName").value});
+    if(r.profile.role!=="admin"){
+      var gender=String((document.getElementById("muEditGender")||{}).value||"male");
+      var flags=Object.assign(glDefaultManagedFlags(),r.profile.feature_flags||{});
+      flags.muscleMap=String((document.getElementById("muEditMuscleMap")||{}).value||"true")==="true";
+      flags.mood=String((document.getElementById("muEditMoodEnabled")||{}).value||"true")==="true";
+      flags.planEdit=String((document.getElementById("muEditPlanEdit")||{}).value||"false")==="true";
+      var cfg=Object.assign({},r.profile.profile_config||{},{managedMode:true,gender:gender});
+      await glAdminApi({action:"set_features",user_id:r.profile.id,feature_flags:flags,profile_config:cfg});
+    }
+    alert("Ustawienia konta zapisane.");glAdminOpenUser(r.profile.id,window.GL_ADMIN_USER_PAGE||0);
+  }catch(e){alert(String(e.message||e));}
+};
+
+/* ---------- More screen ---------- */
+window.luxMoreView=function(){
+  stopTimer();luxStopWorkoutClock();
+  var p=window.GL_PROFILE||{},initials=String(p.display_name||p.username||"U").trim().slice(0,1).toUpperCase(),role=p.role==="admin"?"Administrator":"Użytkownik",sync=window.GL_SYNC_STATUS||{state:"pending",text:"Oczekuje"};
+  var account="<div class='card'><div class='mu-account-card'><div class='mu-avatar'>"+esc(initials)+"</div><div><div class='mu-account-name'>"+esc(p.display_name||p.username||"Konto")+"</div><div class='mu-account-meta'>@"+esc(p.username||"—")+" • "+esc(role)+"</div></div></div><div class='mu-cloud-line'><span><i class='mu-sync-dot "+esc(sync.state||"pending")+"'></i>Supabase</span><span>"+esc(sync.text||"—")+"</span></div></div>";
+  var actions="<div class='lux-action-list'>";
+  if(glIsAdmin()){
+    actions+="<button onclick='glUsersView()'><span>👥 Użytkownicy</span><span>›</span></button>"+
+             "<button onclick='glPlanEditorHub()'><span>▤ Edycja planów</span><span>›</span></button>"+
+             "<button onclick='goalsView()'><span>◎ Aktualizuj cele</span><span>›</span></button>";
+  }else if(gl064PlanEditEnabled()){
+    actions+="<button onclick='glPlanEditorHub()'><span>▤ Edycja planów</span><span>›</span></button>";
+  }
+  actions+="<button onclick='glBodyMeasurementsView()'><span>⌁ Pomiary ciała</span><span>›</span></button>"+
+           "<button onclick='backupView()'><span>⇩ Eksport / import awaryjny</span><span>›</span></button>"+
+           "<button onclick='helpView()'><span>? Pomoc</span><span>›</span></button>"+
+           "<button class='secondary' onclick='glForceCloudSync()'><span>↻ Synchronizuj Supabase</span><span>›</span></button>"+
+           "<button class='secondary' onclick='glLogout()'><span>Wyloguj się</span><span>›</span></button></div>";
+  render("<h1>Więcej</h1>"+account+"<div class='card'><div class='lux-section-title'>GymLog CRUSH</div><div class='small'>"+esc(VERSION)+"</div></div>"+actions+luxBottomNav("more"));
+};
+
+/* Refresh feature flags/profile config when returning from background. */
+window.addEventListener("visibilitychange",function(){
+  if(document.visibilityState!=="visible"||!GL_AUTH_READY||!navigator.onLine||current)return;
+  (async function(){
+    try{
+      var s=await glEnsureSession();if(!s||!s.user)return;
+      var before=JSON.stringify({f:(window.GL_PROFILE||{}).feature_flags||{},c:(window.GL_PROFILE||{}).profile_config||{}});
+      await glFetchProfile(s.user.id);
+      var after=JSON.stringify({f:(window.GL_PROFILE||{}).feature_flags||{},c:(window.GL_PROFILE||{}).profile_config||{}});
+      if(before!==after)home();
+    }catch(e){}
   })();
 });
 

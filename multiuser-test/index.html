@@ -3506,7 +3506,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.67.1";
+VERSION = "BETA 0.67.2";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -6494,43 +6494,45 @@ function gl067GlowLine(ctx,x1,y1,x2,y2,color,width,blur){
   ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
   ctx.restore();
 }
-function gl067Arrow(ctx,x,y,size,color){
+function gl067Arrow(ctx,x,y,size,color,kind){
   ctx.save();
+  kind=kind||"plus";
 
-  // Clean single-stroke NE arrow. No overlapping filled polygon = no glitch.
-  var sx=x-size*.30;
-  var sy=y+size*.26;
-  var ex=x+size*.24;
-  var ey=y-size*.28;
-  var head=size*.24;
+  var arm=size*.22;
+  var line=Math.max(10,size*.12);
 
   ctx.strokeStyle=color;
-  ctx.lineWidth=Math.max(8,size*.115);
+  ctx.lineWidth=line;
   ctx.lineCap="round";
   ctx.lineJoin="round";
   ctx.shadowColor=color;
   ctx.shadowBlur=18;
 
-  // Main shaft.
+  // Horizontal stroke.
   ctx.beginPath();
-  ctx.moveTo(sx,sy);
-  ctx.lineTo(ex,ey);
+  ctx.moveTo(x-arm,y);
+  ctx.lineTo(x+arm,y);
   ctx.stroke();
 
-  // Arrow head.
-  ctx.beginPath();
-  ctx.moveTo(ex-head,ey);
-  ctx.lineTo(ex,ey);
-  ctx.lineTo(ex,ey+head);
-  ctx.stroke();
+  // Vertical stroke only for positive progress.
+  if(kind!=="minus"){
+    ctx.beginPath();
+    ctx.moveTo(x,y-arm);
+    ctx.lineTo(x,y+arm);
+    ctx.stroke();
+  }
 
-  // Very subtle inner highlight for a cleaner neon finish.
+  // Subtle white highlight for cleaner neon finish.
   ctx.shadowBlur=0;
-  ctx.strokeStyle="rgba(255,255,255,.22)";
-  ctx.lineWidth=Math.max(2,size*.025);
+  ctx.strokeStyle="rgba(255,255,255,.18)";
+  ctx.lineWidth=Math.max(2,size*.026);
   ctx.beginPath();
-  ctx.moveTo(sx+size*.03,sy-size*.02);
-  ctx.lineTo(ex-size*.02,ey+size*.02);
+  ctx.moveTo(x-arm*.72,y-line*.10);
+  ctx.lineTo(x+arm*.72,y-line*.10);
+  if(kind!=="minus"){
+    ctx.moveTo(x+line*.10,y-arm*.72);
+    ctx.lineTo(x+line*.10,y+arm*.72);
+  }
   ctx.stroke();
 
   ctx.restore();
@@ -6603,7 +6605,7 @@ async function gl066DownloadTransparentSummary(log,logs,index,profile){
   if(progress==null){
     gl067Text(ctx,"—",W/2,595,82,950,"center","#ffffff","rgba(0,0,0,.9)",20,700,0);
   }else{
-    gl067Arrow(ctx,365,598,66,progressColor);
+    gl067Arrow(ctx,365,598,66,progressColor,(Number(progress||0)<0?"minus":"plus"));
     gl067Text(ctx,progressText,585,595,82,950,"center",progressColor,"rgba(0,0,0,.84)",22,650,0);
   }
 

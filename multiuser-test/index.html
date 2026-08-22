@@ -3506,7 +3506,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.67.2";
+VERSION = "BETA 0.67.3";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -6605,8 +6605,7 @@ async function gl066DownloadTransparentSummary(log,logs,index,profile){
   if(progress==null){
     gl067Text(ctx,"—",W/2,595,82,950,"center","#ffffff","rgba(0,0,0,.9)",20,700,0);
   }else{
-    gl067Arrow(ctx,365,598,66,progressColor,(Number(progress||0)<0?"minus":"plus"));
-    gl067Text(ctx,progressText,585,595,82,950,"center",progressColor,"rgba(0,0,0,.84)",22,650,0);
+    gl067Text(ctx,progressText,W/2,595,82,950,"center",progressColor,"rgba(0,0,0,.84)",22,700,0);
   }
 
   // ===== LOAD =====

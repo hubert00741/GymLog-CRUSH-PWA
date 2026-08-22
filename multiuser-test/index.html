@@ -849,6 +849,60 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
   .gl-plan-editor-actions-064{grid-template-columns:1fr}
 }
 
+
+
+/* ===== 0.65.0 — multi muscle picker / fixed feature controls ===== */
+.gl-muscle-picker-065{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:6px;
+}
+.gl-muscle-chip-065{
+  position:relative;
+  cursor:pointer;
+  user-select:none;
+}
+.gl-muscle-chip-065 input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.gl-muscle-chip-065 span{
+  display:block;
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.10);
+  background:#111114;
+  color:#8f8f96;
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.15px;
+}
+.gl-muscle-chip-065 input:checked + span{
+  color:#fff;
+  border-color:rgba(255,56,73,.46);
+  background:rgba(130,13,29,.35);
+  box-shadow:inset 0 0 0 1px rgba(255,56,73,.10);
+}
+.theme-female .gl-muscle-chip-065 input:checked + span{
+  color:#241018;
+  border-color:rgba(255,177,210,.55);
+  background:#ffb1d2;
+}
+.gl-admin-feature-stack-065{
+  display:grid;
+  gap:9px;
+  margin-top:12px;
+}
+.gl-admin-feature-065{
+  padding:11px;
+  border-radius:13px;
+  background:#0d0d0f;
+  border:1px solid rgba(255,255,255,.07);
+}
+.gl-admin-feature-065 label{margin-top:0!important}
+
 </style>
 </head>
 
@@ -3434,7 +3488,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "PWA BETA 0.64.0 — MULTI USER";
+VERSION = "BETA 0.65.0";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -5530,7 +5584,11 @@ function glAdminRenderSelectedUser(page){
   if(logs.length>per)history+="<div class='historyPager'>"+(page>0?"<button class='secondary' onclick='glAdminRenderSelectedUser("+(page-1)+")'>← Poprzednia</button>":"<span></span>")+"<div class='pageNo'>"+(page+1)+" / "+total+"</div>"+(page<total-1?"<button onclick='glAdminRenderSelectedUser("+(page+1)+")'>Następna →</button>":"<span></span>")+"</div>";
   var settings=(u.role!=="admin"?
     "<label>Typ konta</label><select id='muEditGender'><option value='male' "+(((cfg.gender||"male")==="male")?"selected":"")+">Mężczyzna</option><option value='female' "+(cfg.gender==="female"?"selected":"")+">Kobieta</option></select>"+
-    "<div class='mu-feature-row-063'><label>Manekin mięśni po treningu</label><select id='muEditMuscleMap'><option value='true' "+(flags.muscleMap!==false?"selected":"")+">Włączony</option><option value='false' "+(flags.muscleMap===false?"selected":"")+">Wyłączony</option></select><div class='mu-admin-toggle-note-063'>Wyłączenie ukrywa manekina w podsumowaniu i szczegółach treningu tego konta.</div></div>":"");
+    "<div class='gl-admin-feature-stack-065'>"+
+      "<div class='gl-admin-feature-065'><label>Manekin mięśni po treningu</label><select id='muEditMuscleMap'><option value='true' "+(flags.muscleMap!==false?"selected":"")+">Włączony</option><option value='false' "+(flags.muscleMap===false?"selected":"")+">Wyłączony</option></select><div class='mu-admin-toggle-note-063'>Wyłączenie ukrywa manekina w podsumowaniu i szczegółach treningu tego konta.</div></div>"+
+      "<div class='gl-admin-feature-065'><label>Samopoczucie</label><select id='muEditMoodEnabled'><option value='true' "+(flags.mood!==false?"selected":"")+">Włączone</option><option value='false' "+(flags.mood===false?"selected":"")+">Wyłączone</option></select><div class='mu-admin-toggle-note-063'>Wyłączenie usuwa pole samopoczucia i gotowość z interfejsu tego konta.</div></div>"+
+      "<div class='gl-admin-feature-065'><label>Edycja planu przez użytkownika</label><select id='muEditPlanEdit'><option value='true' "+(flags.planEdit===true?"selected":"")+">Włączona</option><option value='false' "+(flags.planEdit!==true?"selected":"")+">Wyłączona</option></select><div class='mu-admin-toggle-note-063'>Gdy wyłączona, użytkownik nie widzi zakładki Edycja planów.</div></div>"+
+    "</div>":"");
   var html="<h1>"+esc(u.display_name||u.username)+"</h1><button class='secondary mu-user-back' onclick='glUsersView()'>← Użytkownicy</button>"+
     "<div class='card'><div class='lux-section-title'>Konto</div><div class='mu-admin-form'><div class='row2'><div><label>Login</label><input id='muEditLogin' value='"+esc(u.username||"")+"'></div><div><label>Nazwa</label><input id='muEditName' value='"+esc(u.display_name||"")+"'></div></div>"+settings+
     "<button onclick='glAdminSaveIdentity()'>ZAPISZ USTAWIENIA KONTA</button><label>Nowe hasło</label><input id='muEditPass' type='password' placeholder='minimum 8 znaków'><button class='secondary' onclick='glAdminResetPassword()'>Zmień hasło</button>"+
@@ -5873,6 +5931,35 @@ if(typeof window.statsView==="function"){
   window.statsView=function(){var r=gl064BaseStats.apply(this,arguments);requestAnimationFrame(gl064HideMoodPieces);return r;};
 }
 
+
+/* ---------- 0.65: weight statistics include quick-saved measurements ---------- */
+var gl065BaseLuxFieldPair=luxFieldPair;
+var gl065BaseLuxAvg=luxAvg;
+function gl065WeightSeries(){
+  var byDate={};
+  (data.logs||[]).forEach(function(l){
+    var n=luxNum(l&&l.weight),d=String(l&&l.date||"").trim();
+    if(n==null||!d)return;
+    if(!byDate[d])byDate[d]={n:n,log:{date:d},source:"workout"};
+  });
+  (data.bodyMeasurements||[]).forEach(function(m){
+    var n=luxNum(m&&m.weight),d=String(m&&m.date||"").trim();
+    if(n==null||!d)return;
+    byDate[d]={n:n,log:{date:d},source:"measurement"};
+  });
+  return Object.keys(byDate).sort(function(a,b){return b.localeCompare(a);}).map(function(d){return byDate[d];});
+}
+luxFieldPair=function(field){
+  if(field!=="weight")return gl065BaseLuxFieldPair(field);
+  var vals=gl065WeightSeries();
+  return {cur:vals[0]||null,prev:vals[1]||null};
+};
+luxAvg=function(field){
+  if(field!=="weight")return gl065BaseLuxAvg(field);
+  var vals=gl065WeightSeries();if(!vals.length)return null;
+  return vals.reduce(function(sum,x){return sum+x.n;},0)/vals.length;
+};
+
 /* ---------- Plan editor shared helpers ---------- */
 async function gl064PlanApi(payload){
   var s=await glEnsureSession();if(!s)throw new Error("Brak sesji");
@@ -5913,6 +6000,18 @@ function gl064OpenEasyPlanEditor(opts){
 }
 window.gl064OpenEasyPlanEditor=gl064OpenEasyPlanEditor;
 
+
+var GL065_MUSCLE_GROUPS=[
+  "Klatka","Plecy","Barki","Tył barku","Biceps","Triceps",
+  "Czwórki","Tył uda","Pośladek","Łydki","Prostowniki","Brzuch"
+];
+function gl065MusclePickerHtml(e,i){
+  var selectedGroups=Array.isArray(e.groups)?e.groups:[];
+  return "<div class='gl-muscle-picker-065'>"+GL065_MUSCLE_GROUPS.map(function(g){
+    var checked=selectedGroups.indexOf(g)>=0?" checked":"";
+    return "<label class='gl-muscle-chip-065'><input type='checkbox' name='pe_groups_"+i+"' value='"+esc(g)+"'"+checked+"><span>"+esc(g)+"</span></label>";
+  }).join("")+"</div>";
+}
 function gl064CapturePlan(){
   var c=window.GL064_PLAN_CTX;if(!c||!c.planName)return;
   var list=c.plans[c.planName]||[];
@@ -5922,7 +6021,7 @@ function gl064CapturePlan(){
     if(q("pe_sets"))e.sets=Math.max(1,parseInt(q("pe_sets").value,10)||1);
     if(q("pe_reps"))e.reps=String(q("pe_reps").value||"8-12").trim();
     if(q("pe_rest"))e.rest=Math.max(0,parseInt(q("pe_rest").value,10)||0);
-    if(q("pe_groups"))e.groups=String(q("pe_groups").value||"").split(",").map(function(x){return x.trim();}).filter(Boolean);
+    e.groups=Array.prototype.slice.call(document.querySelectorAll("input[name='pe_groups_"+i+"']:checked")).map(function(x){return x.value;});
     if(q("pe_starter"))e.starter=String(q("pe_starter").value||"").trim();
   });
 }
@@ -5940,11 +6039,12 @@ function gl064RenderEasyPlanEditor(){
       "<div><label>Serie</label><input id='pe_sets_"+i+"' inputmode='numeric' value='"+esc(e.sets||3)+"'></div>"+
       "<div><label>Zakres powtórzeń</label><input id='pe_reps_"+i+"' value='"+esc(e.reps||"8-12")+"'></div>"+
       "<div><label>Przerwa (sek.)</label><input id='pe_rest_"+i+"' inputmode='numeric' value='"+esc(e.rest||120)+"'></div>"+
-      "<div><label>Partie</label><input id='pe_groups_"+i+"' value='"+esc((e.groups||[]).join(", "))+"'></div>"+
+      "<div class='wide'><label>Partie mięśni — możesz zaznaczyć kilka</label>"+gl065MusclePickerHtml(e,i)+"</div>"+
       "<div class='wide'><label>Dane startowe — opcjonalnie</label><input id='pe_starter_"+i+"' value='"+esc(e.starter||"")+"' placeholder='np. 80 kg: 10, 75 kg: 10,10,10'></div></div></div>";
   });
   if(!c.planName)exHtml="<div class='card small'>Nie ma jeszcze żadnego dnia treningowego. Dodaj pierwszy plan.</div>";
   var who=c.profile&&c.profile.display_name?(" — "+esc(c.profile.display_name)):"";
+  var codeButton=c.mode==="admin"?"<button class='secondary' onclick='gl064PlanCodeView()'>WPROWADŹ PLAN KODEM</button>":"";
   render(
     "<h1>Edycja planów"+who+"</h1><button class='secondary topMenu' onclick='"+esc(c.back)+"'>← Wróć</button>"+
     "<div class='card'><div class='lux-section-title'>Dzień treningowy</div><div class='gl-easy-plan-head-064'>"+
@@ -5953,9 +6053,11 @@ function gl064RenderEasyPlanEditor(){
       (c.planName?"<button class='danger' onclick='gl064DeletePlan()'>Usuń dzień</button>":"")+"</div>"+
       (c.planName?"<button class='secondary' onclick='gl064AddExercise()'>+ DODAJ ĆWICZENIE</button>":"")+"</div>"+
     exHtml+
-    "<div class='gl-plan-editor-actions-064'><button onclick='gl064SavePlans()'>ZAPISZ ZMIANY PLANU</button><button class='secondary' onclick='gl064PlanCodeView()'>WPROWADŹ PLAN KODEM</button></div>"+luxBottomNav("more")
+    "<div class='gl-plan-editor-actions-064'><button onclick='gl064SavePlans()'>ZAPISZ ZMIANY PLANU</button>"+codeButton+"</div>"+luxBottomNav("more")
   );
 }
+window.gl064RenderEasyPlanEditor=gl064RenderEasyPlanEditor;
+
 window.gl064SwitchPlan=function(name){gl064CapturePlan();window.GL064_PLAN_CTX.planName=name;gl064RenderEasyPlanEditor();};
 window.gl064AddPlan=function(){
   gl064CapturePlan();var c=window.GL064_PLAN_CTX,name=prompt("Nazwa nowego dnia treningowego, np. PUSH:");
@@ -5997,6 +6099,7 @@ window.gl064SavePlans=async function(){
 };
 window.gl064PlanCodeView=function(){
   gl064CapturePlan();var c=window.GL064_PLAN_CTX;if(!c)return;
+  if(c.mode!=="admin"){alert("Wprowadzanie planu kodem jest dostępne tylko dla administratora.");return;}
   var txt=glPlanConfigToText({managed_plans:c.plans});
   render("<h1>Plan kodem</h1><button class='secondary topMenu' onclick='gl064RenderEasyPlanEditor()'>← Edycja planów</button>"+
     "<div class='card'><div class='small'>Możesz wkleić cały plan przygotowany w ChatGPT. Kod zastąpi bieżącą roboczą wersję planów po zatwierdzeniu.</div>"+

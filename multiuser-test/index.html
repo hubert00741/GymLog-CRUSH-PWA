@@ -903,6 +903,24 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
 }
 .gl-admin-feature-065 label{margin-top:0!important}
 
+
+
+/* ===== 0.66.0 — transparent share PNG ===== */
+.gl-share-png-066{
+  margin-top:10px!important;
+  width:100%;
+  min-height:48px;
+  background:linear-gradient(135deg,rgba(132,15,31,.46),rgba(48,7,14,.62))!important;
+  border:1px solid rgba(255,58,77,.34)!important;
+  color:#fff!important;
+  font-weight:950!important;
+  letter-spacing:.45px;
+}
+.theme-female .gl-share-png-066{
+  background:linear-gradient(135deg,rgba(255,177,210,.26),rgba(80,26,51,.58))!important;
+  border-color:rgba(255,177,210,.42)!important;
+}
+
 </style>
 </head>
 
@@ -3488,7 +3506,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.65.0";
+VERSION = "BETA 0.66.0";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -6196,6 +6214,229 @@ window.addEventListener("visibilitychange",function(){
     }catch(e){}
   })();
 });
+
+
+
+/* ======================================================================
+   0.66.0 — transparent workout summary PNG
+   Generated entirely in-browser on a transparent Canvas.
+   No screenshot library, no background card, no external graphics.
+   ====================================================================== */
+function gl066Num(v){
+  var n=parseFloat(String(v==null?"":v).replace(",","."));
+  return isFinite(n)?n:null;
+}
+function gl066DurationText(log){
+  if(!log||!log.createdAt||!log.finishedAt)return "—";
+  var a=new Date(log.createdAt).getTime(),b=new Date(log.finishedAt).getTime();
+  if(!isFinite(a)||!isFinite(b)||b<a)return "—";
+  var sec=Math.max(0,Math.round((b-a)/1000));
+  var h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+  return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+function gl066PreviousComparableLog(log,logs,index){
+  logs=Array.isArray(logs)?logs:[];
+  var training=String(log&&log.training||"");
+  var gym=String((typeof getLogGymV31==="function"?getLogGymV31(log):(log&&log.gym))||"");
+  var fallback=null;
+  for(var j=Number(index)+1;j<logs.length;j++){
+    var x=logs[j];if(!x||String(x.training||"")!==training)continue;
+    if(!fallback)fallback=x;
+    var gx=String((typeof getLogGymV31==="function"?getLogGymV31(x):x.gym)||"");
+    if(!gym||!gx||gx===gym)return x;
+  }
+  return fallback;
+}
+function gl066ProgressPct(log,logs,index){
+  var prev=gl066PreviousComparableLog(log,logs,index);
+  if(!prev)return null;
+  var prevBy={};
+  (prev.exercises||[]).forEach(function(e){if(e&&e.name)prevBy[e.name]=e;});
+  var changes=[];
+  (log.exercises||[]).forEach(function(e){
+    if(!e||!e.name)return;
+    if(window.isSubstituteExercise&&window.isSubstituteExercise(e))return;
+    var pe=prevBy[e.name];if(!pe)return;
+    var a=(typeof luxExerciseStrengthScore==="function")?luxExerciseStrengthScore(e,log):null;
+    var b=(typeof luxExerciseStrengthScore==="function")?luxExerciseStrengthScore(pe,prev):null;
+    if(a==null||b==null||b<=0)return;
+    var pct=((a/b)-1)*100;if(isFinite(pct))changes.push(pct);
+  });
+  if(!changes.length)return null;
+  return changes.reduce(function(a,b){return a+b;},0)/changes.length;
+}
+function gl066MusclePercentages(log){
+  var raw={};
+  try{raw=volumeSummary(log)||{};}catch(e){}
+  var total=0;Object.keys(raw).forEach(function(k){total+=Number(raw[k]||0);});
+  if(total<=0)return [];
+  return Object.keys(raw).map(function(k){
+    return {name:k,value:Number(raw[k]||0),pct:Number(raw[k]||0)/total*100};
+  }).filter(function(x){return x.value>0;}).sort(function(a,b){
+    if(b.pct!==a.pct)return b.pct-a.pct;
+    return String(a.name).localeCompare(String(b.name),"pl");
+  });
+}
+function gl066Accent(profile){
+  var cfg=(profile&&profile.profile_config)||{};
+  return cfg.gender==="female"?"#ffb1d2":"#ff3347";
+}
+function gl066ProgressColor(pct){
+  if(pct==null)return "#ffffff";
+  if(pct>0.05)return "#63f58a";
+  if(pct<-0.05)return "#ff5b6d";
+  return "#ffffff";
+}
+function gl066PctText(n,signed){
+  if(n==null||!isFinite(n))return "—";
+  var v=(signed&&n>0?"+":"")+n.toFixed(1).replace(".",",")+"%";
+  return v;
+}
+function gl066CanvasText(ctx,text,x,y,size,weight,align,color,maxWidth){
+  ctx.save();
+  ctx.font=(weight||800)+" "+size+"px -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif";
+  ctx.textAlign=align||"center";
+  ctx.textBaseline="middle";
+  ctx.lineJoin="round";
+  ctx.lineWidth=Math.max(3,Math.round(size*0.065));
+  ctx.strokeStyle="rgba(0,0,0,.62)";
+  ctx.strokeText(String(text),x,y,maxWidth);
+  ctx.fillStyle=color||"#fff";
+  ctx.fillText(String(text),x,y,maxWidth);
+  ctx.restore();
+}
+function gl066FitText(ctx,text,maxWidth,startSize,minSize,weight){
+  var s=startSize;
+  while(s>minSize){
+    ctx.font=(weight||900)+" "+s+"px -apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif";
+    if(ctx.measureText(String(text)).width<=maxWidth)break;
+    s-=2;
+  }
+  return s;
+}
+function gl066DrawMiniLogo(ctx,cx,cy,accent){
+  ctx.save();
+  ctx.strokeStyle=accent;ctx.lineWidth=5;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(cx-84,cy);ctx.lineTo(cx+84,cy);ctx.stroke();
+  [[-96,-84],[-108,-96],[84,96],[96,108]].forEach(function(p){
+    ctx.beginPath();ctx.moveTo(cx+p[0],cy-13);ctx.lineTo(cx+p[0],cy+13);ctx.stroke();
+  });
+  gl066CanvasText(ctx,"GC",cx,cy,50,950,"center","#ffffff",150);
+  ctx.restore();
+}
+function gl066SanitizeFileName(s){
+  return String(s||"trening").replace(/[ąćęłńóśźż]/gi,function(c){
+    var m={"ą":"a","ć":"c","ę":"e","ł":"l","ń":"n","ó":"o","ś":"s","ź":"z","ż":"z"};
+    return m[c.toLowerCase()]||c;
+  }).replace(/[^a-z0-9_-]+/gi,"-").replace(/^-+|-+$/g,"").slice(0,60)||"trening";
+}
+async function gl066DownloadTransparentSummary(log,logs,index,profile){
+  if(!log)return;
+  var W=1080,H=1350,canvas=document.createElement("canvas");
+  canvas.width=W;canvas.height=H;
+  var ctx=canvas.getContext("2d",{alpha:true});
+  ctx.clearRect(0,0,W,H);
+
+  var accent=gl066Accent(profile||window.GL_PROFILE||{});
+  var progress=gl066ProgressPct(log,logs,index);
+  var muscles=gl066MusclePercentages(log);
+  var duration=gl066DurationText(log);
+
+  // Workout name.
+  var title=String(log.training||"TRENING").toUpperCase();
+  var titleSize=gl066FitText(ctx,title,860,66,38,950);
+  gl066CanvasText(ctx,title,W/2,100,titleSize,950,"center","#ffffff",900);
+  ctx.save();ctx.strokeStyle=accent;ctx.lineWidth=5;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(350,154);ctx.lineTo(730,154);ctx.stroke();ctx.restore();
+
+  // Time.
+  gl066CanvasText(ctx,"CZAS TRENINGU",W/2,230,25,850,"center","rgba(255,255,255,.92)",700);
+  gl066CanvasText(ctx,duration,W/2,300,73,950,"center","#ffffff",900);
+
+  // Progress.
+  gl066CanvasText(ctx,"PROGRES",W/2,410,25,850,"center","rgba(255,255,255,.92)",600);
+  gl066CanvasText(ctx,gl066PctText(progress,true),W/2,480,72,950,"center",gl066ProgressColor(progress),800);
+
+  // Minimal central logo.
+  gl066DrawMiniLogo(ctx,W/2,600,accent);
+
+  // Muscle load.
+  gl066CanvasText(ctx,"OBCIĄŻENIE",W/2,700,25,850,"center","rgba(255,255,255,.92)",600);
+  ctx.save();ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(435,742);ctx.lineTo(645,742);ctx.stroke();ctx.restore();
+
+  if(!muscles.length){
+    gl066CanvasText(ctx,"BRAK DANYCH",W/2,825,34,850,"center","rgba(255,255,255,.78)",700);
+  }else{
+    var maxRows=Math.min(muscles.length,12);
+    var startY=805,rowGap=maxRows>8?43:50;
+    for(var i=0;i<maxRows;i++){
+      var m=muscles[i],y=startY+i*rowGap;
+      var label=String(m.name||"").toUpperCase();
+      var ls=gl066FitText(ctx,label,500,31,22,900);
+      gl066CanvasText(ctx,label,100,y,ls,900,"left","#ffffff",500);
+      gl066CanvasText(ctx,gl066PctText(m.pct,false),980,y,32,950,"right","#ffffff",250);
+      ctx.save();ctx.strokeStyle="rgba(255,255,255,.26)";ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(420,y);ctx.lineTo(820,y);ctx.stroke();
+      ctx.strokeStyle=accent;ctx.lineWidth=4;
+      var x2=420+400*Math.max(0,Math.min(1,m.pct/100));
+      ctx.beginPath();ctx.moveTo(420,y);ctx.lineTo(x2,y);ctx.stroke();ctx.restore();
+    }
+  }
+
+  var blob=await new Promise(function(resolve){canvas.toBlob(resolve,"image/png",1);});
+  if(!blob){alert("Nie udało się wygenerować PNG.");return;}
+  var fname="GymLog-"+gl066SanitizeFileName(log.training)+"-"+gl066SanitizeFileName(log.date)+".png";
+  var file;
+  try{file=new File([blob],fname,{type:"image/png"});}catch(e){file=null;}
+
+  // Standard download first. On iOS/Safari this opens the native save/share flow.
+  var url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=fname;a.style.display="none";document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},30000);
+}
+window.gl066DownloadTransparentSummary=gl066DownloadTransparentSummary;
+
+function gl066AddShareButton(log,logs,index,profile){
+  var app=document.getElementById("app");if(!app||!log||document.getElementById("glSharePng066"))return;
+  var card=app.querySelector(".card");if(!card)return;
+  var b=document.createElement("button");
+  b.id="glSharePng066";b.className="gl-share-png-066";
+  b.textContent="POBIERZ PNG BEZ TŁA";
+  b.onclick=function(){gl066DownloadTransparentSummary(log,logs,index,profile);};
+  card.appendChild(b);
+}
+
+/* Own/admin main history details. */
+var gl066BaseHistoryDetails=window.historyDetailsView;
+window.historyDetailsView=function(i,filter){
+  var r=gl066BaseHistoryDetails.apply(this,arguments);
+  var log=data.logs&&data.logs[i];
+  requestAnimationFrame(function(){gl066AddShareButton(log,data.logs||[],i,window.GL_PROFILE||{});});
+  return r;
+};
+
+/* Managed user's own history details. */
+if(typeof window.glManagedHistoryDetails==="function"){
+  var gl066BaseManagedDetails=window.glManagedHistoryDetails;
+  window.glManagedHistoryDetails=function(i,filter,page){
+    var r=gl066BaseManagedDetails.apply(this,arguments);
+    var log=data.logs&&data.logs[i];
+    requestAnimationFrame(function(){gl066AddShareButton(log,data.logs||[],i,window.GL_PROFILE||{});});
+    return r;
+  };
+}
+
+/* Administrator viewing another user's workout details. */
+if(typeof window.glAdminWorkoutDetails==="function"){
+  var gl066BaseAdminWorkoutDetails=window.glAdminWorkoutDetails;
+  window.glAdminWorkoutDetails=function(i,page){
+    var r=gl066BaseAdminWorkoutDetails.apply(this,arguments);
+    var sel=window.GL_ADMIN_SELECTED||{},logs=(sel.state&&sel.state.logs)||[],log=logs[i];
+    requestAnimationFrame(function(){gl066AddShareButton(log,logs,i,sel.profile||{});});
+    return r;
+  };
+}
 
 
 runInstalledAppUpdates();

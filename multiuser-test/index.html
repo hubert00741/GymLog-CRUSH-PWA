@@ -3506,7 +3506,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.67.3";
+VERSION = "BETA 0.67.6";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -4188,6 +4188,52 @@ function luxExerciseStrengthScore(ex,log){
   });
   return best;
 }
+
+function luxExerciseBestWorkingReps(ex){
+  if(!ex||!ex.sets)return null;
+  var best=null;
+  (ex.sets||[]).forEach(function(raw){
+    var s=luxSetObjForScore(raw,ex);
+    if(!s||!isWorkingSet(s))return;
+    var r=luxNum(s.r!=null?s.r:s.reps);
+    if(r==null||r<=0)return;
+    if(best==null||r>best)best=r;
+  });
+  return best;
+}
+
+/*
+  Compare a pair of the same exercise consistently.
+
+  Bodyweight rule:
+  - if BOTH workouts have bodyweight recorded -> use bodyweight-aware strength score;
+  - if EITHER workout is missing bodyweight -> compare repetitions only in BOTH workouts.
+
+  This prevents invalid comparisons such as:
+    current: 90.7 kg bodyweight × reps
+    previous: reps only
+  which previously produced absurd progress values.
+*/
+function luxExerciseStrengthPair(ex,log,prevEx,prevLog){
+  var bodyweight=isBodyweightExercise(ex)||isBodyweightExercise(prevEx);
+  if(bodyweight){
+    var bwNow=luxNum(log&&log.weight);
+    var bwPrev=luxNum(prevLog&&prevLog.weight);
+    if(bwNow==null||bwPrev==null){
+      return {
+        a:luxExerciseBestWorkingReps(ex),
+        b:luxExerciseBestWorkingReps(prevEx),
+        mode:"reps"
+      };
+    }
+  }
+  return {
+    a:luxExerciseStrengthScore(ex,log),
+    b:luxExerciseStrengthScore(prevEx,prevLog),
+    mode:bodyweight?"bodyweight":"weight"
+  };
+}
+
 function luxStrengthComparisonForTraining(training){
   var logs=(data.logs||[]).filter(function(l){return l&&l.training===training;});
   if(logs.length<2)return null;
@@ -4212,11 +4258,11 @@ function luxStrengthComparisonForTraining(training){
     if(window.isSubstituteExercise&&window.isSubstituteExercise(e))return;
     var pe=prevBy[e.name];
     if(!pe)return;
-    var a=luxExerciseStrengthScore(e,latest);
-    var b=luxExerciseStrengthScore(pe,previous);
+    var pair=luxExerciseStrengthPair(e,latest,pe,previous);
+    var a=pair.a,b=pair.b;
     if(a==null||b==null||b<=0)return;
     var pct=((a/b)-1)*100;
-    if(isFinite(pct))changes.push({name:e.name,pct:pct});
+    if(isFinite(pct))changes.push({name:e.name,pct:pct,mode:pair.mode});
   });
 
   if(!changes.length)return null;
@@ -6257,8 +6303,8 @@ function gl066ProgressPct(log,logs,index){
     if(!e||!e.name)return;
     if(window.isSubstituteExercise&&window.isSubstituteExercise(e))return;
     var pe=prevBy[e.name];if(!pe)return;
-    var a=(typeof luxExerciseStrengthScore==="function")?luxExerciseStrengthScore(e,log):null;
-    var b=(typeof luxExerciseStrengthScore==="function")?luxExerciseStrengthScore(pe,prev):null;
+    var pair=(typeof luxExerciseStrengthPair==="function")?luxExerciseStrengthPair(e,log,pe,prev):null;
+    var a=pair?pair.a:null,b=pair?pair.b:null;
     if(a==null||b==null||b<=0)return;
     var pct=((a/b)-1)*100;if(isFinite(pct))changes.push(pct);
   });
@@ -6577,14 +6623,20 @@ async function gl066DownloadTransparentSummary(log,logs,index,profile){
   if(!log)return;
 
   var muscles=gl066MusclePercentages(log);
-  var W=1080,H=gl067ShareHeight(muscles.length);
+  var progress=gl066ProgressPct(log,logs,index);
+  var hasProgress=(progress!=null && isFinite(progress));
+
+  // If there is no comparable previous workout, remove the PROGRES section
+  // completely and shorten the transparent canvas so no empty gap remains.
+  var W=1080;
+  var H=gl067ShareHeight(muscles.length)-(hasProgress?0:230);
+
   var canvas=document.createElement("canvas");
   canvas.width=W;canvas.height=H;
   var ctx=canvas.getContext("2d",{alpha:true});
   ctx.clearRect(0,0,W,H);
 
   var accent=gl066Accent(profile||window.GL_PROFILE||{});
-  var progress=gl066ProgressPct(log,logs,index);
   var progressColor=gl066ProgressColor(progress);
   var duration=gl066DurationText(log);
 
@@ -6599,22 +6651,23 @@ async function gl066DownloadTransparentSummary(log,logs,index,profile){
   gl067Text(ctx,duration,W/2,365,82,950,"center","#ffffff","rgba(0,0,0,.90)",20,900,0);
 
   // ===== PROGRESS =====
-  gl067Text(ctx,"PROGRES",W/2,505,28,850,"center","rgba(255,255,255,.96)","rgba(0,0,0,.85)",12,560,8);
-
-  var progressText=gl066PctText(progress,true);
-  if(progress==null){
-    gl067Text(ctx,"—",W/2,595,82,950,"center","#ffffff","rgba(0,0,0,.9)",20,700,0);
-  }else{
+  // Render only when there is a real comparable previous workout/result.
+  if(hasProgress){
+    gl067Text(ctx,"PROGRES",W/2,505,28,850,"center","rgba(255,255,255,.96)","rgba(0,0,0,.85)",12,560,8);
+    var progressText=gl066PctText(progress,true);
     gl067Text(ctx,progressText,W/2,595,82,950,"center",progressColor,"rgba(0,0,0,.84)",22,700,0);
   }
 
   // ===== LOAD =====
-  gl067Text(ctx,"OBCIĄŻENIE",W/2,770,28,850,"center","rgba(255,255,255,.96)","rgba(0,0,0,.85)",12,650,8);
+  // Move this section up when PROGRES is absent.
+  var loadTitleY=hasProgress?770:540;
+  var loadStartY=hasProgress?860:630;
+  gl067Text(ctx,"OBCIĄŻENIE",W/2,loadTitleY,28,850,"center","rgba(255,255,255,.96)","rgba(0,0,0,.85)",12,650,8);
 
   if(!muscles.length){
-    gl067Text(ctx,"BRAK DANYCH",W/2,880,34,850,"center","rgba(255,255,255,.82)","rgba(0,0,0,.8)",10,700,2);
+    gl067Text(ctx,"BRAK DANYCH",W/2,loadTitleY+110,34,850,"center","rgba(255,255,255,.82)","rgba(0,0,0,.8)",10,700,2);
   }else{
-    var startY=860;
+    var startY=loadStartY;
     var rowGap=92;
     var nameX=100,barX=335,barW=450,pctX=978;
     muscles.forEach(function(m,i){
@@ -6638,6 +6691,31 @@ async function gl066DownloadTransparentSummary(log,logs,index,profile){
   setTimeout(function(){URL.revokeObjectURL(url);},30000);
 }
 window.gl066DownloadTransparentSummary=gl066DownloadTransparentSummary;
+
+
+
+/* ======================================================================
+   0.67.4 — ACCOUNT MODE SAFETY
+   Hubert/admin must always use the original full GymLog workflow:
+   exact targets from planOverrides + gym selection + ChatGPT workflow.
+   Managed/simple range mode is reserved for ordinary user accounts only.
+   ====================================================================== */
+function glIsManagedUser(){
+  var p=window.GL_PROFILE||{};
+  var username=String(p.username||"").toLowerCase().trim();
+  var role=String(p.role||"").toLowerCase().trim();
+  var cfg=(p.profile_config&&typeof p.profile_config==="object")?p.profile_config:{};
+  var flags=(p.feature_flags&&typeof p.feature_flags==="object")?p.feature_flags:{};
+
+  // Hard safety: owner/admin can never fall into the simplified user UI,
+  // even if an old cached profile is incomplete or a flag is stale.
+  if(role==="admin" || username==="hubert")return false;
+
+  // Regular accounts created for trainees use the simplified managed mode.
+  if(cfg.managedMode===true || flags.managedMode===true)return true;
+  return role==="user";
+}
+window.glIsManagedUser=glIsManagedUser;
 
 
 runInstalledAppUpdates();

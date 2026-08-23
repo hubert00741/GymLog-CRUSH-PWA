@@ -1,4 +1,4 @@
-const CACHE='gymlog-crush-multiuser-test-v0673';
+const CACHE='gymlog-crush-multiuser-test-v0676';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('gymlog-crush-multiuser-test-')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});

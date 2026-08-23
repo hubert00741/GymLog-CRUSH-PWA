@@ -922,6 +922,32 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
 }
 
 </style>
+<style>
+
+/* ===== 0.68.0 — managed/admin history readability ===== */
+.mu-admin-history-actions-068{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  margin-top:10px;
+}
+.mu-admin-history-actions-068 button{margin:0!important;padding:10px 7px!important;font-size:10px!important}
+.mu-admin-summary-068{margin-top:2px}
+.mu-admin-history-kicker-068{margin:15px 1px 10px}
+.mu-managed-history-kicker-068{margin:4px 1px 10px}
+.mu-managed-history-actions-068{
+  display:grid;
+  grid-template-columns:1.25fr 1fr 1fr;
+  gap:6px;
+  margin-top:9px;
+}
+.mu-managed-history-actions-068 button{margin:0!important;padding:10px 6px!important;font-size:10px!important}
+@media(max-width:370px){
+  .mu-managed-history-actions-068{grid-template-columns:1fr 1fr}
+  .mu-managed-history-actions-068 button:first-child{grid-column:1/-1}
+}
+
+</style>
 </head>
 
 <body>
@@ -1330,7 +1356,7 @@ window.startWorkout = function(){
   var ex = clonePlan(tr);
 
   current = {
-    date:document.getElementById("date").value || today(),
+    date:glDateStorage(document.getElementById("date").value || today()),
     training:tr,
     testMode:document.getElementById("testMode").value === "TAK",
     sleep:document.getElementById("sleep").value,
@@ -1629,7 +1655,7 @@ window.saveEditHistory = function(i){
   var l = data.logs[i];
   if(!l) return;
 
-  l.date = document.getElementById("edit_date").value;
+  l.date = glDateStorage(document.getElementById("edit_date").value);
   l.training = document.getElementById("edit_training").value;
   l.sleep = document.getElementById("edit_sleep").value;
   l.weight = document.getElementById("edit_weight").value;
@@ -3103,7 +3129,7 @@ window.startWorkout = function(){
   var gym = safeGymV31(document.getElementById("gym").value);
 
   current = {
-    date:document.getElementById("date").value || today(),
+    date:glDateStorage(document.getElementById("date").value || today()),
     training:tr,
     gym:gym,
     testMode:document.getElementById("testMode").value === "TAK",
@@ -3506,7 +3532,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.67.6";
+VERSION = "BETA 0.68.0";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -5225,7 +5251,7 @@ home=window.home;
 window.glManagedStartWorkout=function(){
   var tr=document.getElementById("tr");if(!tr){alert("Brak planu treningowego.");return;}
   var plan=tr.value,ex=glManagedExercises(plan);if(!ex.length){alert("Ten plan nie ma ćwiczeń.");return;}
-  current={date:(document.getElementById("date").value||today()),training:plan,gym:"CityFit",testMode:false,sleep:(document.getElementById("sleep").value||""),weight:(document.getElementById("weight")?document.getElementById("weight").value:""),mood:(document.getElementById("mood").value||""),footWalk:"",footPush:"",rehab:"",notes:(document.getElementById("notes").value||""),exercises:ex,createdAt:new Date().toISOString()};
+  current={date:glDateStorage(document.getElementById("date").value||today()),training:plan,gym:"CityFit",testMode:false,sleep:(document.getElementById("sleep").value||""),weight:(document.getElementById("weight")?document.getElementById("weight").value:""),mood:(document.getElementById("mood").value||""),footWalk:"",footPush:"",rehab:"",notes:(document.getElementById("notes").value||""),exercises:ex,createdAt:new Date().toISOString()};
   data.lastMeta={sleep:current.sleep,weight:current.weight,mood:current.mood,footWalk:"",footPush:"",rehab:"",gym:"CityFit"};data.draft=current;safeSave();idx=0;exercise();
 };
 
@@ -5586,7 +5612,7 @@ window.glManagedEditWorkout=function(i,filter,page){
 };
 window.glManagedSaveEditedWorkout=function(){
   var c=window.GL_MANAGED_EDIT_CTX;if(!c)return;var l=data.logs&&data.logs[c.index];if(!l)return;
-  l.date=String(document.getElementById("muEditDate").value||"");l.training=String(document.getElementById("muEditTraining").value||"");
+  l.date=glDateStorage(String(document.getElementById("muEditDate").value||""));l.training=String(document.getElementById("muEditTraining").value||"");
   l.sleep=String(document.getElementById("muEditSleep").value||"");l.mood=String(document.getElementById("muEditMood").value||"");
   if(document.getElementById("muEditWeight"))l.weight=String(document.getElementById("muEditWeight").value||"");
   l.notes=String(document.getElementById("muEditNotes").value||"");
@@ -5637,11 +5663,17 @@ function glAdminRenderSelectedUser(page){
   var u=r.profile||{},st=glNormalizeState(r.state||{}),flags=Object.assign(glDefaultManagedFlags(),u.feature_flags||{}),cfg=u.profile_config||{};
   page=Math.max(0,Number(page||0));window.GL_ADMIN_USER_PAGE=page;
   var logs=st.logs||[],per=6,total=Math.max(1,Math.ceil(logs.length/per));page=Math.min(page,total-1);window.GL_ADMIN_USER_PAGE=page;
-  var history="<div class='mu-history-user'>";
+  var history="<div class='lux-summary-grid mu-admin-summary-068'>"+
+    "<div class='lux-summary-tile'><div class='lux-summary-label'>Treningi</div><div class='lux-summary-value'>"+logs.length+"</div><div class='lux-summary-sub'>Wszystkie</div></div>"+
+    "<div class='lux-summary-tile'><div class='lux-summary-label'>Śr. waga</div><div class='lux-summary-value'>"+luxFmt(gl068LogAverage(logs,"weight"),1)+" kg</div><div class='lux-summary-sub'>z zapisanych</div></div>"+
+    "<div class='lux-summary-tile'><div class='lux-summary-label'>Śr. sen</div><div class='lux-summary-value'>"+luxFmt(gl068LogAverage(logs,"sleep"),1)+" h</div><div class='lux-summary-sub'>z zapisanych</div></div></div>"+
+    "<div class='lux-kicker mu-admin-history-kicker-068'>OSTATNIE TRENINGI</div><div class='lux-history-list'>";
   logs.slice(page*per,page*per+per).forEach(function(l,offset){
-    var i=page*per+offset;
-    history+="<article><div class='title'>"+esc(l.training||"Trening")+"</div><div class='meta'>"+esc(l.date||"")+" • "+((l.exercises||[]).length)+" ćwiczeń</div>"+
-      "<div class='mu-admin-history-actions-063'><button onclick='glAdminWorkoutDetails("+i+","+page+")'>Szczegóły</button><button class='secondary' onclick='glAdminEditWorkout("+i+","+page+")'>Edytuj</button><button class='secondary' onclick='glAdminExportWorkout("+i+")'>Eksportuj</button><button class='danger' onclick='glAdminDeleteWorkout("+i+","+page+")'>Usuń trening</button></div></article>";
+    var i=page*per+offset,real=0;
+    try{real=realWorkingSetsCount(l)||0;}catch(e){}
+    history+="<article class='lux-history-card'><div class='lux-history-main'><div class='lux-history-icon'>II</div><div><div class='lux-history-name'>"+esc(l.training||"Trening")+"</div><div class='lux-history-meta'>"+esc(l.date||"")+" • "+((l.exercises||[]).length)+" ćwiczeń</div></div></div>"+
+      "<div class='lux-history-stats'><span>⚖ "+esc(l.weight||"—")+" kg</span><span>☾ "+esc(l.sleep||"—")+" h</span><span>Serie: "+real+"</span></div>"+
+      "<div class='mu-admin-history-actions-068'><button onclick='glAdminWorkoutDetails("+i+","+page+")'>Szczegóły</button><button class='secondary' onclick='glAdminEditWorkout("+i+","+page+")'>Edytuj</button><button class='secondary' onclick='glAdminExportWorkout("+i+")'>Eksportuj</button><button class='danger' onclick='glAdminDeleteWorkout("+i+","+page+")'>Usuń</button></div></article>";
   });
   if(!logs.length)history+="<div class='mu-managed-empty'>Brak treningów.</div>";
   history+="</div>";
@@ -5728,7 +5760,7 @@ window.glAdminEditWorkout=function(i,page){
 window.glAdminSaveEditedWorkout=async function(){
   var c=window.GL_ADMIN_EDIT_CTX,r=window.GL_ADMIN_SELECTED;if(!c||!r)return;var l=r.state&&r.state.logs&&r.state.logs[c.index];if(!l)return;
   try{
-    l.date=String(document.getElementById("admEditDate").value||"");l.training=String(document.getElementById("admEditTraining").value||"");
+    l.date=glDateStorage(String(document.getElementById("admEditDate").value||""));l.training=String(document.getElementById("admEditTraining").value||"");
     l.sleep=String(document.getElementById("admEditSleep").value||"");l.mood=String(document.getElementById("admEditMood").value||"");
     l.weight=String(document.getElementById("admEditWeight").value||"");l.notes=String(document.getElementById("admEditNotes").value||"");
     (l.exercises||[]).forEach(function(e,ei){
@@ -5846,13 +5878,13 @@ function gl064MeasurementById(id){
 function gl064LatestMeasurement(){
   gl064EnsureMeasurements();
   return data.bodyMeasurements.slice().sort(function(a,b){
-    return String(b.date||"").localeCompare(String(a.date||"")) || String(b.updatedAt||b.createdAt||"").localeCompare(String(a.updatedAt||a.createdAt||""));
+    return glDateStorage(b.date||"").localeCompare(glDateStorage(a.date||"")) || String(b.updatedAt||b.createdAt||"").localeCompare(String(a.updatedAt||a.createdAt||""));
   })[0]||null;
 }
 window.glSaveQuickWeight=function(btn){
   gl064EnsureMeasurements();
   var input=document.getElementById("weight"),dateEl=document.getElementById("date");
-  var weight=String(input&&input.value||"").trim(),date=String(dateEl&&dateEl.value||today()).trim()||today();
+  var weight=String(input&&input.value||"").trim(),date=glDateStorage(String(dateEl&&dateEl.value||today()).trim()||today());
   if(!weight){alert("Najpierw wpisz wagę.");return;}
   var rec=data.bodyMeasurements.find(function(x){return x&&x.date===date;});
   if(!rec){
@@ -5868,7 +5900,7 @@ window.glSaveQuickWeight=function(btn){
 window.glBodyMeasurementsView=function(){
   stopTimer();luxStopWorkoutClock();gl064EnsureMeasurements();
   var arr=data.bodyMeasurements.slice().sort(function(a,b){
-    return String(b.date||"").localeCompare(String(a.date||"")) || String(b.updatedAt||b.createdAt||"").localeCompare(String(a.updatedAt||a.createdAt||""));
+    return glDateStorage(b.date||"").localeCompare(glDateStorage(a.date||"")) || String(b.updatedAt||b.createdAt||"").localeCompare(String(a.updatedAt||a.createdAt||""));
   });
   var latest=arr[0]||{},hist="<div class='gl-measure-history-064'>";
   arr.forEach(function(m){
@@ -5905,7 +5937,7 @@ window.glBodyMeasurementEdit=function(id){
 };
 window.glBodyMeasurementSave=function(id){
   gl064EnsureMeasurements();var m=id?gl064MeasurementById(id):null;
-  var date=String((document.getElementById("bm_date")||{}).value||today()).trim()||today();
+  var date=glDateStorage(String((document.getElementById("bm_date")||{}).value||today()).trim()||today());
   if(!m){
     m=data.bodyMeasurements.find(function(x){return x&&x.date===date;})||null;
     if(!m){m={id:"bm_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),createdAt:new Date().toISOString()};data.bodyMeasurements.push(m);}
@@ -6640,7 +6672,8 @@ async function gl066DownloadTransparentSummary(log,logs,index,profile){
   var progressColor=gl066ProgressColor(progress);
   var duration=gl066DurationText(log);
 
-  // ===== HEADER =====
+  // ===== BRAND + HEADER =====
+  gl068DrawShareBrand(ctx,W/2,48,accent);
   var title=String(log.training||"TRENING").toUpperCase();
   var titleSize=gl067FitSize(ctx,title,840,72,42,950);
   gl067Text(ctx,title,W/2,120,titleSize,950,"center","#ffffff","rgba(0,0,0,.85)",18,880,0);
@@ -6716,6 +6749,279 @@ function glIsManagedUser(){
   return role==="user";
 }
 window.glIsManagedUser=glIsManagedUser;
+
+
+
+/* ======================================================================
+   0.68.0 — WEIGHT DATE LOGIC + DATE PRESENTATION + HISTORY + SHARE BRAND
+   ====================================================================== */
+
+function glDateStorage(value){
+  var s=String(value==null?"":value).trim();
+  if(!s)return "";
+  var iso=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(iso)return iso[1]+"-"+iso[2]+"-"+iso[3];
+  var pl=s.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})$/);
+  if(pl){
+    var d=String(pl[1]).padStart(2,"0");
+    var m=String(pl[2]).padStart(2,"0");
+    return pl[3]+"-"+m+"-"+d;
+  }
+  return s;
+}
+function glDateDisplay(value){
+  var s=String(value==null?"":value).trim();
+  if(!s)return "";
+  var iso=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(iso)return iso[3]+"-"+iso[2]+"-"+iso[1];
+  var pl=s.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})$/);
+  if(pl)return String(pl[1]).padStart(2,"0")+"-"+String(pl[2]).padStart(2,"0")+"-"+pl[3];
+  return s;
+}
+function glDateText(value){
+  return String(value==null?"":value).replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g,"$3-$2-$1");
+}
+window.glDateStorage=glDateStorage;
+window.glDateDisplay=glDateDisplay;
+window.glDateText=glDateText;
+
+/* Convert visible ISO dates after every render.
+   Important: do NOT touch textarea/pre/code, so backups/JSON stay intact. */
+function gl068ApplyDatePresentation(){
+  var app=document.getElementById("app");
+  if(!app)return;
+
+  try{
+    var walker=document.createTreeWalker(app,NodeFilter.SHOW_TEXT,{
+      acceptNode:function(node){
+        var p=node.parentElement;
+        if(!p)return NodeFilter.FILTER_REJECT;
+        var tag=String(p.tagName||"").toUpperCase();
+        if(tag==="TEXTAREA"||tag==="SCRIPT"||tag==="STYLE"||tag==="PRE"||tag==="CODE")
+          return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var nodes=[],n;
+    while((n=walker.nextNode()))nodes.push(n);
+    nodes.forEach(function(node){
+      var next=glDateText(node.nodeValue);
+      if(next!==node.nodeValue)node.nodeValue=next;
+    });
+  }catch(e){}
+
+  ["date","edit_date","muEditDate","admEditDate","bm_date"].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&el.value)el.value=glDateDisplay(el.value);
+  });
+}
+var gl068BaseRender=render;
+render=function(html){
+  var r=gl068BaseRender.apply(this,arguments);
+  gl068ApplyDatePresentation();
+  return r;
+};
+window.render=render;
+
+/* Human-readable dates also in native confirm/alert dialogs. */
+var gl068BaseConfirm=window.confirm.bind(window);
+window.confirm=function(msg){return gl068BaseConfirm(glDateText(msg));};
+var gl068BaseAlert=window.alert.bind(window);
+window.alert=function(msg){return gl068BaseAlert(glDateText(msg));};
+
+/* Latest weight is determined by DATE, not by insertion/edit time.
+   Same date: body measurement wins over workout, then latest updated timestamp. */
+function gl068LatestWeightRecord(st){
+  st=st||data||{};
+  var rows=[];
+  (st.logs||[]).forEach(function(l){
+    var w=String(l&&l.weight||"").trim();
+    var d=glDateStorage(l&&l.date||"");
+    if(!w||!d)return;
+    rows.push({
+      weight:w,date:d,priority:1,
+      stamp:String(l.finishedAt||l.createdAt||""),
+      source:"workout"
+    });
+  });
+  (st.bodyMeasurements||[]).forEach(function(m){
+    var w=String(m&&m.weight||"").trim();
+    var d=glDateStorage(m&&m.date||"");
+    if(!w||!d)return;
+    rows.push({
+      weight:w,date:d,priority:2,
+      stamp:String(m.updatedAt||m.createdAt||""),
+      source:"measurement"
+    });
+  });
+  rows.sort(function(a,b){
+    var dc=String(b.date).localeCompare(String(a.date));
+    if(dc)return dc;
+    var pc=(b.priority||0)-(a.priority||0);
+    if(pc)return pc;
+    return String(b.stamp||"").localeCompare(String(a.stamp||""));
+  });
+  return rows[0]||null;
+}
+function gl068SyncCurrentWeight(st){
+  st=st||data;
+  if(!st)return null;
+  var latest=gl068LatestWeightRecord(st);
+  if(latest){
+    if(!st.lastMeta||typeof st.lastMeta!=="object")st.lastMeta={};
+    st.lastMeta.weight=latest.weight;
+  }
+  return latest;
+}
+window.gl068LatestWeightRecord=gl068LatestWeightRecord;
+window.gl068SyncCurrentWeight=gl068SyncCurrentWeight;
+
+/* Always repair lastMeta.weight before saving.
+   This automatically covers add/edit/delete of body measurements. */
+var gl068BaseSafeSave=safeSave;
+safeSave=function(){
+  try{gl068SyncCurrentWeight(data);}catch(e){}
+  return gl068BaseSafeSave.apply(this,arguments);
+};
+window.safeSave=safeSave;
+
+/* Also repair stale data immediately on screen entry after upgrading from older versions. */
+var gl068BaseHome=window.home;
+window.home=function(){
+  try{gl068SyncCurrentWeight(data);}catch(e){}
+  return gl068BaseHome.apply(this,arguments);
+};
+home=window.home;
+
+if(typeof window.glBodyMeasurementsView==="function"){
+  var gl068BaseBodyMeasurementsView=window.glBodyMeasurementsView;
+  window.glBodyMeasurementsView=function(){
+    try{gl068SyncCurrentWeight(data);}catch(e){}
+    return gl068BaseBodyMeasurementsView.apply(this,arguments);
+  };
+}
+
+/* Helper used when admin is inspecting another user's history. */
+function gl068LogAverage(logs,field){
+  var vals=[];
+  (logs||[]).forEach(function(l){
+    var n=luxNum(l&&l[field]);
+    if(n!=null)vals.push(n);
+  });
+  if(!vals.length)return null;
+  return vals.reduce(function(a,b){return a+b;},0)/vals.length;
+}
+window.gl068LogAverage=gl068LogAverage;
+
+/* Managed accounts get the same readable Luxury history hierarchy
+   as the owner account, without owner-only gym/foot metadata. */
+var gl068BaseHistoryView=window.historyView;
+window.historyView=function(filter,page){
+  if(!glIsManagedUser())return gl068BaseHistoryView.apply(this,arguments);
+
+  stopTimer();luxStopWorkoutClock();
+  filter=filter||window._historyCurrentFilter||"Wszystkie";
+  if(page===undefined||page===null)
+    page=(filter===window._historyCurrentFilter)?(window._pwaHistoryPage||0):0;
+  window._historyCurrentFilter=filter;
+
+  var all=["Wszystkie"];
+  glManagedPlanNames().forEach(function(name){if(all.indexOf(name)<0)all.push(name);});
+  (data.logs||[]).forEach(function(l){if(l.training&&all.indexOf(l.training)<0)all.push(l.training);});
+
+  var opts="";
+  all.forEach(function(name){
+    opts+="<option value='"+esc(name)+"'"+selected(filter,name)+">"+esc(name)+"</option>";
+  });
+
+  var matches=[];
+  (data.logs||[]).forEach(function(l,i){
+    if(filter==="Wszystkie"||l.training===filter)matches.push({log:l,index:i});
+  });
+
+  var per=4,totalPages=Math.max(1,Math.ceil(matches.length/per));
+  page=Math.max(0,Math.min(Number(page||0),totalPages-1));
+  window._pwaHistoryPage=page;
+  var visible=matches.slice(page*per,page*per+per);
+
+  var html="<div class='lux-history-head'><h1>Historia</h1><select class='lux-filter' onchange='historyView(this.value,0)'>"+opts+"</select></div>"+
+    "<div class='lux-summary-grid'>"+
+      "<div class='lux-summary-tile'><div class='lux-summary-label'>Treningi</div><div class='lux-summary-value'>"+(data.logs||[]).length+"</div><div class='lux-summary-sub'>Wszystkie</div></div>"+
+      "<div class='lux-summary-tile'><div class='lux-summary-label'>Śr. waga</div><div class='lux-summary-value'>"+luxFmt(luxAvg("weight"),1)+" kg</div><div class='lux-summary-sub'>z zapisanych</div></div>"+
+      "<div class='lux-summary-tile'><div class='lux-summary-label'>Śr. sen</div><div class='lux-summary-value'>"+luxFmt(luxAvg("sleep"),1)+" h</div><div class='lux-summary-sub'>z zapisanych</div></div>"+
+    "</div>"+
+    "<div class='lux-kicker mu-managed-history-kicker-068'>OSTATNIE TRENINGI</div>"+
+    "<div class='lux-history-list'>";
+
+  visible.forEach(function(item){
+    var l=item.log,i=item.index,real=0;
+    try{real=realWorkingSetsCount(l)||0;}catch(e){}
+    html+="<article class='lux-history-card'>"+
+      "<div class='lux-history-main'><div class='lux-history-icon'>II</div><div>"+
+        "<div class='lux-history-name'>"+esc(l.training||"Trening")+"</div>"+
+        "<div class='lux-history-meta'>"+esc(l.date||"")+" • "+((l.exercises||[]).length)+" ćwiczeń</div>"+
+      "</div></div>"+
+      "<div class='lux-history-stats'>"+
+        "<span>⚖ "+esc(l.weight||"—")+" kg</span>"+
+        "<span>☾ "+esc(l.sleep||"—")+" h</span>"+
+        "<span>Serie: "+real+"</span>"+
+      "</div>"+
+      "<div class='mu-managed-history-actions-068'>"+
+        "<button onclick='glManagedHistoryDetails("+i+",\""+esc(filter)+"\","+page+")'>Szczegóły</button>"+
+        "<button class='secondary' onclick='glManagedEditWorkout("+i+",\""+esc(filter)+"\","+page+")'>Edytuj</button>"+
+        "<button class='danger' onclick='glManagedDeleteWorkout("+i+",\""+esc(filter)+"\","+page+")'>Usuń</button>"+
+      "</div>"+
+    "</article>";
+  });
+
+  if(!matches.length)html+="<div class='card small'>Brak treningów dla tego filtra.</div>";
+  html+="</div>";
+
+  if(matches.length>per){
+    html+="<div class='historyPager'>"+
+      (page>0?"<button class='secondary' onclick='historyView(\""+esc(filter)+"\","+(page-1)+")'>← Poprzednia</button>":"<span></span>")+
+      "<div class='pageNo'>"+(page+1)+" / "+totalPages+"</div>"+
+      (page<totalPages-1?"<button onclick='historyView(\""+esc(filter)+"\","+(page+1)+")'>Następna →</button>":"<span></span>")+
+    "</div>";
+  }
+  html+=luxBottomNav("history");
+  render(html);
+};
+historyView=window.historyView;
+
+/* Small deterministic brand wordmark for transparent PNG.
+   Male: CRUSH red. Female: CRUSH baby pink. No opaque background. */
+function gl068DrawShareBrand(ctx,cx,y,accent){
+  ctx.save();
+  var fontSize=25;
+  var family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif";
+  ctx.font="950 "+fontSize+"px "+family;
+  ctx.textBaseline="middle";
+  var left="GYMLOG";
+  var right="CRUSH";
+  var gap=13;
+  var w1=ctx.measureText(left).width;
+  var w2=ctx.measureText(right).width;
+  var start=cx-(w1+gap+w2)/2;
+
+  ctx.shadowColor="rgba(0,0,0,.88)";
+  ctx.shadowBlur=12;
+  ctx.shadowOffsetY=2;
+
+  ctx.textAlign="left";
+  ctx.fillStyle="rgba(255,255,255,.96)";
+  ctx.fillText(left,start,y);
+
+  ctx.fillStyle=accent;
+  ctx.shadowColor=accent;
+  ctx.shadowBlur=10;
+  ctx.fillText(right,start+w1+gap,y);
+  ctx.restore();
+}
+window.gl068DrawShareBrand=gl068DrawShareBrand;
+
+/* Repair stale lastMeta immediately after loading this code. */
+try{gl068SyncCurrentWeight(data);}catch(e){}
 
 
 runInstalledAppUpdates();

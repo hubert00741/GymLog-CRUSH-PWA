@@ -948,6 +948,42 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
 }
 
 </style>
+<style>
+
+/* ===== 0.68.1 — durable workout save status ===== */
+.gl-finish-save-status{
+  margin:12px 0;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.035);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.02em;
+}
+.gl-finish-save-status.pending{border-color:rgba(255,210,28,.25);color:#ffe36a}
+.gl-finish-save-status.ok{border-color:rgba(72,220,120,.28);color:#72ec96}
+.gl-finish-save-status.bad{border-color:rgba(255,83,100,.28);color:#ff7e8d}
+
+</style>
+<style>
+
+/* ===== 0.68.2 — Web Push / rest notifications ===== */
+.gl-push-hero{position:relative;overflow:hidden}
+.gl-push-status{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-top:12px;padding:12px 13px;border-radius:14px;
+  border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035)
+}
+.gl-push-status-left{display:flex;align-items:center;gap:10px;font-weight:850;font-size:12px}
+.gl-push-dot{width:9px;height:9px;border-radius:50%;background:#7d7d7d;box-shadow:0 0 12px rgba(255,255,255,.08)}
+.gl-push-dot.ok{background:#54dc83;box-shadow:0 0 14px rgba(84,220,131,.45)}
+.gl-push-dot.bad{background:#ff6070;box-shadow:0 0 14px rgba(255,96,112,.35)}
+.gl-push-help{font-size:12px;line-height:1.48;color:#b8b8b8;margin-top:10px}
+.gl-push-note{font-size:11px;line-height:1.45;color:#8f8f8f;margin-top:8px}
+.gl-push-test{margin-top:8px}
+
+</style>
 </head>
 
 <body>
@@ -3532,7 +3568,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.68.0";
+VERSION = "BETA 0.68.2";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -6271,7 +6307,8 @@ window.luxMoreView=function(){
   }else if(gl064PlanEditEnabled()){
     actions+="<button onclick='glPlanEditorHub()'><span>▤ Edycja planów</span><span>›</span></button>";
   }
-  actions+="<button onclick='glBodyMeasurementsView()'><span>⌁ Pomiary ciała</span><span>›</span></button>"+
+  actions+="<button onclick='glPushSettingsView()'><span>◉ Powiadomienia o przerwach</span><span>›</span></button>"+
+           "<button onclick='glBodyMeasurementsView()'><span>⌁ Pomiary ciała</span><span>›</span></button>"+
            "<button onclick='backupView()'><span>⇩ Eksport / import awaryjny</span><span>›</span></button>"+
            "<button onclick='helpView()'><span>? Pomoc</span><span>›</span></button>"+
            "<button class='secondary' onclick='glForceCloudSync()'><span>↻ Synchronizuj Supabase</span><span>›</span></button>"+
@@ -7022,6 +7059,697 @@ window.gl068DrawShareBrand=gl068DrawShareBrand;
 
 /* Repair stale lastMeta immediately after loading this code. */
 try{gl068SyncCurrentWeight(data);}catch(e){}
+
+
+
+/* ======================================================================
+   0.68.1 — DURABLE WORKOUT FINALIZATION
+   Goal: a finished workout must survive even if the main full-state sync
+   is interrupted, the app is closed immediately, or a later cloud refresh
+   happens before the normal debounced save completes.
+
+   Layers:
+   1) synchronous local finish journal BEFORE the normal finish handler;
+   2) per-workout Supabase checkpoint (small independent cloud record);
+   3) immediate full-state Supabase push + verification;
+   4) automatic recovery from local/cloud checkpoints on next login.
+   ====================================================================== */
+
+function gl069WorkoutId(log){
+  if(!log)return "";
+  if(log.workoutId)return String(log.workoutId);
+  var base=String(log.createdAt||new Date().toISOString()).replace(/[^0-9]/g,"").slice(0,17);
+  var rnd="";
+  try{
+    if(window.crypto&&crypto.getRandomValues){
+      var a=new Uint32Array(2);crypto.getRandomValues(a);
+      rnd=a[0].toString(36)+a[1].toString(36);
+    }
+  }catch(e){}
+  if(!rnd)rnd=Math.random().toString(36).slice(2,12);
+  log.workoutId="wo_"+base+"_"+rnd;
+  return log.workoutId;
+}
+function gl069SameWorkout(a,b){
+  if(!a||!b)return false;
+  if(a.workoutId&&b.workoutId)return String(a.workoutId)===String(b.workoutId);
+  return String(a.date||"")===String(b.date||"") &&
+         String(a.training||"")===String(b.training||"") &&
+         String(a.gym||"")===String(b.gym||"") &&
+         String(a.createdAt||"")===String(b.createdAt||"");
+}
+function gl069HasWorkout(list,workout){
+  return (list||[]).some(function(x){return gl069SameWorkout(x,workout);});
+}
+function gl069JournalKey(uid){
+  return "GYMLOG_CRUSH_FINISH_JOURNAL_"+String(uid||"")+"_V1";
+}
+function gl069JournalRead(uid){
+  try{
+    var raw=localStorage.getItem(gl069JournalKey(uid));
+    var arr=raw?JSON.parse(raw):[];
+    return Array.isArray(arr)?arr:[];
+  }catch(e){return [];}
+}
+function gl069JournalWrite(uid,arr){
+  try{
+    localStorage.setItem(gl069JournalKey(uid),JSON.stringify((arr||[]).slice(-12)));
+    return true;
+  }catch(e){return false;}
+}
+function gl069JournalAdd(uid,workout){
+  var arr=gl069JournalRead(uid),id=gl069WorkoutId(workout);
+  arr=arr.filter(function(x){return x&&x.workout&&String(x.workout.workoutId||"")!==id;});
+  arr.push({savedAt:new Date().toISOString(),workout:workout});
+  return gl069JournalWrite(uid,arr);
+}
+function gl069JournalRemove(uid,workoutId){
+  var arr=gl069JournalRead(uid).filter(function(x){
+    return !(x&&x.workout&&String(x.workout.workoutId||"")===String(workoutId||""));
+  });
+  gl069JournalWrite(uid,arr);
+}
+function gl069FinishStatus(text,state){
+  try{
+    var app=document.getElementById("app");
+    if(!app)return;
+    var el=document.getElementById("glFinishSaveStatus");
+    if(!el){
+      el=document.createElement("div");
+      el.id="glFinishSaveStatus";
+      app.insertBefore(el,app.firstChild);
+    }
+    el.className="gl-finish-save-status "+String(state||"pending");
+    el.textContent=String(text||"");
+  }catch(e){}
+}
+
+async function gl069CheckpointUpsert(workout){
+  if(!navigator.onLine)return false;
+  var s=await glEnsureSession();
+  if(!s||!s.user||!s.user.id)return false;
+  var wid=gl069WorkoutId(workout);
+  try{
+    await glApi("/rest/v1/workout_finish_checkpoints?on_conflict=user_id,workout_id",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Prefer":"resolution=merge-duplicates,return=minimal"
+      },
+      body:JSON.stringify({
+        user_id:s.user.id,
+        workout_id:wid,
+        workout:workout,
+        workout_date:glDateStorage(workout.date||"")||null,
+        training:String(workout.training||""),
+        gym:String(workout.gym||""),
+        updated_at:new Date().toISOString()
+      })
+    },s);
+    return true;
+  }catch(e){
+    console.log("Workout checkpoint upsert:",e);
+    return false;
+  }
+}
+async function gl069CheckpointDelete(workoutId){
+  if(!navigator.onLine)return false;
+  var s=await glEnsureSession();
+  if(!s||!s.user||!s.user.id)return false;
+  try{
+    await glApi(
+      "/rest/v1/workout_finish_checkpoints?user_id=eq."+encodeURIComponent(s.user.id)+
+      "&workout_id=eq."+encodeURIComponent(String(workoutId||"")),
+      {method:"DELETE",headers:{"Prefer":"return=minimal"}},s
+    );
+    return true;
+  }catch(e){
+    console.log("Workout checkpoint delete:",e);
+    return false;
+  }
+}
+async function gl069CheckpointList(){
+  if(!navigator.onLine)return [];
+  var s=await glEnsureSession();
+  if(!s||!s.user||!s.user.id)return [];
+  try{
+    var rows=await glApi(
+      "/rest/v1/workout_finish_checkpoints?select=workout_id,workout,updated_at&order=updated_at.desc&limit=20",
+      {method:"GET"},s
+    );
+    return Array.isArray(rows)?rows:[];
+  }catch(e){
+    console.log("Workout checkpoint list:",e);
+    return [];
+  }
+}
+async function gl069RemoteContainsWorkout(workout){
+  if(!navigator.onLine)return false;
+  var s=await glEnsureSession();
+  if(!s||!s.user||!s.user.id)return false;
+  try{
+    var remote=await glFetchRemoteState(s.user.id);
+    var found=gl069HasWorkout(remote&&remote.state&&remote.state.logs,workout);
+    if(found&&remote.sync_revision!=null){
+      try{localStorage.setItem(glRevisionKey(s.user.id),String(remote.sync_revision));}catch(e){}
+    }
+    return found;
+  }catch(e){return false;}
+}
+
+async function gl069FinalizeCompletedWorkout(workout){
+  var s=glSession(),uid=s&&s.user&&s.user.id;
+  if(!uid||!workout)return false;
+
+  gl069FinishStatus(
+    navigator.onLine
+      ?"Zapisano lokalnie • zabezpieczam trening w Supabase…"
+      :"Zapisano lokalnie • offline — synchronizacja dokończy się automatycznie.",
+    "pending"
+  );
+
+  if(!navigator.onLine)return false;
+
+  // Independent per-workout cloud checkpoint first.
+  var checkpointOk=await gl069CheckpointUpsert(workout);
+
+  // Then push the complete application state immediately (do not wait for debounce).
+  var stateOk=await glPushCloudState();
+
+  // Verify that the exact workout made it into the main cloud state.
+  var verified=false;
+  if(stateOk)verified=await gl069RemoteContainsWorkout(workout);
+
+  // One retry if the full-state write returned but verification did not find the log.
+  if(!verified){
+    try{
+      if(!gl069HasWorkout(data.logs,workout)){
+        data.logs.unshift(workout);
+        try{recomputeLastByExercise();}catch(e){}
+        safeSave();
+      }
+      stateOk=await glPushCloudState();
+      if(stateOk)verified=await gl069RemoteContainsWorkout(workout);
+    }catch(e){}
+  }
+
+  if(verified){
+    await gl069CheckpointDelete(workout.workoutId);
+    gl069JournalRemove(uid,workout.workoutId);
+    gl069FinishStatus("Trening bezpiecznie zapisany w Supabase.", "ok");
+    return true;
+  }
+
+  // Keep both the local journal and (when it succeeded) cloud checkpoint.
+  gl069FinishStatus(
+    checkpointOk
+      ?"Trening ma kopię awaryjną w chmurze. Pełna synchronizacja dokończy się automatycznie."
+      :"Trening zapisany lokalnie. Synchronizacja dokończy się automatycznie po odzyskaniu połączenia.",
+    "bad"
+  );
+  return false;
+}
+
+/* Final wrapper around ALL owner/managed finish modes.
+   The journal is written synchronously before any existing finish code runs. */
+var gl069BaseFinishWorkout=window.finishWorkout;
+window.finishWorkout=function(){
+  if(!current)return gl069BaseFinishWorkout.apply(this,arguments);
+
+  var s=glSession(),uid=s&&s.user&&s.user.id;
+  var nowIso=new Date().toISOString();
+
+  gl069WorkoutId(current);
+  if(!current.finishedAt)current.finishedAt=nowIso;
+  if(current.createdAt){
+    try{
+      var seconds=Math.max(0,Math.round((new Date(current.finishedAt)-new Date(current.createdAt))/1000));
+      if(isFinite(seconds))current.durationSeconds=seconds;
+    }catch(e){}
+  }
+
+  var snap=null;
+  try{snap=JSON.parse(JSON.stringify(current));}catch(e){snap=current;}
+
+  if(uid&&snap)gl069JournalAdd(uid,snap);
+
+  var result=gl069BaseFinishWorkout.apply(this,arguments);
+
+  // Ensure the already-finalized log carries the stable ID/timing snapshot.
+  try{
+    if(snap&&!gl069HasWorkout(data.logs,snap)){
+      data.logs.unshift(snap);
+      data.draft=null;
+      try{recomputeLastByExercise();}catch(e){}
+      safeSave();
+    }else if(snap){
+      var saved=(data.logs||[]).find(function(x){return gl069SameWorkout(x,snap);});
+      if(saved){
+        saved.workoutId=snap.workoutId;
+        if(!saved.finishedAt)saved.finishedAt=snap.finishedAt;
+        if(saved.durationSeconds==null&&snap.durationSeconds!=null)saved.durationSeconds=snap.durationSeconds;
+        safeSave();
+      }
+    }
+  }catch(e){}
+
+  setTimeout(function(){gl069FinalizeCompletedWorkout(snap);},0);
+  return result;
+};
+finishWorkout=window.finishWorkout;
+
+/* Recover pending completed workouts after login/cloud load.
+   This is the safety net for users who have no end-of-workout ChatGPT report. */
+async function gl069RecoverPendingWorkouts(){
+  var s=glSession();
+  if(!GL_AUTH_READY||!s||!s.user||!s.user.id)return false;
+  var uid=s.user.id,all=[],seen={};
+
+  gl069JournalRead(uid).forEach(function(entry){
+    var w=entry&&entry.workout;if(!w)return;
+    var id=gl069WorkoutId(w);if(!seen[id]){seen[id]=1;all.push(w);}
+  });
+
+  if(navigator.onLine){
+    var cloud=await gl069CheckpointList();
+    cloud.forEach(function(row){
+      var w=row&&row.workout;if(!w)return;
+      if(!w.workoutId&&row.workout_id)w.workoutId=row.workout_id;
+      var id=gl069WorkoutId(w);if(!seen[id]){seen[id]=1;all.push(w);}
+    });
+  }
+
+  if(!all.length)return false;
+
+  var changed=false;
+  all.forEach(function(w){
+    if(!gl069HasWorkout(data.logs,w)){
+      data.logs.unshift(w);
+      changed=true;
+    }
+  });
+
+  if(changed){
+    try{recomputeLastByExercise();}catch(e){}
+    safeSave();
+  }
+
+  if(!navigator.onLine){
+    if(changed&&!current)home();
+    return changed;
+  }
+
+  await glPushCloudState();
+
+  for(var i=0;i<all.length;i++){
+    var w=all[i];
+    if(await gl069RemoteContainsWorkout(w)){
+      await gl069CheckpointDelete(w.workoutId);
+      gl069JournalRemove(uid,w.workoutId);
+    }
+  }
+
+  if(changed&&!current)home();
+  return changed;
+}
+
+/* Run recovery after the normal authentication/bootstrap has loaded whichever
+   state (local or remote) won the ordinary sync decision. */
+var gl069BaseAfterAuthenticated=glAfterAuthenticated;
+glAfterAuthenticated=async function(s,fromLogin){
+  var result=await gl069BaseAfterAuthenticated.apply(this,arguments);
+  try{await gl069RecoverPendingWorkouts();}catch(e){console.log("Workout recovery:",e);}
+  return result;
+};
+
+/* Best-effort page-close upload of the newest pending workout checkpoint.
+   The request is small and uses keepalive; the local journal remains the
+   authoritative fallback if iOS kills the page before this completes. */
+function gl069KeepaliveCheckpoint(){
+  try{
+    if(!navigator.onLine)return;
+    var s=glSession();
+    if(!s||!s.user||!s.user.id||!s.access_token)return;
+    var arr=gl069JournalRead(s.user.id);
+    if(!arr.length)return;
+    var w=arr[arr.length-1]&&arr[arr.length-1].workout;
+    if(!w)return;
+    var wid=gl069WorkoutId(w);
+    fetch(GL_SUPABASE_URL+"/rest/v1/workout_finish_checkpoints?on_conflict=user_id,workout_id",{
+      method:"POST",
+      keepalive:true,
+      headers:{
+        "apikey":GL_SUPABASE_KEY,
+        "Authorization":"Bearer "+s.access_token,
+        "Content-Type":"application/json",
+        "Prefer":"resolution=merge-duplicates,return=minimal"
+      },
+      body:JSON.stringify({
+        user_id:s.user.id,
+        workout_id:wid,
+        workout:w,
+        workout_date:glDateStorage(w.date||"")||null,
+        training:String(w.training||""),
+        gym:String(w.gym||""),
+        updated_at:new Date().toISOString()
+      })
+    }).catch(function(){});
+  }catch(e){}
+}
+window.addEventListener("pagehide",gl069KeepaliveCheckpoint);
+window.addEventListener("visibilitychange",function(){
+  if(document.visibilityState==="hidden")gl069KeepaliveCheckpoint();
+});
+
+/* Prefer explicit durationSeconds when a recovered/archived workout has it. */
+var gl069BaseDurationText=gl066DurationText;
+gl066DurationText=function(log){
+  if(log&&log.durationSeconds!=null){
+    var sec=Math.max(0,Number(log.durationSeconds)||0);
+    var h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=Math.floor(sec%60);
+    return String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+  }
+  return gl069BaseDurationText.apply(this,arguments);
+};
+
+
+
+/* ======================================================================
+   0.68.2 — REST TIMER WEB PUSH
+   - PWA Web Push subscription per device
+   - Supabase timer row per rest period
+   - server-side scheduled push even while GymLog is in background
+   - foreground timer/vibration remains
+   ====================================================================== */
+
+var GL_PUSH_VAPID_PUBLIC="BP-y7e_DUm2g75e5CP4cyAEjj0rhnAKAEaHegE1ZbGhdLcwKPHYPhaCcmiuXGKk3tvZVNY7T3Vx1txZ4YkxHZ4c";
+var GL_PUSH_DEVICE_KEY="GYMLOG_CRUSH_PUSH_DEVICE_ID_V1";
+var GL_PUSH_ENABLED_PREFIX="GYMLOG_CRUSH_PUSH_ENABLED_";
+var GL_PUSH_ACTIVE_PREFIX="GYMLOG_CRUSH_ACTIVE_REST_PUSH_";
+var GL_REST_PUSH_GENERATION=0;
+
+function gl070PushSupported(){
+  return !!(window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window);
+}
+function gl070DeviceId(){
+  var id="";
+  try{id=localStorage.getItem(GL_PUSH_DEVICE_KEY)||"";}catch(e){}
+  if(id)return id;
+  try{id=(crypto&&crypto.randomUUID)?crypto.randomUUID():"dev_"+Date.now()+"_"+Math.random().toString(36).slice(2);}
+  catch(e){id="dev_"+Date.now()+"_"+Math.random().toString(36).slice(2);}
+  try{localStorage.setItem(GL_PUSH_DEVICE_KEY,id);}catch(e){}
+  return id;
+}
+function gl070PushEnabledKey(uid){return GL_PUSH_ENABLED_PREFIX+String(uid||"");}
+function gl070ActiveKey(uid){return GL_PUSH_ACTIVE_PREFIX+String(uid||"");}
+function gl070PushEnabled(){
+  var s=glSession(),uid=s&&s.user&&s.user.id;
+  if(!uid||!gl070PushSupported()||Notification.permission!=="granted")return false;
+  try{return localStorage.getItem(gl070PushEnabledKey(uid))==="1";}catch(e){return false;}
+}
+function gl070SetPushEnabled(uid,on){
+  try{
+    if(on)localStorage.setItem(gl070PushEnabledKey(uid),"1");
+    else localStorage.removeItem(gl070PushEnabledKey(uid));
+  }catch(e){}
+}
+function gl070ReadActive(){
+  var s=glSession(),uid=s&&s.user&&s.user.id;if(!uid)return null;
+  try{var x=localStorage.getItem(gl070ActiveKey(uid));return x?JSON.parse(x):null;}catch(e){return null;}
+}
+function gl070WriteActive(v){
+  var s=glSession(),uid=s&&s.user&&s.user.id;if(!uid)return;
+  try{
+    if(v)localStorage.setItem(gl070ActiveKey(uid),JSON.stringify(v));
+    else localStorage.removeItem(gl070ActiveKey(uid));
+  }catch(e){}
+}
+function gl070B64ToU8(base64String){
+  var padding="=".repeat((4-base64String.length%4)%4);
+  var base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+  var raw=atob(base64),out=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+  return out;
+}
+async function gl070SwRegistration(){
+  if(!("serviceWorker" in navigator))throw new Error("Service Worker niedostępny");
+  try{await navigator.serviceWorker.register("./sw.js");}catch(e){}
+  return await navigator.serviceWorker.ready;
+}
+async function gl070UpsertSubscription(sub){
+  var s=await glEnsureSession();
+  if(!s||!s.user||!s.user.id)throw new Error("Brak aktywnej sesji");
+  var j=sub.toJSON(),keys=j.keys||{};
+  var rows=await glApi("/rest/v1/push_subscriptions?on_conflict=user_id,device_id",{
+    method:"POST",
+    keepalive:true,
+    headers:{
+      "Content-Type":"application/json",
+      "Prefer":"resolution=merge-duplicates,return=representation"
+    },
+    body:JSON.stringify({
+      user_id:s.user.id,
+      device_id:gl070DeviceId(),
+      endpoint:j.endpoint||sub.endpoint,
+      p256dh:keys.p256dh||"",
+      auth:keys.auth||"",
+      user_agent:String(navigator.userAgent||"").slice(0,500),
+      active:true,
+      updated_at:new Date().toISOString()
+    })
+  },s);
+  return rows&&rows[0]?rows[0]:null;
+}
+async function gl070EnsureSubscription(requestPermission){
+  if(!gl070PushSupported())throw new Error("To urządzenie/przeglądarka nie obsługuje Web Push w tym trybie.");
+  var permission=Notification.permission;
+  if(permission!=="granted" && requestPermission){
+    permission=await Notification.requestPermission();
+  }
+  if(permission!=="granted"){
+    if(permission==="denied")throw new Error("Powiadomienia są zablokowane w ustawieniach systemu.");
+    throw new Error("Nie przyznano zgody na powiadomienia.");
+  }
+  var reg=await gl070SwRegistration();
+  var sub=await reg.pushManager.getSubscription();
+  if(!sub){
+    sub=await reg.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey:gl070B64ToU8(GL_PUSH_VAPID_PUBLIC)
+    });
+  }
+  await gl070UpsertSubscription(sub);
+  var s=glSession();if(s&&s.user)gl070SetPushEnabled(s.user.id,true);
+  return sub;
+}
+
+window.glEnableRestPush=async function(){
+  try{
+    await gl070EnsureSubscription(true);
+    await glPushSettingsView();
+  }catch(e){
+    alert(String(e.message||e));
+    await glPushSettingsView();
+  }
+};
+window.glDisableRestPush=async function(){
+  var s=await glEnsureSession();
+  try{
+    if("serviceWorker" in navigator){
+      var reg=await gl070SwRegistration();
+      var sub=await reg.pushManager.getSubscription();
+      if(sub)await sub.unsubscribe();
+    }
+  }catch(e){}
+  try{
+    if(s&&s.user){
+      await glApi("/rest/v1/push_subscriptions?user_id=eq."+encodeURIComponent(s.user.id)+"&device_id=eq."+encodeURIComponent(gl070DeviceId()),{
+        method:"DELETE",headers:{"Prefer":"return=minimal"}
+      },s);
+      gl070SetPushEnabled(s.user.id,false);
+    }
+  }catch(e){}
+  await gl070CancelActiveRestPush();
+  await glPushSettingsView();
+};
+
+window.glPushSettingsView=async function(){
+  stopTimer();luxStopWorkoutClock();
+  var support=gl070PushSupported();
+  var permission=support?Notification.permission:"unsupported";
+  var s=glSession(),uid=s&&s.user&&s.user.id;
+  var enabled=!!(uid&&support&&permission==="granted"&&gl070PushEnabled());
+  var actualSub=false;
+  if(support&&permission==="granted"){
+    try{var reg=await gl070SwRegistration();actualSub=!!(await reg.pushManager.getSubscription());}catch(e){}
+  }
+  enabled=enabled&&actualSub;
+
+  var dot=enabled?"ok":(permission==="denied"?"bad":"");
+  var status=enabled?"Włączone":(permission==="denied"?"Zablokowane":"Wyłączone");
+  var info="";
+  if(!support){
+    info="Na iPhonie powiadomienia Web Push wymagają uruchamiania GymLog CRUSH jako aplikacji dodanej do ekranu początkowego. Na nieobsługiwanym trybie przeglądarki przycisk nie zadziała.";
+  }else if(permission==="denied"){
+    info="System zablokował powiadomienia. Włącz je dla GymLog CRUSH w ustawieniach powiadomień telefonu, a następnie wróć tutaj.";
+  }else{
+    info="Po zapisaniu serii koniec przerwy jest zapisywany w Supabase. Gdy GymLog jest w tle i jesteś np. na Instagramie, telefon dostanie systemowe powiadomienie o końcu przerwy.";
+  }
+
+  var actions=enabled
+    ? "<button class='gl-push-test' onclick='glTestRestPush()'>TEST — POWIADOMIENIE ZA 5 SEKUND</button><button class='secondary' onclick='glDisableRestPush()'>WYŁĄCZ POWIADOMIENIA</button>"
+    : "<button onclick='glEnableRestPush()'"+(support&&permission!=="denied"?"":" disabled")+">WŁĄCZ POWIADOMIENIA O PRZERWACH</button>";
+
+  render("<h1>Powiadomienia</h1><button class='secondary topMenu' onclick='luxMoreView()'>← Więcej</button>"+
+    "<div class='card gl-push-hero'><div class='lux-section-title'>Koniec przerwy</div>"+
+      "<div class='gl-push-status'><div class='gl-push-status-left'><i class='gl-push-dot "+dot+"'></i><span>"+status+"</span></div><div class='small'>"+(permission==="granted"?"zgoda systemowa":"")+"</div></div>"+
+      "<div class='gl-push-help'>"+esc(info)+"</div>"+
+      actions+
+      "<div class='gl-push-note'>Powiadomienie poza aplikacją wymaga połączenia z internetem. Wibracja/haptyka powiadomienia zależy również od ustawień dźwięków i powiadomień w telefonie.</div>"+
+    "</div>"+luxBottomNav("more"));
+};
+
+async function gl070InsertRestTimer(sec,endAt,exerciseName){
+  if(!gl070PushEnabled()||!navigator.onLine)return null;
+  var s=await glEnsureSession();if(!s||!s.user||!s.user.id)return null;
+  var workoutId="";
+  try{if(current)workoutId=gl069WorkoutId(current);}catch(e){}
+  var rows=await glApi("/rest/v1/rest_timer_notifications",{
+    method:"POST",
+    keepalive:true,
+    headers:{"Content-Type":"application/json","Prefer":"return=representation"},
+    body:JSON.stringify({
+      user_id:s.user.id,
+      device_id:gl070DeviceId(),
+      workout_id:workoutId||null,
+      training:current?String(current.training||""):"",
+      exercise:String(exerciseName||""),
+      end_at:new Date(endAt).toISOString(),
+      status:"pending"
+    })
+  },s);
+  return rows&&rows[0]?rows[0]:null;
+}
+async function gl070CancelTimerId(id){
+  if(!id||!navigator.onLine)return false;
+  try{
+    var s=await glEnsureSession();if(!s)return false;
+    await glApi("/rest/v1/rest_timer_notifications?id=eq."+encodeURIComponent(id),{
+      method:"PATCH",
+      keepalive:true,
+      headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+      body:JSON.stringify({status:"cancelled",updated_at:new Date().toISOString()})
+    },s);
+    return true;
+  }catch(e){return false;}
+}
+async function gl070CancelActiveRestPush(){
+  GL_REST_PUSH_GENERATION++;
+  var active=gl070ReadActive();
+  gl070WriteActive(null);
+  if(active&&active.id)await gl070CancelTimerId(active.id);
+  return true;
+}
+function gl070ClearActiveLocal(){
+  gl070WriteActive(null);
+}
+async function gl070ScheduleRestPush(sec,endAt,exerciseName){
+  if(!gl070PushEnabled())return null;
+  var generation=++GL_REST_PUSH_GENERATION;
+  try{
+    var row=await gl070InsertRestTimer(sec,endAt,exerciseName);
+    if(!row||!row.id)return null;
+    if(generation!==GL_REST_PUSH_GENERATION){
+      await gl070CancelTimerId(row.id);
+      return null;
+    }
+    gl070WriteActive({
+      id:row.id,
+      endAt:new Date(endAt).toISOString(),
+      sec:Number(sec||0),
+      exercise:String(exerciseName||"")
+    });
+    return row;
+  }catch(e){
+    console.log("Rest push schedule:",e);
+    return null;
+  }
+}
+
+window.glTestRestPush=async function(){
+  if(!gl070PushEnabled()){alert("Najpierw włącz powiadomienia.");return;}
+  try{
+    await gl070CancelActiveRestPush();
+    var row=await gl070InsertRestTimer(5,Date.now()+5000,"TEST POWIADOMIENIA");
+    if(!row||!row.id)throw new Error("Nie udało się zaplanować testu.");
+    alert("Test zaplanowany. Za około 5 sekund powinno pojawić się powiadomienie GymLog CRUSH.");
+  }catch(e){alert(String(e.message||e));}
+};
+
+/* Replace the rest countdown with a deadline-based timer + server push.
+   Natural expiry does NOT cancel the cloud notification. Manual stop does. */
+function gl070ClearLocalRestInterval(){
+  if(timer){clearInterval(timer);timer=null;}
+}
+stopTimer=function(){
+  gl070ClearLocalRestInterval();
+  gl070CancelActiveRestPush();
+};
+window.stopTimer=stopTimer;
+
+startRest=function(sec){
+  gl070ClearLocalRestInterval();
+  gl070CancelActiveRestPush();
+
+  sec=Math.max(1,Number(sec||0));
+  var end=Date.now()+sec*1000;
+  var e=current&&current.exercises&&current.exercises[idx];
+  var exerciseName=e&&e.name?e.name:"";
+
+  var el=document.getElementById("timer");
+  if(el){
+    el.innerText=fmt(sec);
+    el.className="timer running";
+  }
+
+  gl070ScheduleRestPush(sec,end,exerciseName);
+
+  timer=setInterval(function(){
+    var left=Math.ceil((end-Date.now())/1000);
+    var node=document.getElementById("timer");
+    if(left<=0){
+      gl070ClearLocalRestInterval();
+      gl070ClearActiveLocal();
+      if(node){
+        node.innerText="GOTOWE";
+        node.className="timer ready";
+      }
+      try{if(navigator.vibrate)navigator.vibrate([250,120,250,120,350]);}catch(e){}
+      return;
+    }
+    if(node){
+      node.innerText=fmt(left);
+      node.className="timer running";
+    }
+  },250);
+};
+
+window.restartTimer=function(){
+  if(!current)return;
+  var e=current.exercises[idx];
+  startRest(e.autoRestRecord?180:e.rest);
+};
+
+/* Keep the subscription fresh after a normal authenticated load,
+   without asking for permission again. */
+var gl070BaseAfterAuthenticated=glAfterAuthenticated;
+glAfterAuthenticated=async function(s,fromLogin){
+  var result=await gl070BaseAfterAuthenticated.apply(this,arguments);
+  try{
+    if(s&&s.user&&gl070PushEnabled())await gl070EnsureSubscription(false);
+  }catch(e){console.log("Push refresh:",e);}
+  return result;
+};
 
 
 runInstalledAppUpdates();

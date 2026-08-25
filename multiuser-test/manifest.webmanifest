@@ -1,12 +1,10 @@
 {
-  "name": "GymLog CRUSH — Multi User",
+  "name": "GymLog CRUSH",
   "short_name": "GymLog CRUSH",
-  "description": "GymLog CRUSH multi-user build with account themes",
-  "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#050505",
+  "background_color": "#070707",
   "theme_color": "#070707",
   "icons": [
     {

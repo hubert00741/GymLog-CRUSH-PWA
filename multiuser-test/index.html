@@ -1016,6 +1016,182 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
 .gl-push-test-result-0683.wait{color:#ffe26b;border-color:rgba(255,220,70,.22)}
 
 </style>
+<style>
+
+/* =====================================================================
+   0.68.5 — TRUE START DASHBOARD
+   The old Start form becomes Workout Setup. Home becomes a real dashboard.
+   ===================================================================== */
+.gl085-dashboard{padding-bottom:4px}
+.gl085-top{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:2px 0 16px;
+}
+.gl085-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.gl085-brand img{width:136px;max-width:46vw;height:auto;display:block}
+.gl085-account{display:flex;align-items:center;gap:9px;min-width:0}
+.gl085-account-copy{text-align:right;min-width:0}
+.gl085-account-copy b{
+  display:block;font-size:12px;line-height:1.1;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;max-width:128px
+}
+.gl085-account-copy span{display:block;color:#74767c;font-size:9px;margin-top:3px}
+.gl085-avatar{
+  width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  font-size:11px;font-weight:950;letter-spacing:-.02em;color:#fff;
+  background:linear-gradient(145deg,var(--account-accent,#ff2738),#55101a);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 8px 22px rgba(0,0,0,.32)
+}
+.gl085-hero{
+  position:relative;overflow:hidden;border-radius:24px;padding:19px 18px 18px;
+  min-height:202px;border:1px solid rgba(255,255,255,.09);
+  background:
+    radial-gradient(180px 160px at 91% 14%,rgba(255,255,255,.065),transparent 68%),
+    radial-gradient(210px 180px at 93% 70%,color-mix(in srgb,var(--account-accent,#ff2738) 17%,transparent),transparent 68%),
+    linear-gradient(145deg,#151619 0%,#0d0e11 60%,#0a0a0c 100%);
+  box-shadow:0 18px 46px rgba(0,0,0,.24)
+}
+.gl085-hero:after{
+  content:"CRUSH";position:absolute;right:-13px;bottom:-17px;
+  font-size:72px;line-height:1;font-weight:1000;letter-spacing:-.08em;
+  color:rgba(255,255,255,.026);pointer-events:none
+}
+.gl085-hero-kicker{
+  position:relative;z-index:1;font-size:10px;font-weight:900;letter-spacing:.12em;
+  color:#85878d;text-transform:uppercase
+}
+.gl085-hero h1{
+  position:relative;z-index:1;margin:7px 0 4px!important;padding:0!important;
+  font-size:31px!important;line-height:1.02!important;letter-spacing:-.055em!important
+}
+.gl085-hero h1:after{display:none!important}
+.gl085-hero-sub{
+  position:relative;z-index:1;color:#9a9ca2;font-size:12px;line-height:1.35;
+  min-height:17px
+}
+.gl085-hero-meta{
+  position:relative;z-index:1;display:flex;gap:7px;flex-wrap:wrap;margin-top:12px
+}
+.gl085-chip{
+  display:inline-flex;align-items:center;min-height:27px;padding:0 9px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.075);background:rgba(255,255,255,.035);
+  color:#b7b9be;font-size:9px;font-weight:800
+}
+.gl085-hero-actions{
+  position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(108px,.65fr);
+  gap:8px;margin-top:17px
+}
+.gl085-start-btn{
+  min-height:50px!important;margin:0!important;border-radius:15px!important;
+  font-size:13px!important;font-weight:950!important;letter-spacing:.025em!important;
+  background:linear-gradient(135deg,var(--account-accent,#ff2738),#8d1127)!important;
+  border:1px solid color-mix(in srgb,var(--account-accent,#ff2738) 70%,#fff)!important;
+  box-shadow:0 11px 27px color-mix(in srgb,var(--account-accent,#ff2738) 19%,transparent)!important
+}
+.gl085-plan-btn{
+  min-height:50px!important;margin:0!important;border-radius:15px!important;
+  font-size:11px!important
+}
+.gl085-section-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin:20px 2px 9px
+}
+.gl085-section-head h2{
+  margin:0!important;font-size:14px!important;letter-spacing:-.025em!important
+}
+.gl085-text-btn{
+  width:auto!important;margin:0!important;padding:6px 0!important;min-height:0!important;
+  border:0!important;background:none!important;box-shadow:none!important;color:var(--account-accent,#ff2738)!important;
+  font-size:10px!important;font-weight:850!important
+}
+.gl085-metrics{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px
+}
+.gl085-metric{
+  min-width:0;padding:12px 9px 10px;border-radius:15px;
+  border:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(155deg,#121316,#0d0e10)
+}
+.gl085-metric-label{
+  color:#72747a;font-size:8px;text-transform:uppercase;letter-spacing:.07em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.gl085-metric-value{
+  margin-top:7px;font-size:18px;line-height:1;font-weight:950;letter-spacing:-.045em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.gl085-metric-value small{font-size:9px;color:#888a90;font-weight:700;letter-spacing:0}
+.gl085-metric-note{
+  color:#686a70;font-size:8px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.gl085-week{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px
+}
+.gl085-week-card{
+  padding:13px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.07);
+  background:#0e0f11;display:flex;align-items:center;justify-content:space-between;gap:12px
+}
+.gl085-week-card span{display:block;color:#777980;font-size:9px}
+.gl085-week-card b{display:block;font-size:20px;line-height:1;font-weight:950;margin-top:5px;letter-spacing:-.045em}
+.gl085-week-icon{
+  width:35px;height:35px;border-radius:12px;display:grid;place-items:center;
+  color:var(--account-accent,#ff2738);font-size:15px;font-weight:950;
+  background:color-mix(in srgb,var(--account-accent,#ff2738) 9%,#101114);
+  border:1px solid color-mix(in srgb,var(--account-accent,#ff2738) 17%,transparent)
+}
+.gl085-recent-list{display:grid;gap:7px}
+.gl085-recent{
+  width:100%!important;margin:0!important;padding:0!important;text-align:left!important;
+  min-height:0!important;border-radius:16px!important;overflow:hidden!important;
+  background:linear-gradient(155deg,#111215,#0d0e10)!important;
+  border:1px solid rgba(255,255,255,.07)!important;box-shadow:none!important
+}
+.gl085-recent-inner{
+  padding:12px 13px;display:grid;grid-template-columns:39px minmax(0,1fr) auto;
+  gap:11px;align-items:center
+}
+.gl085-recent-icon{
+  width:39px;height:39px;border-radius:13px;display:grid;place-items:center;
+  color:var(--account-accent,#ff2738);font-weight:950;font-size:12px;
+  background:color-mix(in srgb,var(--account-accent,#ff2738) 9%,#111216);
+  border:1px solid color-mix(in srgb,var(--account-accent,#ff2738) 16%,transparent)
+}
+.gl085-recent-copy{min-width:0}
+.gl085-recent-name{
+  color:#f1f2f3;font-size:12px;font-weight:900;line-height:1.15;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.gl085-recent-meta{
+  color:#76787e;font-size:9px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.gl085-recent-side{text-align:right;min-width:58px}
+.gl085-recent-date{color:#a4a6ab;font-size:9px;white-space:nowrap}
+.gl085-recent-duration{color:#67696f;font-size:8px;margin-top:4px}
+.gl085-empty{
+  padding:19px 15px;border-radius:16px;text-align:center;color:#7c7e84;font-size:11px;
+  border:1px dashed rgba(255,255,255,.09);background:#0b0c0e
+}
+.gl085-setup-back{
+  width:auto!important;margin:0 0 11px!important;padding:9px 12px!important;
+  min-height:38px!important;border-radius:12px!important
+}
+.gl085-draft-banner{
+  margin-top:10px;padding:10px 11px;border-radius:12px;
+  color:#ffd0d6;font-size:10px;font-weight:800;
+  background:color-mix(in srgb,var(--account-accent,#ff2738) 8%,#111216);
+  border:1px solid color-mix(in srgb,var(--account-accent,#ff2738) 20%,transparent)
+}
+.theme-female .gl085-avatar{
+  background:linear-gradient(145deg,#df83ac,#8f456d)
+}
+@media(max-width:430px){
+  .gl085-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .gl085-hero-actions{grid-template-columns:1fr}
+  .gl085-plan-btn{min-height:42px!important}
+}
+
+</style>
 </head>
 
 <body>
@@ -3600,7 +3776,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.68.4";
+VERSION = "BETA 0.68.5";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -8206,6 +8382,244 @@ document.addEventListener("visibilitychange",function(){
     gl0683ForegroundAlert(name);
   }
 });
+
+
+
+/* ======================================================================
+   0.68.5 — REAL START DASHBOARD
+   Flow:
+   login -> dashboard -> "Rozpocznij trening" -> existing workout setup
+   -> active workout.
+   Existing admin/managed setup logic is preserved untouched.
+   ====================================================================== */
+
+var GL085_SETUP_MODE=false;
+var gl085WorkoutSetupRenderer=window.home;
+
+function gl085Profile(){
+  return window.GL_PROFILE||glSavedProfile()||{};
+}
+function gl085DisplayName(){
+  var p=gl085Profile();
+  return String(p.display_name||p.username||"GymLog").trim()||"GymLog";
+}
+function gl085FirstName(){
+  return gl085DisplayName().split(/\s+/)[0]||"GymLog";
+}
+function gl085Initials(){
+  var parts=gl085DisplayName().split(/\s+/).filter(Boolean);
+  if(!parts.length)return "GL";
+  return (parts[0].charAt(0)+(parts.length>1?parts[parts.length-1].charAt(0):parts[0].charAt(1)||"")).toUpperCase();
+}
+function gl085PlanNames(){
+  try{
+    if(glIsManagedUser())return glManagedPlanNames().slice();
+    if(typeof getPlanOrder==="function")return getPlanOrder().slice();
+  }catch(e){}
+  try{return Object.keys(PLANS||{});}catch(e){return [];}
+}
+function gl085NextPlan(){
+  var names=gl085PlanNames();
+  if(!names.length)return "";
+  var logs=data&&Array.isArray(data.logs)?data.logs:[];
+  var last="";
+  for(var i=0;i<logs.length;i++){
+    if(logs[i]&&names.indexOf(logs[i].training)>=0){last=logs[i].training;break;}
+  }
+  if(!last)return names[0];
+  var ix=names.indexOf(last);
+  return names[(ix+1)%names.length]||names[0];
+}
+function gl085PlanSub(plan){
+  var p=String(plan||"").toLowerCase();
+  if(p.indexOf("push")>=0)return "Klatka • Barki • Triceps";
+  if(p.indexOf("pull")>=0)return "Plecy • Tył barku • Biceps";
+  if(p.indexOf("nogi")>=0||p.indexOf("leg")>=0)return "Czwórki • Pośladek • Tył uda";
+  if(p.indexOf("upper")>=0)return "Góra ciała";
+  if(p.indexOf("poślad")>=0||p.indexOf("poslad")>=0)return "Pośladek • Tył uda";
+  if(p.indexOf("brzuch")>=0||p.indexOf("core")>=0)return "Core";
+  return "Twój plan treningowy";
+}
+function gl085DateMs(value){
+  var s="";
+  try{s=glDateStorage(value||"");}catch(e){s=String(value||"");}
+  var m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m)return NaN;
+  return Date.UTC(Number(m[1]),Number(m[2])-1,Number(m[3]));
+}
+function gl085Recent7Days(){
+  var now=gl085DateMs(today()),min=now-(6*86400000);
+  return (data.logs||[]).filter(function(l){
+    var t=gl085DateMs(l&&l.date);
+    return isFinite(t)&&t>=min&&t<=now+86399999;
+  });
+}
+function gl085WorkingSets7Days(){
+  var n=0;
+  gl085Recent7Days().forEach(function(l){
+    try{n+=Number(realWorkingSetsCount(l)||0);}catch(e){}
+  });
+  return n;
+}
+function gl085LatestWeight(){
+  try{
+    var r=gl068LatestWeightRecord(data);
+    if(r&&r.weight!==undefined&&r.weight!==null&&String(r.weight)!=="")return String(r.weight);
+  }catch(e){}
+  return String((data.lastMeta&&data.lastMeta.weight)||"");
+}
+function gl085Duration(log){
+  try{
+    if(typeof gl066DurationText==="function"){
+      var x=gl066DurationText(log);
+      if(x&&x!=="—"&&x!=="00:00:00")return x;
+    }
+  }catch(e){}
+  return "";
+}
+function gl085Gym(log){
+  try{
+    if(typeof getLogGymV31==="function")return getLogGymV31(log)||"";
+  }catch(e){}
+  return String(log&&log.gym||"");
+}
+function gl085RecentHtml(){
+  var logs=(data.logs||[]).slice(0,3);
+  if(!logs.length)return "<div class='gl085-empty'>Po pierwszym zakończonym treningu pojawi się tutaj historia aktywności.</div>";
+  var html="<div class='gl085-recent-list'>";
+  logs.forEach(function(l,i){
+    if(!l)return;
+    var gym=gl085Gym(l),dur=gl085Duration(l),date="";
+    try{date=glDateDisplay(l.date||"");}catch(e){date=String(l.date||"");}
+    var real=0;try{real=realWorkingSetsCount(l)||0;}catch(e){}
+    html+="<button class='gl085-recent' onclick='historyDetailsView("+i+",\"Wszystkie\")'>"+
+      "<span class='gl085-recent-inner'>"+
+        "<span class='gl085-recent-icon'>"+(String(l.training||"").toLowerCase().indexOf("nogi")>=0?"N":"II")+"</span>"+
+        "<span class='gl085-recent-copy'><span class='gl085-recent-name'>"+esc(l.training||"Trening")+"</span>"+
+          "<span class='gl085-recent-meta'>"+esc(gym||"—")+" • "+real+" serii roboczych</span></span>"+
+        "<span class='gl085-recent-side'><span class='gl085-recent-date'>"+esc(date||"—")+"</span>"+
+          "<span class='gl085-recent-duration'>"+esc(dur||"")+"</span></span>"+
+      "</span></button>";
+  });
+  return html+"</div>";
+}
+
+/* Bottom nav now has a real Start destination and a separate workout entry. */
+luxBottomNav=function(active){
+  var workoutActive=active==="workout"||GL085_SETUP_MODE;
+  return "<nav class='lux-bottom-nav'>"+
+    "<button class='"+(active==="start"&&!GL085_SETUP_MODE?"active":"")+"' onclick='home()'><span class='ico'>⌂</span><span>Start</span></button>"+
+    "<button class='"+(active==="history"?"active":"")+"' onclick='historyView()'><span class='ico'>↶</span><span>Historia</span></button>"+
+    "<button class='plus "+(workoutActive?"active":"")+"' onclick='glWorkoutSetupView()'>+</button>"+
+    "<button class='"+(active==="stats"?"active":"")+"' onclick='luxStatsView()'><span class='ico'>▥</span><span>Statystyki</span></button>"+
+    "<button class='"+(active==="more"?"active":"")+"' onclick='luxMoreView()'><span class='ico'>•••</span><span>Więcej</span></button>"+
+  "</nav>";
+};
+window.luxBottomNav=luxBottomNav;
+
+window.glWorkoutSetupView=function(){
+  stopTimer();luxStopWorkoutClock();
+  GL085_SETUP_MODE=true;
+  try{
+    gl085WorkoutSetupRenderer();
+  }finally{
+    GL085_SETUP_MODE=false;
+  }
+  try{
+    var app=document.getElementById("app");
+    if(!app)return;
+    var back=document.createElement("button");
+    back.type="button";
+    back.className="secondary gl085-setup-back";
+    back.textContent="← Start";
+    back.onclick=function(){home();};
+    var card=app.querySelector(".lux-start-card");
+    if(card)app.insertBefore(back,card);
+    else app.insertBefore(back,app.firstChild);
+  }catch(e){}
+};
+
+window.home=function(){
+  stopTimer();luxStopWorkoutClock();
+  glApplyProfileTheme();
+  try{gl068SyncCurrentWeight(data);}catch(e){}
+
+  var lm=data.lastMeta||{};
+  var nextPlan=gl085NextPlan();
+  var draft=data.draft||null;
+  var heroPlan=draft?String(draft.training||nextPlan||"Trening"):String(nextPlan||"Trening");
+  var buttonText=draft?"KONTYNUUJ TRENING":"ROZPOCZNIJ TRENING";
+  var buttonAction=draft?"resumeDraft()":"glWorkoutSetupView()";
+  var planNames=gl085PlanNames();
+
+  var weight=gl085LatestWeight();
+  var sleep=String(lm.sleep||"");
+  var mood=String(lm.mood||"");
+  var flags={};try{flags=glFlags()||{};}catch(e){}
+  var showWeight=flags.bodyWeight!==false;
+  var showMood=true;
+  try{if(glIsManagedUser()&&typeof gl064MoodEnabled==="function")showMood=gl064MoodEnabled();}catch(e){}
+
+  var metrics="";
+  if(showWeight){
+    metrics+="<div class='gl085-metric'><div class='gl085-metric-label'>Waga</div><div class='gl085-metric-value'>"+
+      esc(weight||"—")+"<small>"+(weight?" kg":"")+"</small></div><div class='gl085-metric-note'>Aktualna</div></div>";
+  }
+  metrics+="<div class='gl085-metric'><div class='gl085-metric-label'>Sen</div><div class='gl085-metric-value'>"+
+    esc(sleep||"—")+"<small>"+(sleep?" h":"")+"</small></div><div class='gl085-metric-note'>Ostatni wpis</div></div>";
+  if(showMood){
+    metrics+="<div class='gl085-metric'><div class='gl085-metric-label'>Samopoczucie</div><div class='gl085-metric-value'>"+
+      esc(mood||"—")+"<small>"+(mood?"/10":"")+"</small></div><div class='gl085-metric-note'>Ostatni wpis</div></div>";
+  }
+  metrics+="<div class='gl085-metric'><div class='gl085-metric-label'>Treningi</div><div class='gl085-metric-value'>"+
+    gl085Recent7Days().length+"<small> / 7 dni</small></div><div class='gl085-metric-note'>Ostatni tydzień</div></div>";
+
+  var draftBanner=draft
+    ?"<div class='gl085-draft-banner'>Masz rozpoczęty trening. Główny przycisk wznowi go dokładnie w miejscu, w którym został zapisany.</div>"
+    :"";
+
+  var setupSecondary=planNames.length
+    ?"<button class='secondary gl085-plan-btn' onclick='glWorkoutSetupView()'>USTAW TRENING</button>"
+    :"";
+
+  var html=
+    "<div class='gl085-dashboard'>"+
+      "<div class='gl085-top'>"+
+        "<div class='gl085-brand'><img src='header-logo.png?v=685' alt='GymLog CRUSH'></div>"+
+        "<div class='gl085-account'><div class='gl085-account-copy'><b>"+esc(gl085FirstName())+"</b><span>"+(glIsManagedUser()?"Profil treningowy":"Profil główny")+"</span></div><div class='gl085-avatar'>"+esc(gl085Initials())+"</div></div>"+
+      "</div>"+
+
+      "<section class='gl085-hero'>"+
+        "<div class='gl085-hero-kicker'>"+(draft?"Rozpoczęty trening":"Następny trening")+"</div>"+
+        "<h1>"+esc(heroPlan)+"</h1>"+
+        "<div class='gl085-hero-sub'>"+esc(gl085PlanSub(heroPlan))+"</div>"+
+        "<div class='gl085-hero-meta'>"+
+          "<span class='gl085-chip'>"+(draft?"W toku":"Gotowy do rozpoczęcia")+"</span>"+
+          (draft&&draft.gym?"<span class='gl085-chip'>"+esc(draft.gym)+"</span>":"")+
+        "</div>"+
+        draftBanner+
+        "<div class='gl085-hero-actions'>"+
+          "<button class='gl085-start-btn' onclick='"+buttonAction+"'>"+buttonText+" →</button>"+
+          setupSecondary+
+        "</div>"+
+      "</section>"+
+
+      "<div class='gl085-section-head'><h2>Podsumowanie</h2><button class='gl085-text-btn' onclick='luxStatsView()'>Statystyki →</button></div>"+
+      "<div class='gl085-metrics'>"+metrics+"</div>"+
+
+      "<div class='gl085-week'>"+
+        "<div class='gl085-week-card'><div><span>Treningi / 7 dni</span><b>"+gl085Recent7Days().length+"</b></div><div class='gl085-week-icon'>↗</div></div>"+
+        "<div class='gl085-week-card'><div><span>Serie robocze / 7 dni</span><b>"+gl085WorkingSets7Days()+"</b></div><div class='gl085-week-icon'>II</div></div>"+
+      "</div>"+
+
+      "<div class='gl085-section-head'><h2>Ostatnie treningi</h2><button class='gl085-text-btn' onclick='historyView()'>Zobacz wszystkie →</button></div>"+
+      gl085RecentHtml()+
+      "<div id='pwa-version'>"+esc(VERSION)+"</div>"+
+    "</div>"+luxBottomNav("start");
+
+  render(html);
+};
+home=window.home;
 
 
 runInstalledAppUpdates();

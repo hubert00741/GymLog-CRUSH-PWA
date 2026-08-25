@@ -1,4 +1,4 @@
-const CACHE='gymlog-crush-multiuser-test-v0682';
+const CACHE='gymlog-crush-multiuser-test-v0684';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png'];
 
 self.addEventListener('install',e=>{
@@ -39,6 +39,7 @@ self.addEventListener('push',event=>{
     tag:data.tag||'gymlog-rest',
     renotify:true,
     requireInteraction:false,
+    silent:false,
     vibrate:[250,120,250,120,350],
     data:{
       url:data.url||'./',

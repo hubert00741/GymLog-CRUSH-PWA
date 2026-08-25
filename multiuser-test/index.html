@@ -984,6 +984,38 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
 .gl-push-test{margin-top:8px}
 
 </style>
+<style>
+
+/* ===== 0.68.3 — foreground rest alert ===== */
+.gl-rest-alert-0683{
+  position:fixed;inset:0;z-index:999999;
+  display:flex;align-items:center;justify-content:center;
+  padding:22px;background:rgba(0,0,0,.76);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+.gl-rest-alert-card-0683{
+  width:min(420px,100%);border-radius:24px;padding:24px 20px 18px;
+  text-align:center;background:#0d0d0f;border:1px solid rgba(255,255,255,.13);
+  box-shadow:0 28px 90px rgba(0,0,0,.62);
+}
+.gl-rest-alert-icon-0683{
+  width:72px;height:72px;border-radius:50%;margin:0 auto 14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:30px;font-weight:950;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.13);
+}
+.gl-rest-alert-title-0683{font-size:28px;font-weight:950;letter-spacing:-.02em}
+.gl-rest-alert-sub-0683{font-size:13px;color:#bdbdbd;margin:8px auto 16px;line-height:1.4}
+.gl-rest-alert-card-0683 button{font-size:15px;padding:14px}
+.gl-push-test-result-0683{
+  margin-top:10px;padding:10px 12px;border-radius:12px;font-size:11px;font-weight:850;
+  border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)
+}
+.gl-push-test-result-0683.ok{color:#6ee99a;border-color:rgba(80,225,130,.25)}
+.gl-push-test-result-0683.bad{color:#ff7d8c;border-color:rgba(255,90,110,.25)}
+.gl-push-test-result-0683.wait{color:#ffe26b;border-color:rgba(255,220,70,.22)}
+
+</style>
 </head>
 
 <body>
@@ -3568,7 +3600,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.68.2";
+VERSION = "BETA 0.68.4";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -4949,8 +4981,11 @@ window.muscleCardForWorkout = function(log){ return window.muscleVisualHtml(log)
 var GL_SUPABASE_URL="https://dahilrvzyslrfmukdphn.supabase.co";
 var GL_SUPABASE_KEY="sb_publishable_RpMCuZ9cDNV1uUxHrIMnRQ_5uhq4wFt";
 var GL_SESSION_KEY="GYMLOG_CRUSH_SUPABASE_SESSION_V1";
+var GL_SESSION_BACKUP_KEY="GYMLOG_CRUSH_SUPABASE_SESSION_BACKUP_V1";
 var GL_PROFILE_KEY="GYMLOG_CRUSH_SUPABASE_PROFILE_V1";
 var GL_AUTH_READY=false;
+var GL_AUTH_TRANSIENT_ERROR=null;
+var GL_AUTH_RETRY_TIMER=null;
 var GL_CLOUD_APPLYING=false;
 var GL_CLOUD_TIMER=null;
 window.GL_PROFILE=null;
@@ -4976,11 +5011,32 @@ function glRevisionKey(uid){return "GYMLOG_CRUSH_CLOUD_REV_"+uid+"_V1";}
 function glGetJSON(key){try{var x=localStorage.getItem(key);return x?JSON.parse(x):null;}catch(e){return null;}}
 function glSetJSON(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
 function glSetSync(state,text){window.GL_SYNC_STATUS={state:state,text:text};}
-function glSession(){return glGetJSON(GL_SESSION_KEY);}
-function glSaveSession(s){glSetJSON(GL_SESSION_KEY,s);}
+function glSession(){
+  var s=glGetJSON(GL_SESSION_KEY);
+  if(!s){
+    s=glGetJSON(GL_SESSION_BACKUP_KEY);
+    if(s)glSetJSON(GL_SESSION_KEY,s);
+  }
+  return s;
+}
+function glSaveSession(s){
+  glSetJSON(GL_SESSION_KEY,s);
+  glSetJSON(GL_SESSION_BACKUP_KEY,s);
+  GL_AUTH_TRANSIENT_ERROR=null;
+}
 function glSavedProfile(){return glGetJSON(GL_PROFILE_KEY);}
 function glSaveProfile(p){glSetJSON(GL_PROFILE_KEY,p);}
-function glClearAuth(){try{localStorage.removeItem(GL_SESSION_KEY);localStorage.removeItem(GL_PROFILE_KEY);}catch(e){} window.GL_PROFILE=null;GL_AUTH_READY=false;document.body.classList.remove("theme-female");}
+function glClearAuth(){
+  try{
+    localStorage.removeItem(GL_SESSION_KEY);
+    localStorage.removeItem(GL_SESSION_BACKUP_KEY);
+    localStorage.removeItem(GL_PROFILE_KEY);
+  }catch(e){}
+  window.GL_PROFILE=null;
+  GL_AUTH_READY=false;
+  GL_AUTH_TRANSIENT_ERROR=null;
+  document.body.classList.remove("theme-female");
+}
 function glUsernameEmail(username){return String(username||"").toLowerCase().trim()+"@users.gymlog-crush.local";}
 function glValidUsername(username){return /^[a-z0-9._-]{2,32}$/i.test(String(username||"").trim());}
 
@@ -4991,7 +5047,14 @@ async function glApi(path,opts,sessionOverride){
   if(s&&s.access_token)headers.Authorization="Bearer "+s.access_token;
   var res=await fetch(GL_SUPABASE_URL+path,Object.assign({},opts,{headers:headers}));
   var txt=await res.text();var body=null;try{body=txt?JSON.parse(txt):null;}catch(e){body=txt;}
-  if(!res.ok){var msg=(body&&body.msg)||(body&&body.message)||(body&&body.error_description)||(body&&body.error)||("HTTP "+res.status);throw new Error(msg);}
+  if(!res.ok){
+    var msg=(body&&body.msg)||(body&&body.message)||(body&&body.error_description)||(body&&body.error)||("HTTP "+res.status);
+    var err=new Error(msg);
+    err.status=res.status;
+    err.body=body;
+    err.path=path;
+    throw err;
+  }
   return body;
 }
 
@@ -5001,10 +5064,40 @@ async function glRefreshSession(){
   var next={access_token:body.access_token,refresh_token:body.refresh_token||s.refresh_token,expires_at:Date.now()+Number(body.expires_in||3600)*1000,user:body.user||s.user};
   glSaveSession(next);return next;
 }
+function glAuthErrorText(e){
+  return String((e&&e.message)||e||"").toLowerCase();
+}
+function glIsFatalRefreshError(e){
+  var st=Number(e&&e.status||0),m=glAuthErrorText(e);
+  if(st===400||st===401)return true;
+  return m.indexOf("invalid refresh token")>=0 ||
+         m.indexOf("refresh token not found")>=0 ||
+         m.indexOf("invalid_grant")>=0 ||
+         m.indexOf("session_not_found")>=0;
+}
+function glIsDisabledAccountError(e){
+  var m=glAuthErrorText(e);
+  return m.indexOf("konto jest wyłączone")>=0;
+}
 async function glEnsureSession(){
   var s=glSession();if(!s)return null;
   if(!navigator.onLine)return s;
-  if(!s.expires_at||s.expires_at<Date.now()+90000){try{s=await glRefreshSession();}catch(e){glClearAuth();return null;}}
+  if(!s.expires_at||s.expires_at<Date.now()+90000){
+    try{
+      s=await glRefreshSession();
+      GL_AUTH_TRANSIENT_ERROR=null;
+    }catch(e){
+      if(glIsFatalRefreshError(e)){
+        glClearAuth();
+        return null;
+      }
+      // Safari/iOS can wake a PWA before networking is fully ready.
+      // Keep the refresh token and local account data. Retry later.
+      GL_AUTH_TRANSIENT_ERROR=e;
+      console.log("Session refresh deferred:",e);
+      return s;
+    }
+  }
   return s;
 }
 async function glFetchProfile(uid){
@@ -5097,38 +5190,186 @@ window.glSkipLegacyMigration=function(){
   var s=glSession();if(!s||!s.user)return;STORE=glUserStore(s.user.id);data=glNormalizeState(safeLoad());home();
 };
 
+function glRenderSessionRecovery(message){
+  stopTimer();luxStopWorkoutClock();
+  render("<div class='auth-shell'><div class='auth-brand'><img src='header-logo.png?v=684' alt='GymLog CRUSH'></div>"+
+    "<div class='auth-card'><div class='auth-kicker'>TWOJA SESJA JEST ZACHOWANA</div>"+
+    "<div class='auth-title'>Przywracam konto…</div>"+
+    "<div class='auth-sub'>"+esc(message||"Połączenie z Supabase nie jest jeszcze gotowe. Nie musisz logować się ponownie.")+"</div>"+
+    "<div class='auth-msg show ok'>Ponowię połączenie automatycznie.</div>"+
+    "<button class='secondary' onclick='glAuthBootstrap()'>SPRÓBUJ TERAZ</button>"+
+    "</div></div>");
+}
+function glScheduleAuthRetry(delay){
+  if(GL_AUTH_RETRY_TIMER)clearTimeout(GL_AUTH_RETRY_TIMER);
+  GL_AUTH_RETRY_TIMER=setTimeout(function(){
+    GL_AUTH_RETRY_TIMER=null;
+    if(glSession())window.glAuthBootstrap();
+  },Math.max(1500,Number(delay||3500)));
+}
 async function glAfterAuthenticated(s,fromLogin){
   if(!s||!s.user||!s.user.id){glRenderLogin();return;}
+  var uid=s.user.id;
+  var p=glSavedProfile();
+  var networkReady=!!navigator.onLine && !GL_AUTH_TRANSIENT_ERROR;
+
   try{
-    var p;
-    if(navigator.onLine){p=await glFetchProfile(s.user.id);}else{p=glSavedProfile();window.GL_PROFILE=p;glApplyProfileTheme();}
-    if(!p)throw new Error("Brak profilu offline");
-    STORE=glUserStore(s.user.id);data=glNormalizeState(safeLoad());
+    // Try to refresh the profile, but a temporary Safari/network failure
+    // must never erase an otherwise valid remembered session.
+    if(networkReady){
+      try{
+        p=await glFetchProfile(uid);
+      }catch(profileErr){
+        if(glIsDisabledAccountError(profileErr)){
+          glClearAuth();
+          glRenderLogin("To konto jest wyłączone.",true);
+          return;
+        }
+
+        // A 401/403 may simply mean the access token expired while iOS slept.
+        if(Number(profileErr&&profileErr.status||0)===401 || Number(profileErr&&profileErr.status||0)===403){
+          try{
+            s=await glRefreshSession();
+            p=await glFetchProfile(uid);
+            networkReady=true;
+          }catch(refreshErr){
+            if(glIsFatalRefreshError(refreshErr)){
+              glClearAuth();
+              glRenderLogin("Sesja wygasła. Zaloguj się ponownie.",true);
+              return;
+            }
+            GL_AUTH_TRANSIENT_ERROR=refreshErr;
+            networkReady=false;
+            p=glSavedProfile();
+          }
+        }else{
+          GL_AUTH_TRANSIENT_ERROR=profileErr;
+          networkReady=false;
+          p=glSavedProfile();
+        }
+      }
+    }
+
+    if(p){
+      window.GL_PROFILE=p;
+      glApplyProfileTheme();
+    }
+
+    STORE=glUserStore(uid);
+    data=glNormalizeState(safeLoad());
+
+    // If we have a cached profile, the app can open instantly from local data
+    // while Safari finishes waking its network stack.
+    if(!p){
+      GL_AUTH_READY=false;
+      glSetSync("pending","Przywracam sesję…");
+      glRenderSessionRecovery("Sesja jest zapisana na tym iPhonie. Czekam tylko na połączenie z Supabase.");
+      glScheduleAuthRetry(3000);
+      return;
+    }
+
     GL_AUTH_READY=true;
 
-    if(!navigator.onLine){glSetSync("bad","Offline — dane lokalne");try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(e){}home();return;}
+    if(!networkReady){
+      glSetSync("bad","Tryb lokalny — ponawiam połączenie");
+      try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(e){}
+      home();
+      glScheduleAuthRetry(3500);
+      return;
+    }
 
-    var remote=await glFetchRemoteState(s.user.id);
-    var dirty=localStorage.getItem(glDirtyKey(s.user.id))==="1";
+    var remote;
+    try{
+      remote=await glFetchRemoteState(uid);
+      GL_AUTH_TRANSIENT_ERROR=null;
+    }catch(remoteErr){
+      // Do not log out because state download failed.
+      GL_AUTH_TRANSIENT_ERROR=remoteErr;
+      glSetSync("bad","Chmura chwilowo niedostępna — dane lokalne");
+      try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(e){}
+      home();
+      glScheduleAuthRetry(4000);
+      return;
+    }
+
+    var dirty=localStorage.getItem(glDirtyKey(uid))==="1";
     if(dirty&&glMeaningful(data)){
-      await glPushCloudState();try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(e){}home();return;
+      var pushed=await glPushCloudState();
+      try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(e){}
+      home();
+      if(!pushed)glScheduleAuthRetry(4000);
+      return;
     }
 
     if(glMeaningful(remote.state)){
-      GL_CLOUD_APPLYING=true;data=glNormalizeState(remote.state);try{localStorage.setItem(STORE,JSON.stringify(data));localStorage.setItem(glDirtyKey(s.user.id),"0");localStorage.setItem(glRevisionKey(s.user.id),String(remote.sync_revision||0));}catch(e){}GL_CLOUD_APPLYING=false;
-      glSetSync("ok","Zsynchronizowano");try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(e){}home();return;
+      GL_CLOUD_APPLYING=true;
+      data=glNormalizeState(remote.state);
+      try{
+        localStorage.setItem(STORE,JSON.stringify(data));
+        localStorage.setItem(glDirtyKey(uid),"0");
+        localStorage.setItem(glRevisionKey(uid),String(remote.sync_revision||0));
+      }catch(e){}
+      GL_CLOUD_APPLYING=false;
+      glSetSync("ok","Zsynchronizowano");
+      try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(e){}
+      home();
+      return;
     }
 
     if(glMeaningful(data)){
-      await glPushCloudState();try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(e){}home();return;
+      var pushedLocal=await glPushCloudState();
+      try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(e){}
+      home();
+      if(!pushedLocal)glScheduleAuthRetry(4000);
+      return;
     }
 
     var legacy=glLegacyState();
-    if(glMeaningful(legacy)){glSetSync("pending","Czeka na pierwszy import");glRenderMigration(legacy,remote);return;}
+    if(glMeaningful(legacy)){
+      glSetSync("pending","Czeka na pierwszy import");
+      glRenderMigration(legacy,remote);
+      return;
+    }
 
-    GL_CLOUD_APPLYING=true;data=glEmptyState();try{localStorage.setItem(STORE,JSON.stringify(data));}catch(e){}GL_CLOUD_APPLYING=false;
-    await glPushCloudState();home();
-  }catch(e){console.log("Auth bootstrap:",e);glClearAuth();glRenderLogin("Nie udało się wczytać konta. Zaloguj się ponownie.",true);}
+    GL_CLOUD_APPLYING=true;
+    data=glEmptyState();
+    try{localStorage.setItem(STORE,JSON.stringify(data));}catch(e){}
+    GL_CLOUD_APPLYING=false;
+    var firstPush=await glPushCloudState();
+    home();
+    if(!firstPush)glScheduleAuthRetry(4000);
+  }catch(e){
+    console.log("Auth bootstrap:",e);
+
+    if(glIsDisabledAccountError(e)){
+      glClearAuth();
+      glRenderLogin("To konto jest wyłączone.",true);
+      return;
+    }
+    if(glIsFatalRefreshError(e)){
+      glClearAuth();
+      glRenderLogin("Sesja wygasła. Zaloguj się ponownie.",true);
+      return;
+    }
+
+    // Any other startup failure is treated as temporary. Never erase tokens.
+    GL_AUTH_TRANSIENT_ERROR=e;
+    var cached=glSavedProfile();
+    if(cached){
+      window.GL_PROFILE=cached;
+      glApplyProfileTheme();
+      STORE=glUserStore(uid);
+      data=glNormalizeState(safeLoad());
+      GL_AUTH_READY=true;
+      glSetSync("bad","Tryb lokalny — ponawiam połączenie");
+      try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(_e){}
+      home();
+    }else{
+      GL_AUTH_READY=false;
+      glRenderSessionRecovery("Nie udało się jeszcze połączyć z Supabase, ale Twoje logowanie nie zostało usunięte.");
+    }
+    glScheduleAuthRetry(4000);
+  }
 }
 
 window.addEventListener("visibilitychange",function(){
@@ -5149,7 +5390,13 @@ window.glAuthBootstrap=async function(){
   if(!s){glRenderLogin();return;}
   await glAfterAuthenticated(s,false);
 };
-window.addEventListener("online",function(){if(GL_AUTH_READY)glPushCloudState();});
+window.addEventListener("online",function(){
+  GL_AUTH_TRANSIENT_ERROR=null;
+  if(glSession()){
+    if(GL_AUTH_READY)glPushCloudState();
+    glScheduleAuthRetry(500);
+  }
+});
 
 
 
@@ -7750,6 +7997,215 @@ glAfterAuthenticated=async function(s,fromLogin){
   }catch(e){console.log("Push refresh:",e);}
   return result;
 };
+
+
+
+/* ======================================================================
+   0.68.3 — PUSH + FOREGROUND ALERT FIX
+   - backend Apple VAPID subject fixed separately without rotating keys
+   - loud foreground alert + audio beep
+   - test button verifies server status instead of only scheduling
+   ====================================================================== */
+
+var GL0683_AUDIO_CTX=null;
+
+function gl0683UnlockAudio(){
+  try{
+    var Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx)return;
+    if(!GL0683_AUDIO_CTX)GL0683_AUDIO_CTX=new Ctx();
+    if(GL0683_AUDIO_CTX.state==="suspended")GL0683_AUDIO_CTX.resume().catch(function(){});
+  }catch(e){}
+}
+function gl0683Beep(){
+  try{
+    var Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx)return;
+    if(!GL0683_AUDIO_CTX)GL0683_AUDIO_CTX=new Ctx();
+    var ctx=GL0683_AUDIO_CTX;
+    if(ctx.state==="suspended")ctx.resume().catch(function(){});
+    var now=ctx.currentTime;
+    [0,.22,.44].forEach(function(off,i){
+      var osc=ctx.createOscillator(),gain=ctx.createGain();
+      osc.type="sine";
+      osc.frequency.setValueAtTime(i===2?1040:880,now+off);
+      gain.gain.setValueAtTime(.0001,now+off);
+      gain.gain.exponentialRampToValueAtTime(.22,now+off+.015);
+      gain.gain.exponentialRampToValueAtTime(.0001,now+off+.16);
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.start(now+off);osc.stop(now+off+.18);
+    });
+  }catch(e){}
+}
+function gl0683DismissRestAlert(){
+  var x=document.getElementById("glRestAlert0683");
+  if(x)x.remove();
+}
+window.gl0683DismissRestAlert=gl0683DismissRestAlert;
+
+function gl0683ForegroundAlert(exerciseName){
+  try{
+    gl0683Beep();
+    if(navigator.vibrate)navigator.vibrate([250,120,250,120,350]);
+  }catch(e){}
+
+  try{
+    gl0683DismissRestAlert();
+    var wrap=document.createElement("div");
+    wrap.id="glRestAlert0683";
+    wrap.className="gl-rest-alert-0683";
+    var name=String(exerciseName||"").trim();
+    wrap.innerHTML="<div class='gl-rest-alert-card-0683'>"+
+      "<div class='gl-rest-alert-icon-0683'>✓</div>"+
+      "<div class='gl-rest-alert-title-0683'>PRZERWA MINĘŁA</div>"+
+      "<div class='gl-rest-alert-sub-0683'>"+(name?esc(name)+"<br>":"")+"Czas na następną serię.</div>"+
+      "<button onclick='gl0683DismissRestAlert()'>OK — ROBIĘ SERIĘ</button>"+
+      "</div>";
+    document.body.appendChild(wrap);
+  }catch(e){}
+}
+window.gl0683ForegroundAlert=gl0683ForegroundAlert;
+
+/* Unlock WebAudio from the same user gesture that saves a set / starts a rest. */
+var gl0683BaseSaveSet=window.saveSet;
+window.saveSet=function(){
+  gl0683UnlockAudio();
+  return gl0683BaseSaveSet.apply(this,arguments);
+};
+saveSet=window.saveSet;
+
+var gl0683BaseRestartTimer=window.restartTimer;
+window.restartTimer=function(){
+  gl0683UnlockAudio();
+  return gl0683BaseRestartTimer.apply(this,arguments);
+};
+restartTimer=window.restartTimer;
+
+/* Poll the exact timer record so TEST reports whether Apple accepted the push. */
+async function gl0683GetTimerStatus(id){
+  try{
+    var s=await glEnsureSession();if(!s)return null;
+    var rows=await glApi(
+      "/rest/v1/rest_timer_notifications?select=id,status,sent_at,error,attempts&id=eq."+encodeURIComponent(id)+"&limit=1",
+      {method:"GET"},s
+    );
+    return rows&&rows[0]?rows[0]:null;
+  }catch(e){return null;}
+}
+function gl0683TestStatus(text,state){
+  var old=document.getElementById("glPushTestResult0683");
+  if(!old){
+    old=document.createElement("div");
+    old.id="glPushTestResult0683";
+    old.className="gl-push-test-result-0683";
+    var btn=document.querySelector(".gl-push-test");
+    if(btn&&btn.parentNode)btn.parentNode.insertBefore(old,btn.nextSibling);
+  }
+  if(old){
+    old.className="gl-push-test-result-0683 "+String(state||"wait");
+    old.textContent=String(text||"");
+  }
+}
+
+/* Override test: schedule, then show real backend delivery state. */
+window.glTestRestPush=async function(){
+  if(!gl070PushEnabled()){alert("Najpierw włącz powiadomienia.");return;}
+  gl0683UnlockAudio();
+  try{
+    await gl070CancelActiveRestPush();
+    var row=await gl070InsertRestTimer(5,Date.now()+5000,"TEST POWIADOMIENIA");
+    if(!row||!row.id)throw new Error("Nie udało się zaplanować testu.");
+    gl0683TestStatus("Test zaplanowany — czekam na odpowiedź Apple…","wait");
+
+    var started=Date.now(),done=false;
+    while(Date.now()-started<22000){
+      await new Promise(function(resolve){setTimeout(resolve,1800);});
+      var st=await gl0683GetTimerStatus(row.id);
+      if(!st)continue;
+      if(st.status==="sent"){
+        gl0683TestStatus("WYSŁANE ✓ Apple przyjęło powiadomienie. Powinno być widoczne w systemie.","ok");
+        done=true;break;
+      }
+      if(st.status==="failed"){
+        gl0683TestStatus("BŁĄD WYSYŁKI — "+String(st.error||"nieznany błąd"),"bad");
+        done=true;break;
+      }
+    }
+    if(!done)gl0683TestStatus("Brak potwierdzenia po 22 s. Spróbuj ponownie przy stabilnym internecie.","bad");
+  }catch(e){
+    gl0683TestStatus("BŁĄD — "+String(e.message||e),"bad");
+  }
+};
+
+/* Final foreground countdown. The server push remains independent and will
+   handle background/minimized PWA. When the page is visible, additionally
+   show a large in-app alert and play an unlocked audio signal. */
+function gl0683ClearLocalTimer(){
+  if(timer){clearInterval(timer);timer=null;}
+}
+startRest=function(sec){
+  gl0683UnlockAudio();
+  gl0683ClearLocalTimer();
+  gl070CancelActiveRestPush();
+
+  sec=Math.max(1,Number(sec||0));
+  var end=Date.now()+sec*1000;
+  var e=current&&current.exercises&&current.exercises[idx];
+  var exerciseName=e&&e.name?e.name:"";
+
+  var el=document.getElementById("timer");
+  if(el){
+    el.innerText=fmt(sec);
+    el.className="timer running";
+  }
+
+  gl070ScheduleRestPush(sec,end,exerciseName);
+
+  timer=setInterval(function(){
+    var left=Math.ceil((end-Date.now())/1000);
+    var node=document.getElementById("timer");
+    if(left<=0){
+      gl0683ClearLocalTimer();
+      gl070ClearActiveLocal();
+      if(node){
+        node.innerText="GOTOWE";
+        node.className="timer ready";
+      }
+      if(document.visibilityState==="visible"){
+        gl0683ForegroundAlert(exerciseName);
+      }
+      return;
+    }
+    if(node){
+      node.innerText=fmt(left);
+      node.className="timer running";
+    }
+  },200);
+};
+window.startRest=startRest;
+
+window.restartTimer=function(){
+  gl0683UnlockAudio();
+  if(!current)return;
+  var e=current.exercises[idx];
+  startRest(e.autoRestRecord?180:e.rest);
+};
+restartTimer=window.restartTimer;
+
+/* If user returns after iOS suspended the foreground timer, immediately
+   reconcile the deadline and show the alert if the rest already elapsed.
+   Background Web Push remains the primary alert while the app is hidden. */
+document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState!=="visible")return;
+  var active=gl070ReadActive();
+  if(!active||!active.endAt)return;
+  var end=new Date(active.endAt).getTime();
+  if(isFinite(end)&&end<=Date.now()){
+    var name=String(active.exercise||"");
+    gl070ClearActiveLocal();
+    gl0683ForegroundAlert(name);
+  }
+});
 
 
 runInstalledAppUpdates();

@@ -1462,6 +1462,170 @@ body.theme-female .lux-muscle-title-icon{
   border-color:rgba(240,169,202,.18)!important;
 }
 
+
+/* =====================================================================
+   0.69.2 — FEMALE = MALE STYLE + BABY PINK ACCENT ONLY
+   No solid pink button fills. Dark surfaces + neon baby-pink outlines.
+   ===================================================================== */
+body.theme-female{
+  --lux-red:#d783ad!important;
+  --lux-red2:#ec9fc5!important;
+  --lux-red3:#ffc1df!important;
+  --lux-burgundy:#a45f82!important;
+  --lux-line-red:rgba(255,193,223,.34)!important;
+  --crush-burgundy:#d783ad!important;
+  --crush-burgundy-active:#eca2c6!important;
+  --account-accent:#f4a8cb!important;
+  --female-pink:#f4a8cb;
+  --female-pink-bright:#ffc4df;
+  --female-pink-line:rgba(244,168,203,.46);
+  --female-pink-line-soft:rgba(244,168,203,.25);
+  --female-dark:#0d0e11;
+  --female-dark-2:#111216;
+}
+
+/* Main rule that neutralises the old full-pink generic female rule. */
+body.theme-female button:not(.secondary):not(.danger):not(.warn){
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0)),
+    linear-gradient(180deg,#111216,#0c0d10)!important;
+  border:1px solid var(--female-pink-line)!important;
+  color:#fff!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.035),
+    0 0 0 1px rgba(244,168,203,.025),
+    0 9px 22px rgba(0,0,0,.20)!important;
+  text-shadow:none!important;
+}
+body.theme-female button.secondary{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,0)),
+    linear-gradient(180deg,#101115,#0c0d10)!important;
+  border:1px solid var(--female-pink-line-soft)!important;
+  color:#eeeef1!important;
+  box-shadow:none!important;
+}
+
+/* Start screen: keep the proportions, change only the visual treatment. */
+body.theme-female .gl086-start-main{
+  background:
+    linear-gradient(180deg,rgba(244,168,203,.035),rgba(244,168,203,.008)),
+    linear-gradient(180deg,#111216,#0c0d10)!important;
+  border:1.5px solid rgba(255,190,220,.58)!important;
+  color:#fff!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.035),
+    0 0 15px rgba(244,168,203,.08),
+    0 12px 26px rgba(0,0,0,.24)!important;
+}
+body.theme-female .gl086-profile-button{
+  background:
+    linear-gradient(180deg,rgba(244,168,203,.025),rgba(244,168,203,.006)),
+    linear-gradient(180deg,#111216,#0c0d10)!important;
+  border:1px solid rgba(244,168,203,.34)!important;
+  box-shadow:0 10px 24px rgba(0,0,0,.20)!important;
+}
+body.theme-female .gl085-section-head .gl085-text-btn,
+body.theme-female .gl085-section-head .text-btn,
+body.theme-female .gl085-text-btn,
+body.theme-female .text-btn{
+  background:#0d0e11!important;
+  border:1px solid rgba(244,168,203,.38)!important;
+  color:#ffc4df!important;
+  box-shadow:0 0 10px rgba(244,168,203,.035)!important;
+}
+
+/* Cards remain exactly dark like History. */
+body.theme-female .gl085-metric,
+body.theme-female .gl085-week-card,
+body.theme-female .gl086-recent,
+body.theme-female .gl085-empty,
+body.theme-female .card,
+body.theme-female .box,
+body.theme-female .lux-current-tile,
+body.theme-female .lux-strength-card,
+body.theme-female .lux-stat-card,
+body.theme-female .lux-metric,
+body.theme-female .lux-history-card{
+  background:linear-gradient(145deg,#111113,#09090a)!important;
+  border-color:rgba(244,168,203,.15)!important;
+}
+
+/* Statistics: every red male accent becomes baby pink. */
+body.theme-female .lux-current-tile.primary{
+  border-color:rgba(244,168,203,.38)!important;
+  background:
+    radial-gradient(circle at 100% 0,rgba(244,168,203,.10),transparent 54%),
+    linear-gradient(145deg,#111113,#09090a)!important;
+}
+body.theme-female .lux-stat-card.red{
+  border-color:rgba(244,168,203,.34)!important;
+  background:
+    radial-gradient(circle at 100% 0,rgba(244,168,203,.09),transparent 55%),
+    linear-gradient(145deg,#111113,#09090a)!important;
+}
+body.theme-female .lux-muscle-card{
+  border-color:rgba(244,168,203,.30)!important;
+  background:
+    radial-gradient(circle at 50% 25%,rgba(244,168,203,.06),transparent 44%),
+    linear-gradient(160deg,#0b0b0d 0%,#080809 72%,#0d090c 100%)!important;
+}
+body.theme-female .lux-muscle-title-icon{
+  color:#ffc1df!important;
+  background:rgba(244,168,203,.07)!important;
+  border-color:rgba(244,168,203,.25)!important;
+}
+body.theme-female .lux-muscle-title-text b,
+body.theme-female .lux-muscle-foot b{
+  color:#ffc1df!important;
+}
+
+/* Bottom navigation: dark male-style buttons, pink outline only. */
+body.theme-female .lux-bottom-nav{
+  background:rgba(12,12,13,.95)!important;
+  border-color:rgba(244,168,203,.18)!important;
+}
+body.theme-female .lux-bottom-nav button{
+  background:#0d0e11!important;
+  border:1px solid rgba(244,168,203,.28)!important;
+  color:#d9d6da!important;
+  box-shadow:none!important;
+}
+body.theme-female .lux-bottom-nav button.active{
+  background:#101115!important;
+  border-color:rgba(255,193,223,.52)!important;
+  color:#fff!important;
+  box-shadow:0 0 12px rgba(244,168,203,.06)!important;
+}
+body.theme-female .lux-bottom-nav .plus{
+  background:#101115!important;
+  border:1.5px solid rgba(255,193,223,.56)!important;
+  color:#fff!important;
+  box-shadow:0 0 14px rgba(244,168,203,.08)!important;
+}
+body.theme-female .lux-bottom-nav .plus .ico,
+body.theme-female .lux-bottom-nav .plus span:last-child{color:#fff!important}
+
+/* More / account / secondary screens: dark like male, only pink outline. */
+body.theme-female .lux-action-list button,
+body.theme-female .gl086-upload-label{
+  background:#0d0e11!important;
+  border-color:rgba(244,168,203,.30)!important;
+  color:#fff!important;
+}
+body.theme-female .lux-action-list button span:last-child{color:#ffc4df!important}
+body.theme-female input:focus,
+body.theme-female select:focus,
+body.theme-female textarea:focus{
+  border-color:rgba(255,193,223,.58)!important;
+  box-shadow:0 0 0 3px rgba(244,168,203,.07)!important;
+}
+body.theme-female h1:after,
+body.theme-female .lux-section-title:before{
+  background:linear-gradient(90deg,#ffc4df,#d987b0)!important;
+  box-shadow:0 0 12px rgba(244,168,203,.14)!important;
+}
+
 </style>
 <style>
 
@@ -4531,7 +4695,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.69.1";
+VERSION = "BETA 0.69.2";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -9701,7 +9865,9 @@ window.gl089IsFemaleProfile=function(profile){
   return String(p.gender||"").toLowerCase()==="female";
 };
 window.gl089HeaderLogoSrc=function(profile){
-  return gl089IsFemaleProfile(profile) ? "header-logo-female.png?v=689" : "header-logo.png?v=689";
+  return (typeof glGender==="function" && glGender()==="female")
+    ? "header-logo-female.png?v=692"
+    : "header-logo.png?v=692";
 };
 
 

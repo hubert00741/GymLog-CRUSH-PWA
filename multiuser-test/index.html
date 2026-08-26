@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta charset="utf-8">
 <meta name="theme-color" content="#070707">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1705,6 +1705,36 @@ body.theme-female .gl086-woman-mark{
 @media(max-width:430px){
   .gl095-wordmark{gap:7px}
   .gl095-gym,.gl095-crush{font-size:20px}
+}
+
+
+/* =====================================================================
+   0.69.6 — workout setup header + locked interface zoom
+   ===================================================================== */
+html,body,#app{
+  touch-action:pan-x pan-y;
+}
+.gl096-setup-brand{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  width:max-content;
+  max-width:100%;
+  margin:3px 2px 14px;
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+.gl096-setup-brand .gl095-wordmark{
+  padding:0!important;
+}
+.gl096-setup-brand .gl086-woman-mark{
+  margin-top:8px!important;
+  padding-left:1px!important;
+}
+@media(max-width:430px){
+  .gl096-setup-brand{margin-bottom:12px}
 }
 
 </style>
@@ -4776,7 +4806,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.69.5";
+VERSION = "BETA 0.69.6";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -5618,7 +5648,11 @@ function luxBottomNav(active){
   "</nav>";
 }
 function luxHero(){
-  return "<div class='lux-hero'><img src='header-logo.png?v=620' alt='GymLog CRUSH'><div class='lux-for-woman'>FOR WOMAN</div></div>";
+  var female=(typeof glGender==="function"&&glGender()==="female");
+  return "<div class='gl096-setup-brand'>"+
+    "<div class='gl095-wordmark' aria-label='GymLog CRUSH'><span class='gl095-gym'>GymLog</span><span class='gl095-crush'>CRUSH</span></div>"+
+    (female?"<div class='gl086-woman-mark'>FOR WOMAN</div>":"")+
+  "</div>";
 }
 function luxFormRow(icon,color,label,control){
   return "<div class='lux-field-row'>"+luxIcon(icon,color)+"<div class='lux-field-copy'><label>"+label+"</label>"+control+"</div></div>";
@@ -9950,6 +9984,19 @@ window.gl089HeaderLogoSrc=function(profile){
     ? "header-logo-female.png?v=694"
     : "header-logo.png?v=694";
 };
+
+
+
+/* 0.69.6 — prevent pinch zoom in the app UI. */
+(function gl096LockInterfaceZoom(){
+  function preventGesture(e){e.preventDefault();}
+  document.addEventListener("gesturestart",preventGesture,{passive:false});
+  document.addEventListener("gesturechange",preventGesture,{passive:false});
+  document.addEventListener("gestureend",preventGesture,{passive:false});
+  document.addEventListener("touchmove",function(e){
+    if(e.touches&&e.touches.length>1)e.preventDefault();
+  },{passive:false});
+})();
 
 
 runInstalledAppUpdates();

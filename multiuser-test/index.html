@@ -2167,6 +2167,174 @@ body.theme-female .gl099-set-number{
   .gl099-set-value{font-size:14px}
 }
 
+
+/* =====================================================================
+   0.70.0 — cleaner plan block + frameless profile header
+   ===================================================================== */
+
+/* HISTORY — PLAN NA DZIŚ
+   Flat, readable section directly inside the exercise card. */
+.gl100-plan-block{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.075);
+}
+.gl100-plan-label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#a9abb2;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  line-height:1;
+}
+.gl100-plan-label:before{
+  content:"";
+  width:4px;
+  height:16px;
+  flex:0 0 4px;
+  border-radius:999px;
+  background:#c92e45;
+  box-shadow:0 0 10px rgba(201,46,69,.18);
+}
+.gl100-plan-value{
+  margin-top:9px;
+  color:#f0f0f3;
+  font-size:14px;
+  line-height:1.48;
+  font-weight:650;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.gl100-plan-line + .gl100-plan-line{
+  margin-top:5px;
+}
+body.theme-female .gl100-plan-block{
+  border-top-color:rgba(244,168,203,.12)!important;
+}
+body.theme-female .gl100-plan-label:before{
+  background:#ffb8d8!important;
+  box-shadow:0 0 10px rgba(255,184,216,.22)!important;
+}
+body.theme-female .gl100-plan-label{
+  color:#c8adb9!important;
+}
+
+/* MORE — PROFILE
+   No inner rectangle. Just avatar + identity centered cleanly in the card. */
+.gl100-more-profile-card{
+  padding:18px!important;
+}
+.gl100-more-account,
+body.theme-female .gl100-more-account{
+  width:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:inherit!important;
+  text-align:left!important;
+}
+.gl100-more-profile-inner{
+  display:grid;
+  grid-template-columns:78px minmax(0,1fr);
+  align-items:center;
+  gap:17px;
+  width:100%;
+  padding:2px 2px 17px;
+  box-sizing:border-box;
+}
+.gl100-more-avatar-wrap{
+  width:78px;
+  height:78px;
+  display:grid;
+  place-items:center;
+  padding:4px;
+  border-radius:50%;
+  box-sizing:border-box;
+  background:linear-gradient(145deg,rgba(177,35,57,.22),rgba(51,8,15,.62));
+  border:1px solid rgba(205,68,87,.30);
+  box-shadow:0 10px 24px rgba(0,0,0,.25);
+}
+.gl100-more-avatar{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:50%!important;
+  overflow:hidden!important;
+  display:grid!important;
+  place-items:center!important;
+  background:#101115!important;
+  box-shadow:none!important;
+  color:#fff!important;
+  font-size:21px!important;
+  font-weight:900!important;
+}
+.gl100-more-avatar img{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  border-radius:50%!important;
+}
+.gl100-more-profile-copy{
+  min-width:0;
+  align-self:center;
+}
+.gl100-more-profile-name{
+  color:#f8f8fa;
+  font-size:20px;
+  line-height:1.08;
+  font-weight:950;
+  letter-spacing:-.035em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.gl100-more-profile-meta{
+  margin-top:7px;
+  color:#7e7f86;
+  font-size:11px;
+  line-height:1.3;
+  font-weight:750;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.gl100-more-profile-card .mu-cloud-line{
+  margin:0!important;
+  padding:15px 2px 2px!important;
+  border-top:1px solid rgba(255,255,255,.065)!important;
+}
+body.theme-female .gl100-more-avatar-wrap{
+  background:linear-gradient(145deg,rgba(255,190,220,.16),rgba(106,37,72,.26))!important;
+  border-color:rgba(255,193,223,.35)!important;
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.24),
+    0 0 14px rgba(244,168,203,.045)!important;
+}
+
+@media(max-width:390px){
+  .gl100-more-profile-card{padding:16px!important}
+  .gl100-more-profile-inner{
+    grid-template-columns:70px minmax(0,1fr);
+    gap:14px;
+    padding-bottom:15px;
+  }
+  .gl100-more-avatar-wrap{width:70px;height:70px}
+  .gl100-more-profile-name{font-size:18px}
+  .gl100-plan-value{font-size:13px}
+}
+
 </style>
 <style>
 
@@ -5236,7 +5404,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.69.9";
+VERSION = "BETA 0.70.0";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -10789,6 +10957,217 @@ window.gl097DeleteDraftFromStart=function(){
     render("<h1>Więcej</h1>"+account+
       "<div class='card'><div class='lux-section-title'>GymLog CRUSH</div><div class='small'>"+esc(VERSION)+"</div></div>"+
       actions+luxBottomNav("more"));
+  };
+})();
+
+
+
+/* ======================================================================
+   0.70.0 — plan renderer + frameless More profile
+   ====================================================================== */
+(function(){
+  function gl100NormalizeText(value){
+    var s=String(value==null?"":value);
+    s=s.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+    s=s.replace(/\\\\n/g,"\n").replace(/\\n/g,"\n");
+    s=s.replace(/\\\\r/g,"\n").replace(/\\r/g,"\n");
+    return s;
+  }
+
+  function gl100PlanHtml(plan){
+    var raw=gl100NormalizeText(plan).trim();
+    if(!raw)return "";
+    var lines=raw.split(/\n+/).map(function(x){return x.trim();}).filter(Boolean);
+    var body=lines.map(function(line){
+      return "<div class='gl100-plan-line'>"+esc(line)+"</div>";
+    }).join("");
+    return "<div class='gl100-plan-block'>"+
+      "<div class='gl100-plan-label'>Plan na dziś</div>"+
+      "<div class='gl100-plan-value'>"+body+"</div>"+
+    "</div>";
+  }
+
+  /* Replace the exercise card builder from 0.69.9 only for the final
+     managed/admin details views. Sets stay one row per set; plan is now flat. */
+  function gl100SetLines(ex){
+    var result=[];
+    ((ex&&ex.sets)||[]).forEach(function(set){
+      var raw="";
+      try{raw=typeof set==="string"?set:getSetLine(set);}catch(e){raw=String(set||"");}
+      gl100NormalizeText(raw).split(/\n+/).forEach(function(part){
+        var line=String(part||"").trim().replace(/^\s*\d+\.\s+(?=\S)/,"");
+        if(line)result.push(line);
+      });
+    });
+    return result;
+  }
+
+  function gl100ExerciseCard(ex,index){
+    var lines=gl100SetLines(ex),sets="";
+    if(!lines.length){
+      sets="<div class='gl099-set-empty'>Brak wpisanych serii.</div>";
+    }else{
+      lines.forEach(function(line,i){
+        sets+="<div class='gl099-set-row'><div class='gl099-set-number'>"+(i+1)+"</div><div class='gl099-set-value'>"+esc(line)+"</div></div>";
+      });
+    }
+
+    var prev=ex&&(ex.reportLast||ex.last)||"";
+    var previous="";
+    if(String(prev).trim()){
+      previous="<details class='lux-details'><summary>Poprzedni wynik</summary><div class='box'>"+
+        esc(gl100NormalizeText(prev)).replace(/\n/g,"<br>")+
+      "</div></details>";
+    }
+
+    return "<article class='card gl099-exercise-card'>"+
+      "<h3>"+(index+1)+". "+esc(ex&&ex.name||"Ćwiczenie")+"</h3>"+
+      "<div class='gl099-set-stack'>"+sets+"</div>"+
+      gl100PlanHtml(ex&&ex.plan||"")+
+      previous+
+    "</article>";
+  }
+
+  function gl100ManagedDetails(i,filter,page){
+    var l=data.logs&&data.logs[i];
+    if(!l)return historyView(filter,page);
+
+    var gym="";try{gym=getLogGymV31(l)||"";}catch(e){}
+    var duration="";try{duration=(typeof gl066DurationText==="function"?gl066DurationText(l):"")||"";}catch(e){}
+    var exercises="";
+    (l.exercises||[]).forEach(function(ex,ei){exercises+=gl100ExerciseCard(ex,ei);});
+    var real="—";try{real=realWorkingSetsCount(l)||0;}catch(e){}
+    var notes=String(l.notes||"").trim()
+      ?"<div class='gl0698-notes'><b>Uwagi:</b><br>"+esc(gl100NormalizeText(l.notes)).replace(/\n/g,"<br>")+"</div>"
+      :"";
+    var map=(glFlags().muscleMap!==false&&window.muscleVisualHtml)?window.muscleVisualHtml(l):"";
+
+    render(
+      "<h1>Szczegóły treningu</h1>"+
+      "<button class='secondary topMenu mu-user-back' onclick='historyView(\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>← Historia</button>"+
+      "<div class='card'><h2>"+esc(l.training||"")+"</h2>"+
+        "<div class='gl0698-detail-sub'>"+esc(l.date||"")+(gym?" • "+esc(gym):"")+(duration&&duration!=="—"?" • "+esc(duration):"")+"</div>"+
+        "<div class='metricGrid'>"+
+          "<div><span>Sen</span><b>"+esc(l.sleep||"—")+"</b></div>"+
+          "<div><span>Waga</span><b>"+esc(l.weight||"—")+"</b></div>"+
+          "<div><span>Samopoczucie</span><b>"+esc(l.mood||"—")+"</b></div>"+
+          "<div><span>Serie robocze</span><b>"+esc(real)+"</b></div>"+
+        "</div>"+
+        notes+
+        "<div class='gl0698-detail-actions'>"+
+          "<button class='secondary' onclick='glManagedEditWorkout("+i+",\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>Edytuj trening</button>"+
+          "<button class='danger' onclick='glManagedDeleteWorkout("+i+",\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>Usuń trening</button>"+
+        "</div>"+
+      "</div>"+
+      map+exercises+luxBottomNav("history")
+    );
+
+    try{
+      requestAnimationFrame(function(){
+        if(typeof gl066AddShareButton==="function"){
+          gl066AddShareButton(l,data.logs||[],i,window.GL_PROFILE||{});
+        }
+      });
+    }catch(e){}
+  }
+  window.glManagedHistoryDetails=gl100ManagedDetails;
+
+  if(typeof window.glAdminWorkoutDetails==="function"){
+    window.glAdminWorkoutDetails=function(i,page){
+      var selected=window.GL_ADMIN_SELECTED||{};
+      var l=selected.state&&selected.state.logs&&selected.state.logs[i];
+      if(!l)return;
+
+      var exercises="";
+      (l.exercises||[]).forEach(function(ex,ei){exercises+=gl100ExerciseCard(ex,ei);});
+      var gym="";try{gym=getLogGymV31(l)||"";}catch(e){}
+      var duration="";try{duration=(typeof gl066DurationText==="function"?gl066DurationText(l):"")||"";}catch(e){}
+      var real="—";try{real=realWorkingSetsCount(l)||0;}catch(e){}
+      var notes=String(l.notes||"").trim()
+        ?"<div class='gl0698-notes'><b>Uwagi:</b><br>"+esc(gl100NormalizeText(l.notes)).replace(/\n/g,"<br>")+"</div>"
+        :"";
+      var flags=(selected.profile&&selected.profile.feature_flags)||{};
+      var map=(flags.muscleMap!==false&&window.muscleVisualHtml)?window.muscleVisualHtml(l):"";
+
+      render(
+        "<h1>Szczegóły treningu</h1>"+
+        "<button class='secondary topMenu mu-user-back' onclick='glAdminOpenUser(\""+esc((selected.profile||{}).id||"")+"\","+Number(page||0)+")'>← "+esc((selected.profile||{}).display_name||"Użytkownik")+"</button>"+
+        "<div class='card'><h2>"+esc(l.training||"")+"</h2>"+
+          "<div class='gl0698-detail-sub'>"+esc(l.date||"")+(gym?" • "+esc(gym):"")+(duration&&duration!=="—"?" • "+esc(duration):"")+"</div>"+
+          "<div class='metricGrid'>"+
+            "<div><span>Sen</span><b>"+esc(l.sleep||"—")+"</b></div>"+
+            "<div><span>Waga</span><b>"+esc(l.weight||"—")+"</b></div>"+
+            "<div><span>Samopoczucie</span><b>"+esc(l.mood||"—")+"</b></div>"+
+            "<div><span>Serie robocze</span><b>"+esc(real)+"</b></div>"+
+          "</div>"+
+          notes+
+          "<div class='gl0698-detail-actions'>"+
+            "<button onclick='glAdminEditWorkout("+i+","+Number(page||0)+")'>Edytuj trening</button>"+
+            "<button class='danger' onclick='glAdminDeleteWorkout("+i+","+Number(page||0)+")'>Usuń trening</button>"+
+          "</div>"+
+        "</div>"+
+        map+exercises+luxBottomNav("more")
+      );
+
+      try{
+        requestAnimationFrame(function(){
+          if(typeof gl066AddShareButton==="function"){
+            var sel=window.GL_ADMIN_SELECTED||{},logs=(sel.state&&sel.state.logs)||[];
+            gl066AddShareButton(l,logs,i,sel.profile||{});
+          }
+        });
+      }catch(e){}
+    };
+  }
+
+  /* MORE: only avatar + name + @username + Klient/Administrator.
+     No inner rectangle, no chevron. Whole row remains tappable. */
+  window.luxMoreView=function(){
+    stopTimer();luxStopWorkoutClock();
+
+    var p=window.GL_PROFILE||{};
+    var role=p.role==="admin"?"Administrator":"Klient";
+    var sync=window.GL_SYNC_STATUS||{state:"pending",text:"Oczekuje"};
+    var avatar=gl086AvatarHtml(p,"gl100-more-avatar",gl085Initials());
+
+    var account=
+      "<div class='card gl100-more-profile-card'>"+
+        "<button class='gl100-more-account' onclick='glAccountView(\"more\")' aria-label='Konto i profil'>"+
+          "<div class='gl100-more-profile-inner'>"+
+            "<div class='gl100-more-avatar-wrap'>"+avatar+"</div>"+
+            "<div class='gl100-more-profile-copy'>"+
+              "<div class='gl100-more-profile-name'>"+esc(p.display_name||p.username||"Konto")+"</div>"+
+              "<div class='gl100-more-profile-meta'>@"+esc(p.username||"—")+" • "+esc(role)+"</div>"+
+            "</div>"+
+          "</div>"+
+        "</button>"+
+        "<div class='mu-cloud-line'><span><i class='mu-sync-dot "+esc(sync.state||"pending")+"'></i>Supabase</span><span>"+esc(sync.text||"—")+"</span></div>"+
+      "</div>";
+
+    var actions="<div class='lux-action-list'>";
+    if(glIsAdmin()){
+      actions+="<button onclick='glUsersView()'><span>👥 Użytkownicy</span><span>›</span></button>"+
+               "<button onclick='glPlanEditorHub()'><span>▤ Edycja planów</span><span>›</span></button>"+
+               "<button onclick='goalsView()'><span>◎ Aktualizuj cele</span><span>›</span></button>";
+    }else if(gl064PlanEditEnabled()){
+      actions+="<button onclick='glPlanEditorHub()'><span>▤ Edycja planów</span><span>›</span></button>";
+    }
+
+    actions+="<button onclick='glAccountView(\"more\")'><span>◉ Konto i profil</span><span>›</span></button>"+
+             "<button onclick='glPushSettingsView()'><span>◉ Powiadomienia o przerwach</span><span>›</span></button>"+
+             "<button onclick='glBodyMeasurementsView()'><span>⌁ Pomiary ciała</span><span>›</span></button>"+
+             "<button onclick='backupView()'><span>⇩ Eksport / import awaryjny</span><span>›</span></button>"+
+             "<button onclick='helpView()'><span>? Pomoc</span><span>›</span></button>"+
+             "<button class='secondary' onclick='glForceCloudSync()'><span>↻ Synchronizuj Supabase</span><span>›</span></button>"+
+             "<button class='secondary' onclick='glLogout()'><span>Wyloguj się</span><span>›</span></button></div>";
+
+    render(
+      "<h1>Więcej</h1>"+
+      account+
+      "<div class='card'><div class='lux-section-title'>GymLog CRUSH</div><div class='small'>"+esc(VERSION)+"</div></div>"+
+      actions+
+      luxBottomNav("more")
+    );
   };
 })();
 

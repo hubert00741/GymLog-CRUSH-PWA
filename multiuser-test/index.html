@@ -1958,6 +1958,215 @@ body.theme-female .gl0698-set-index{
   .gl0698-history-actions{grid-template-columns:1fr}
 }
 
+
+/* =====================================================================
+   0.69.9 — literal \n history fix + symmetrical More profile card
+   ===================================================================== */
+
+/* MORE / PROFILE
+   One outer card only. The clickable profile row does NOT get a second
+   pink rectangle around it. The avatar has equal breathing room on all
+   sides and is centered inside its own circular ring. */
+.gl099-more-profile-card{
+  padding:18px!important;
+  overflow:hidden;
+}
+.gl099-more-account,
+body.theme-female .gl099-more-account{
+  width:100%!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:inherit!important;
+  text-align:left!important;
+}
+.gl099-more-profile-inner{
+  width:100%;
+  min-width:0;
+  display:grid;
+  grid-template-columns:76px minmax(0,1fr) 28px;
+  align-items:center;
+  column-gap:16px;
+  box-sizing:border-box;
+  padding:4px 2px 16px;
+}
+.gl099-more-avatar-wrap{
+  width:76px;
+  height:76px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  padding:4px;
+  box-sizing:border-box;
+  background:linear-gradient(145deg,rgba(177,35,57,.26),rgba(51,8,15,.72));
+  border:1px solid rgba(205,68,87,.34);
+  box-shadow:0 10px 25px rgba(0,0,0,.27);
+}
+.gl099-more-avatar{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  border-radius:50%!important;
+  overflow:hidden!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  box-shadow:none!important;
+  background:#111217!important;
+  color:#fff!important;
+  font-size:21px!important;
+  font-weight:900!important;
+}
+.gl099-more-avatar img{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  border-radius:50%!important;
+}
+.gl099-more-profile-copy{
+  min-width:0;
+}
+.gl099-more-profile-name{
+  color:#f7f7f8;
+  font-size:20px;
+  line-height:1.08;
+  font-weight:950;
+  letter-spacing:-.035em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.gl099-more-profile-meta{
+  margin-top:7px;
+  color:#7d7e85;
+  font-size:11px;
+  line-height:1.3;
+  font-weight:750;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.gl099-more-profile-chevron{
+  justify-self:end;
+  color:#9a9ba2;
+  font-size:27px;
+  line-height:1;
+  font-weight:500;
+}
+.gl099-more-profile-card .mu-cloud-line{
+  margin:0!important;
+  padding:15px 2px 2px!important;
+  border-top:1px solid rgba(255,255,255,.065)!important;
+}
+body.theme-female .gl099-more-avatar-wrap{
+  background:linear-gradient(145deg,rgba(255,190,220,.18),rgba(106,37,72,.30))!important;
+  border-color:rgba(255,193,223,.42)!important;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.25),
+    0 0 14px rgba(244,168,203,.055)!important;
+}
+body.theme-female .gl099-more-profile-chevron{
+  color:#ffc0dd!important;
+}
+
+/* HISTORY SETS
+   Every actual set gets its own compact row. No glued multi-set strings. */
+.gl099-set-stack{
+  display:grid;
+  gap:8px;
+  margin-top:10px;
+}
+.gl099-set-row{
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr);
+  align-items:center;
+  gap:11px;
+  padding:10px 12px;
+  border-radius:15px;
+  background:linear-gradient(180deg,#111216,#0b0c0f);
+  border:1px solid rgba(255,255,255,.065);
+}
+.gl099-set-number{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  background:rgba(168,28,45,.12);
+  border:1px solid rgba(190,47,68,.23);
+  color:#ffd8dd;
+  font-size:12px;
+  font-weight:950;
+}
+.gl099-set-value{
+  min-width:0;
+  color:#f2f2f5;
+  font-size:15px;
+  line-height:1.34;
+  font-weight:550;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+.gl099-set-empty{
+  padding:13px 14px;
+  border-radius:14px;
+  color:#85868e;
+  font-size:12px;
+  background:#0c0d10;
+  border:1px dashed rgba(255,255,255,.08);
+}
+.gl099-exercise-card{
+  padding:16px!important;
+}
+.gl099-exercise-card > h3{
+  margin:0 0 2px!important;
+  font-size:20px!important;
+  line-height:1.18!important;
+}
+.gl099-exercise-card .lux-details{
+  margin-top:10px!important;
+}
+.gl099-exercise-card .lux-details .box{
+  white-space:normal!important;
+  line-height:1.45!important;
+  overflow-wrap:anywhere!important;
+}
+body.theme-female .gl099-set-row{
+  border-color:rgba(244,168,203,.13)!important;
+}
+body.theme-female .gl099-set-number{
+  background:rgba(244,168,203,.08)!important;
+  border-color:rgba(244,168,203,.27)!important;
+  color:#ffd9ea!important;
+}
+
+@media(max-width:390px){
+  .gl099-more-profile-card{padding:15px!important}
+  .gl099-more-profile-inner{
+    grid-template-columns:68px minmax(0,1fr) 22px;
+    column-gap:13px;
+    padding-bottom:14px;
+  }
+  .gl099-more-avatar-wrap{width:68px;height:68px;padding:4px}
+  .gl099-more-profile-name{font-size:18px}
+  .gl099-set-row{
+    grid-template-columns:30px minmax(0,1fr);
+    gap:9px;
+    padding:9px 10px;
+  }
+  .gl099-set-number{width:30px;height:30px;border-radius:10px}
+  .gl099-set-value{font-size:14px}
+}
+
 </style>
 <style>
 
@@ -5027,7 +5236,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.69.8";
+VERSION = "BETA 0.69.9";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -10379,6 +10588,208 @@ window.gl097DeleteDraftFromStart=function(){
       try{requestAnimationFrame(function(){ if(typeof gl066AddShareButton==="function"){ var sel=window.GL_ADMIN_SELECTED||{},logs=(sel.state&&sel.state.logs)||[]; gl066AddShareButton(l,logs,i,(sel.profile||{})); } });}catch(e){}
     };
   }
+})();
+
+
+
+/* ======================================================================
+   0.69.9 — managed-history line normalizer + More profile layout
+   ====================================================================== */
+(function(){
+  function gl099NormalizeMultiline(value){
+    var s=String(value==null?"":value);
+    /* Support:
+       - real line feeds,
+       - literal backslash+n from older managed-user data,
+       - double escaped backslash+backslash+n. */
+    s=s.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+    s=s.replace(/\\\\n/g,"\n").replace(/\\n/g,"\n");
+    s=s.replace(/\\\\r/g,"\n").replace(/\\r/g,"\n");
+    return s;
+  }
+
+  function gl099CleanSetLine(line){
+    line=String(line||"").trim();
+    /* A few old exports stored "1. " inside the value itself.
+       The UI already shows its own set number. */
+    line=line.replace(/^\s*\d+\.\s+(?=\S)/,"");
+    return line.trim();
+  }
+
+  function gl099SetLines(ex){
+    var result=[];
+    ((ex&&ex.sets)||[]).forEach(function(set){
+      var raw="";
+      try{raw=typeof set==="string"?set:getSetLine(set);}catch(e){raw=String(set||"");}
+      gl099NormalizeMultiline(raw).split(/\n+/).forEach(function(part){
+        var line=gl099CleanSetLine(part);
+        if(line)result.push(line);
+      });
+    });
+    return result;
+  }
+
+  function gl099HtmlMultiline(value){
+    return esc(gl099NormalizeMultiline(value))
+      .replace(/\n+/g,"<br>");
+  }
+
+  function gl099ExerciseCard(ex,index){
+    var lines=gl099SetLines(ex),sets="";
+    if(!lines.length){
+      sets="<div class='gl099-set-empty'>Brak wpisanych serii.</div>";
+    }else{
+      lines.forEach(function(line,i){
+        sets+="<div class='gl099-set-row'><div class='gl099-set-number'>"+(i+1)+"</div><div class='gl099-set-value'>"+esc(line)+"</div></div>";
+      });
+    }
+    var extra="";
+    if(ex&&String(ex.plan||"").trim()){
+      extra+="<details class='lux-details'><summary>Plan na dziś</summary><div class='box'>"+gl099HtmlMultiline(ex.plan)+"</div></details>";
+    }
+    var prev=ex&&(ex.reportLast||ex.last)||"";
+    if(String(prev).trim()){
+      extra+="<details class='lux-details'><summary>Poprzedni wynik</summary><div class='box'>"+gl099HtmlMultiline(prev)+"</div></details>";
+    }
+    return "<article class='card gl099-exercise-card'><h3>"+(index+1)+". "+esc(ex&&ex.name||"Ćwiczenie")+"</h3><div class='gl099-set-stack'>"+sets+"</div>"+extra+"</article>";
+  }
+
+  function gl099ManagedDetail(i,filter,page){
+    var l=data.logs&&data.logs[i];
+    if(!l)return historyView(filter,page);
+    var gym="";try{gym=getLogGymV31(l)||"";}catch(e){}
+    var duration="";
+    try{duration=(typeof gl066DurationText==="function"?gl066DurationText(l):"")||"";}catch(e){}
+    var exercises="";
+    (l.exercises||[]).forEach(function(ex,ei){exercises+=gl099ExerciseCard(ex,ei);});
+    var real="—";try{real=realWorkingSetsCount(l)||0;}catch(e){}
+    var notes=String(l.notes||"").trim()
+      ?"<div class='gl0698-notes'><b>Uwagi:</b><br>"+gl099HtmlMultiline(l.notes)+"</div>"
+      :"";
+    var map=(glFlags().muscleMap!==false&&window.muscleVisualHtml)?window.muscleVisualHtml(l):"";
+
+    render(
+      "<h1>Szczegóły treningu</h1>"+
+      "<button class='secondary topMenu mu-user-back' onclick='historyView(\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>← Historia</button>"+
+      "<div class='card'><h2>"+esc(l.training||"")+"</h2>"+
+        "<div class='gl0698-detail-sub'>"+esc(l.date||"")+(gym?" • "+esc(gym):"")+(duration&&duration!=="—"?" • "+esc(duration):"")+"</div>"+
+        "<div class='metricGrid'>"+
+          "<div><span>Sen</span><b>"+esc(l.sleep||"—")+"</b></div>"+
+          "<div><span>Waga</span><b>"+esc(l.weight||"—")+"</b></div>"+
+          "<div><span>Samopoczucie</span><b>"+esc(l.mood||"—")+"</b></div>"+
+          "<div><span>Serie robocze</span><b>"+esc(real)+"</b></div>"+
+        "</div>"+
+        notes+
+        "<div class='gl0698-detail-actions'>"+
+          "<button class='secondary' onclick='glManagedEditWorkout("+i+",\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>Edytuj trening</button>"+
+          "<button class='danger' onclick='glManagedDeleteWorkout("+i+",\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>Usuń trening</button>"+
+        "</div>"+
+      "</div>"+
+      map+exercises+luxBottomNav("history")
+    );
+
+    try{
+      requestAnimationFrame(function(){
+        if(typeof gl066AddShareButton==="function"){
+          gl066AddShareButton(l,data.logs||[],i,window.GL_PROFILE||{});
+        }
+      });
+    }catch(e){}
+  }
+  window.glManagedHistoryDetails=gl099ManagedDetail;
+
+  /* Same readable renderer when admin opens a managed user's workout. */
+  if(typeof window.glAdminWorkoutDetails==="function"){
+    window.glAdminWorkoutDetails=function(i,page){
+      var selected=window.GL_ADMIN_SELECTED||{};
+      var l=selected.state&&selected.state.logs&&selected.state.logs[i];
+      if(!l)return;
+      var exercises="";
+      (l.exercises||[]).forEach(function(ex,ei){exercises+=gl099ExerciseCard(ex,ei);});
+      var gym="";try{gym=getLogGymV31(l)||"";}catch(e){}
+      var duration="";try{duration=(typeof gl066DurationText==="function"?gl066DurationText(l):"")||"";}catch(e){}
+      var real="—";try{real=realWorkingSetsCount(l)||0;}catch(e){}
+      var notes=String(l.notes||"").trim()
+        ?"<div class='gl0698-notes'><b>Uwagi:</b><br>"+gl099HtmlMultiline(l.notes)+"</div>"
+        :"";
+      var flags=(selected.profile&&selected.profile.feature_flags)||{};
+      var map=(flags.muscleMap!==false&&window.muscleVisualHtml)?window.muscleVisualHtml(l):"";
+
+      render(
+        "<h1>Szczegóły treningu</h1>"+
+        "<button class='secondary topMenu mu-user-back' onclick='glAdminOpenUser(\""+esc((selected.profile||{}).id||"")+"\","+Number(page||0)+")'>← "+esc((selected.profile||{}).display_name||"Użytkownik")+"</button>"+
+        "<div class='card'><h2>"+esc(l.training||"")+"</h2>"+
+          "<div class='gl0698-detail-sub'>"+esc(l.date||"")+(gym?" • "+esc(gym):"")+(duration&&duration!=="—"?" • "+esc(duration):"")+"</div>"+
+          "<div class='metricGrid'>"+
+            "<div><span>Sen</span><b>"+esc(l.sleep||"—")+"</b></div>"+
+            "<div><span>Waga</span><b>"+esc(l.weight||"—")+"</b></div>"+
+            "<div><span>Samopoczucie</span><b>"+esc(l.mood||"—")+"</b></div>"+
+            "<div><span>Serie robocze</span><b>"+esc(real)+"</b></div>"+
+          "</div>"+
+          notes+
+          "<div class='gl0698-detail-actions'>"+
+            "<button onclick='glAdminEditWorkout("+i+","+Number(page||0)+")'>Edytuj trening</button>"+
+            "<button class='danger' onclick='glAdminDeleteWorkout("+i+","+Number(page||0)+")'>Usuń trening</button>"+
+          "</div>"+
+        "</div>"+
+        map+exercises+luxBottomNav("more")
+      );
+
+      try{
+        requestAnimationFrame(function(){
+          if(typeof gl066AddShareButton==="function"){
+            var sel=window.GL_ADMIN_SELECTED||{},logs=(sel.state&&sel.state.logs)||[];
+            gl066AddShareButton(l,logs,i,sel.profile||{});
+          }
+        });
+      }catch(e){}
+    };
+  }
+
+  /* More screen rebuilt with a balanced avatar area.
+     This intentionally removes the nested pink outline around the profile. */
+  window.luxMoreView=function(){
+    stopTimer();luxStopWorkoutClock();
+    var p=window.GL_PROFILE||{};
+    var role=p.role==="admin"?"Administrator":"Użytkownik";
+    var sync=window.GL_SYNC_STATUS||{state:"pending",text:"Oczekuje"};
+    var avatar=gl086AvatarHtml(p,"gl099-more-avatar",gl085Initials());
+
+    var account=
+      "<div class='card gl099-more-profile-card'>"+
+        "<button class='gl099-more-account' onclick='glAccountView(\"more\")' aria-label='Konto i profil'>"+
+          "<div class='gl099-more-profile-inner'>"+
+            "<div class='gl099-more-avatar-wrap'>"+avatar+"</div>"+
+            "<div class='gl099-more-profile-copy'>"+
+              "<div class='gl099-more-profile-name'>"+esc(p.display_name||p.username||"Konto")+"</div>"+
+              "<div class='gl099-more-profile-meta'>@"+esc(p.username||"—")+" • "+esc(role)+"</div>"+
+            "</div>"+
+            "<span class='gl099-more-profile-chevron'>›</span>"+
+          "</div>"+
+        "</button>"+
+        "<div class='mu-cloud-line'><span><i class='mu-sync-dot "+esc(sync.state||"pending")+"'></i>Supabase</span><span>"+esc(sync.text||"—")+"</span></div>"+
+      "</div>";
+
+    var actions="<div class='lux-action-list'>";
+    if(glIsAdmin()){
+      actions+="<button onclick='glUsersView()'><span>👥 Użytkownicy</span><span>›</span></button>"+
+               "<button onclick='glPlanEditorHub()'><span>▤ Edycja planów</span><span>›</span></button>"+
+               "<button onclick='goalsView()'><span>◎ Aktualizuj cele</span><span>›</span></button>";
+    }else if(gl064PlanEditEnabled()){
+      actions+="<button onclick='glPlanEditorHub()'><span>▤ Edycja planów</span><span>›</span></button>";
+    }
+    actions+="<button onclick='glAccountView(\"more\")'><span>◉ Konto i profil</span><span>›</span></button>"+
+             "<button onclick='glPushSettingsView()'><span>◉ Powiadomienia o przerwach</span><span>›</span></button>"+
+             "<button onclick='glBodyMeasurementsView()'><span>⌁ Pomiary ciała</span><span>›</span></button>"+
+             "<button onclick='backupView()'><span>⇩ Eksport / import awaryjny</span><span>›</span></button>"+
+             "<button onclick='helpView()'><span>? Pomoc</span><span>›</span></button>"+
+             "<button class='secondary' onclick='glForceCloudSync()'><span>↻ Synchronizuj Supabase</span><span>›</span></button>"+
+             "<button class='secondary' onclick='glLogout()'><span>Wyloguj się</span><span>›</span></button></div>";
+
+    render("<h1>Więcej</h1>"+account+
+      "<div class='card'><div class='lux-section-title'>GymLog CRUSH</div><div class='small'>"+esc(VERSION)+"</div></div>"+
+      actions+luxBottomNav("more"));
+  };
 })();
 
 

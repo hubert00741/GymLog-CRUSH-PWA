@@ -1128,6 +1128,191 @@ body.theme-female .lux-section-title:before{
   body.theme-female .gl086-profile-button{padding:10px 11px!important;min-height:60px!important}
 }
 
+
+/* =====================================================================
+   0.69.0 — female theme unified to match clean History style
+   ===================================================================== */
+body.theme-female{
+  --female-card-bg:linear-gradient(180deg,rgba(240,169,202,.035),rgba(217,129,174,.015)),linear-gradient(180deg,#121317,#0d0e12);
+  --female-card-border:rgba(240,169,202,.18);
+  --female-card-border-strong:rgba(240,169,202,.28);
+  --female-text-soft:#a896a3;
+  --female-text-dim:#827786;
+  --female-glow-soft:rgba(217,129,174,.08);
+}
+body.theme-female .gl085-top{align-items:flex-start!important}
+body.theme-female .gl085-brand img{
+  width:150px!important;
+  max-width:44vw!important;
+  height:auto!important;
+  display:block!important;
+}
+body.theme-female .gl086-woman-mark{
+  font-size:11px!important;
+  letter-spacing:.33em!important;
+  color:#ffc7e1!important;
+  text-shadow:0 0 10px rgba(255,199,225,.55),0 0 20px rgba(217,129,174,.18)!important;
+  margin-top:2px!important;
+}
+body.theme-female .gl086-profile-button,
+body.theme-female .gl086-start-main,
+body.theme-female .lux-action-list button,
+body.theme-female .gl086-upload-label,
+body.theme-female .secondary,
+body.theme-female .ghost,
+body.theme-female .gl085-metric,
+body.theme-female .gl085-week-card,
+body.theme-female .gl086-recent,
+body.theme-female .gl086-account-card,
+body.theme-female .lux-summary-tile,
+body.theme-female .lux-history-card,
+body.theme-female .card,
+body.theme-female .topMenu,
+body.theme-female .metricGrid>div,
+body.theme-female .box,
+body.theme-female .cloudStatus,
+body.theme-female .cloudMeta,
+body.theme-female .cloudRepo,
+body.theme-female .gl085-empty{
+  background:var(--female-card-bg)!important;
+  border:1px solid var(--female-card-border)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 10px 24px rgba(0,0,0,.20)!important;
+}
+body.theme-female .gl086-start-main{
+  min-height:66px!important;
+  border-color:var(--female-card-border-strong)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 12px 30px var(--female-glow-soft)!important;
+  color:#fff!important;
+  text-shadow:none!important;
+  letter-spacing:.028em!important;
+}
+body.theme-female .gl086-profile-button{
+  min-height:62px!important;
+  padding:11px 13px!important;
+}
+body.theme-female .gl086-profile-button,
+body.theme-female .gl086-start-main,
+body.theme-female .lux-action-list button{
+  border-radius:20px!important;
+}
+body.theme-female .gl085-account-copy b,
+body.theme-female .gl085-metric-value,
+body.theme-female .gl085-week-card b,
+body.theme-female .lux-summary-value,
+body.theme-female .gl086-recent-name,
+body.theme-female .mu-account-card h2,
+body.theme-female .lux-history-card h3,
+body.theme-female .lux-action-list button strong{
+  color:#fff!important;
+}
+body.theme-female .gl085-account-copy span,
+body.theme-female .gl085-metric-label,
+body.theme-female .gl085-week-card span,
+body.theme-female .lux-summary-label,
+body.theme-female .lux-summary-sub,
+body.theme-female .gl086-recent-date,
+body.theme-female .gl086-recent-time,
+body.theme-female .mu-account-card p,
+body.theme-female .mu-account-row span:first-child,
+body.theme-female .lux-action-list button small,
+body.theme-female .gl085-empty,
+body.theme-female .gl086-empty{
+  color:var(--female-text-soft)!important;
+}
+body.theme-female .gl085-section-head .text-btn,
+body.theme-female .text-btn,
+body.theme-female .gl085-section-head button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:34px!important;
+  padding:0 12px!important;
+  border-radius:999px!important;
+  background:var(--female-card-bg)!important;
+  border:1px solid var(--female-card-border)!important;
+  color:#ffc7e1!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+body.theme-female .gl085-section-head .text-btn:active,
+body.theme-female .text-btn:active{transform:scale(.99)}
+body.theme-female .gl085-avatar{
+  background:linear-gradient(145deg,rgba(240,169,202,.18),rgba(184,102,145,.22)),linear-gradient(180deg,#181920,#101116)!important;
+  border:1px solid rgba(240,169,202,.26)!important;
+  color:#ffd8ea!important;
+  box-shadow:0 10px 22px rgba(217,129,174,.10)!important;
+}
+body.theme-female .gl085-week-icon,
+body.theme-female .lux-icon{
+  color:#ffc0da!important;
+  background:rgba(240,169,202,.06)!important;
+  border:1px solid rgba(240,169,202,.16)!important;
+}
+body.theme-female .gl085-week-icon svg,
+body.theme-female .lux-icon svg{stroke:currentColor!important}
+body.theme-female .lux-action-list button{
+  justify-content:space-between!important;
+  min-height:58px!important;
+}
+body.theme-female .lux-action-list button span:last-child{
+  color:#ffc7e1!important;
+}
+body.theme-female .select,
+body.theme-female select{
+  background:var(--female-card-bg)!important;
+  border:1px solid var(--female-card-border)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+body.theme-female .lux-bottom-nav{
+  background:rgba(12,12,14,.95)!important;
+  border:1px solid rgba(240,169,202,.18)!important;
+  box-shadow:0 -1px 0 rgba(255,255,255,.03),0 12px 34px rgba(0,0,0,.34)!important;
+}
+body.theme-female .lux-bottom-nav button{
+  background:
+    linear-gradient(180deg,rgba(240,169,202,.10),rgba(217,129,174,.04)),
+    linear-gradient(180deg,#14151a,#0e0f13)!important;
+  border:1px solid rgba(240,169,202,.24)!important;
+  color:#f0dce7!important;
+  box-shadow:none!important;
+}
+body.theme-female .lux-bottom-nav button.active{
+  background:
+    linear-gradient(180deg,rgba(240,169,202,.14),rgba(217,129,174,.06)),
+    linear-gradient(180deg,#15161b,#0f1014)!important;
+  border-color:rgba(240,169,202,.30)!important;
+  color:#fff!important;
+  box-shadow:0 10px 20px rgba(217,129,174,.08)!important;
+}
+body.theme-female .lux-bottom-nav .plus{
+  background:
+    linear-gradient(180deg,rgba(240,169,202,.16),rgba(217,129,174,.08)),
+    linear-gradient(180deg,#15161b,#101116)!important;
+  color:#fff!important;
+  border:1px solid rgba(240,169,202,.30)!important;
+  box-shadow:0 10px 22px rgba(217,129,174,.10)!important;
+}
+body.theme-female .lux-bottom-nav .plus .ico,
+body.theme-female .lux-bottom-nav .plus span:last-child{color:#fff!important}
+body.theme-female h1:after,
+body.theme-female .lux-section-title:before{
+  background:linear-gradient(90deg,#ffc7e1,#dc8db7)!important;
+  box-shadow:0 0 10px rgba(255,199,225,.16)!important;
+}
+body.theme-female .gl085-start-cta{margin:6px 0 18px!important}
+body.theme-female .gl085-empty{
+  border-style:dashed!important;
+  color:#90919a!important;
+}
+body.theme-female .mu-sync-dot.ok{
+  box-shadow:0 0 0 4px rgba(103,220,141,.08),0 0 14px rgba(103,220,141,.18)!important;
+}
+
 </style>
 <style>
 
@@ -4197,7 +4382,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.68.9";
+VERSION = "BETA 0.69.0";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};

@@ -4558,7 +4558,7 @@ window.historyDetailsView = function(i, filter){
     "<h1>Szczegóły treningu</h1><div class='badge'>" + VERSION + "</div>" +
     "<div class='card'><h2>" + esc(l.date) + " — " + esc(l.training) + "</h2>" +
     "<textarea style='height:420px'>" + esc(txt) + "</textarea>" +
-    "<button onclick='copyText(document.querySelector(\"textarea\").value)'>Kopiuj raport</button>" +
+    "<button onclick='window.copyText(document.querySelector(\"textarea\").value)'>Kopiuj raport</button>" +
     "<button class='secondary' onclick='historyView(\"" + esc(filter || window._historyCurrentFilter || "Wszystkie") + "\")'>Wróć do historii</button></div>"
   );
 };
@@ -5617,7 +5617,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.70.1";
+VERSION = "BETA 0.70.2";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -5803,7 +5803,7 @@ window.historyDetailsView = function(i,filter){
     "<div class='card'><h2>"+esc(l.date)+" — "+esc(l.training)+"</h2><div class='small'>"+esc(getLogGymV31(l))+"</div>"+
     "<div class='metricGrid'><div><span>Sen</span><b>"+esc(l.sleep||"—")+"</b></div><div><span>Waga</span><b>"+esc(l.weight||"—")+"</b></div><div><span>Samopoczucie</span><b>"+esc(l.mood||"—")+"</b></div><div><span>Serie robocze</span><b>"+realWorkingSetsCount(l)+"</b></div></div>"+
     "<div class='box' style='margin-top:10px'>Paluch chodzenie/wybicie: "+esc(l.footWalk||"—")+" / "+esc(l.footPush||"—")+"\\nRehabilitacja: "+esc(l.rehab||"—")+"\\nUwagi: "+esc(l.notes||"brak")+"</div>"+
-    "<div class='volumeWrap'>"+chips+"</div><button onclick='copyText(window._pwaDetailReport)'>Kopiuj pełny raport</button></div>"+exercises
+    "<div class='volumeWrap'>"+chips+"</div><button onclick='window.copyText(window._pwaDetailReport)'>Kopiuj pełny raport</button></div>"+exercises
   );
 };
 
@@ -11484,6 +11484,85 @@ window.gl097DeleteDraftFromStart=function(){
     );
   };
 })();
+
+
+
+/* ======================================================================
+   0.70.2 — global clipboard fix
+   Some legacy report buttons use inline onclick handlers. The original
+   copyText() lived inside the app closure, so Safari could not resolve it
+   from an inline handler. Expose one robust global clipboard function.
+   ====================================================================== */
+window.copyText=function(value){
+  var text=String(value==null?"":value);
+
+  function fallbackCopy(){
+    var area=document.createElement("textarea");
+    area.value=text;
+    area.setAttribute("readonly","");
+    area.style.position="fixed";
+    area.style.left="-9999px";
+    area.style.top="0";
+    area.style.opacity="0";
+    area.style.fontSize="16px";
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    try{area.setSelectionRange(0,area.value.length);}catch(e){}
+
+    var ok=false;
+    try{ok=!!document.execCommand("copy");}catch(e){ok=false;}
+    area.remove();
+
+    if(!ok){
+      try{window.prompt("Skopiuj raport ręcznie:",text);}catch(e){}
+    }
+    return ok;
+  }
+
+  try{
+    if(window.isSecureContext && navigator.clipboard && typeof navigator.clipboard.writeText==="function"){
+      return navigator.clipboard.writeText(text).catch(function(){
+        fallbackCopy();
+      });
+    }
+  }catch(e){}
+
+  fallbackCopy();
+  return Promise.resolve();
+};
+
+/* Route the standard copy actions through the same global implementation. */
+window.copyFinalReport=function(){
+  var el=document.getElementById("rep");
+  if(!el)return;
+  window.copyText(el.value);
+  alert("Raport skopiowany.");
+};
+window.copyHistory=function(i){
+  if(!data.logs||!data.logs[i])return;
+  window.copyText(makeReport(data.logs[i]));
+  alert("Raport skopiowany.");
+};
+window.copyBackup=function(){
+  var el=document.getElementById("backupText");
+  if(!el)return;
+  window.copyText(el.value);
+  alert("Backup skopiowany.");
+};
+
+/* Admin export also uses the global clipboard API. */
+if(typeof window.glAdminExportWorkout==="function"){
+  window.glAdminExportWorkout=function(i){
+    var r=window.GL_ADMIN_SELECTED;
+    var log=r&&r.state&&r.state.logs&&r.state.logs[i];
+    if(!log){alert("Nie znaleziono treningu.");return;}
+    var txt="";
+    try{txt=makeReport(log);}catch(e){txt=JSON.stringify(log,null,2);}
+    window.copyText(txt);
+    alert("Eksport treningu skopiowany.");
+  };
+}
 
 
 runInstalledAppUpdates();

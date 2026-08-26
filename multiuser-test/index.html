@@ -1313,6 +1313,155 @@ body.theme-female .mu-sync-dot.ok{
   box-shadow:0 0 0 4px rgba(103,220,141,.08),0 0 14px rgba(103,220,141,.18)!important;
 }
 
+
+/* =====================================================================
+   0.69.1 — female theme final refinement
+   - use female logo in top-left
+   - remove hard full-pink blocks
+   - unify all female buttons/cards with subtle history-style accents
+   - statistics red accents -> baby pink
+   ===================================================================== */
+body.theme-female{
+  --lux-line-red:rgba(240,169,202,.26)!important;
+  --lux-red:#c4749d!important;
+  --lux-red2:#d98db5!important;
+  --lux-red3:#f0b2d0!important;
+  --lux-burgundy:#8d4e6c!important;
+  --crush-burgundy:#c677a1!important;
+  --crush-burgundy-2:#de97bb!important;
+  --female-btn-bg:
+    linear-gradient(180deg,rgba(240,169,202,.07),rgba(217,129,174,.03)),
+    linear-gradient(180deg,#121317,#0d0e12);
+  --female-btn-bg-active:
+    linear-gradient(180deg,rgba(240,169,202,.11),rgba(217,129,174,.05)),
+    linear-gradient(180deg,#13141a,#0e0f13);
+  --female-btn-border:rgba(240,169,202,.23);
+  --female-btn-border-strong:rgba(240,169,202,.30);
+  --female-btn-text:#fff;
+  --female-btn-text-soft:#ffd4e7;
+}
+body.theme-female .gl085-brand img{
+  width:150px!important;
+  max-width:44vw!important;
+  height:auto!important;
+  display:block!important;
+  object-fit:contain!important;
+  filter:none!important;
+}
+body.theme-female .gl086-profile-button,
+body.theme-female .gl086-start-main,
+body.theme-female .gl085-section-head .text-btn,
+body.theme-female .text-btn,
+body.theme-female .lux-action-list button,
+body.theme-female .secondary,
+body.theme-female .ghost,
+body.theme-female .topMenu,
+body.theme-female .lux-bottom-nav button,
+body.theme-female .lux-bottom-nav .plus,
+body.theme-female .lux-tool,
+body.theme-female .lux-filter,
+body.theme-female .select,
+body.theme-female select{
+  background:var(--female-btn-bg)!important;
+  border:1px solid var(--female-btn-border)!important;
+  color:var(--female-btn-text)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.035),
+    0 10px 22px rgba(0,0,0,.18)!important;
+  text-shadow:none!important;
+}
+body.theme-female .gl086-profile-button,
+body.theme-female .gl086-start-main{
+  border-radius:22px!important;
+}
+body.theme-female .gl086-profile-button:active,
+body.theme-female .gl086-start-main:active,
+body.theme-female .text-btn:active,
+body.theme-female .lux-bottom-nav button:active{
+  transform:scale(.992)!important;
+}
+body.theme-female .gl086-start-main{
+  color:#fff!important;
+  font-weight:950!important;
+  letter-spacing:.02em!important;
+  min-height:68px!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 12px 28px rgba(217,129,174,.08)!important;
+}
+body.theme-female .gl086-profile-button{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 10px 22px rgba(217,129,174,.06)!important;
+}
+body.theme-female .gl086-profile-button .gl085-account-copy span,
+body.theme-female .gl086-profile-button .gl085-account-copy small{
+  color:#b69aaa!important;
+}
+body.theme-female .gl085-section-head .text-btn,
+body.theme-female .text-btn{
+  min-height:34px!important;
+  padding:0 14px!important;
+  border-radius:999px!important;
+  color:var(--female-btn-text-soft)!important;
+}
+body.theme-female .lux-bottom-nav{
+  background:rgba(12,12,14,.95)!important;
+  border:1px solid rgba(240,169,202,.16)!important;
+}
+body.theme-female .lux-bottom-nav button{
+  color:#e8d4df!important;
+  border-radius:18px!important;
+}
+body.theme-female .lux-bottom-nav button.active{
+  background:var(--female-btn-bg-active)!important;
+  border-color:var(--female-btn-border-strong)!important;
+  color:#fff!important;
+}
+body.theme-female .lux-bottom-nav .plus{
+  background:var(--female-btn-bg-active)!important;
+  border-color:rgba(240,169,202,.34)!important;
+  color:#fff!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 12px 26px rgba(217,129,174,.12)!important;
+}
+body.theme-female .lux-bottom-nav .plus .ico,
+body.theme-female .lux-bottom-nav .plus span:last-child{color:#fff!important}
+body.theme-female .lux-current-tile.primary,
+body.theme-female .lux-strength-card,
+body.theme-female .lux-muscle-card,
+body.theme-female .lux-current-tile,
+body.theme-female .lux-metric,
+body.theme-female .lux-stat-card,
+body.theme-female .lux-stats-section{
+  border-color:rgba(240,169,202,.20)!important;
+}
+body.theme-female .lux-strength-card,
+body.theme-female .lux-muscle-card{
+  background:
+    linear-gradient(180deg,rgba(240,169,202,.04),rgba(217,129,174,.02)),
+    linear-gradient(180deg,#111216,#0d0e12)!important;
+}
+body.theme-female .lux-muscle-title-text b,
+body.theme-female .lux-muscle-foot b,
+body.theme-female .lux-current-value.accent,
+body.theme-female .lux-current-label.accent{
+  color:#f3bfd8!important;
+}
+body.theme-female h1:after,
+body.theme-female .lux-section-title:before{
+  background:linear-gradient(90deg,#ffcde3,#dc91b9)!important;
+  box-shadow:0 0 10px rgba(255,205,227,.18)!important;
+}
+body.theme-female .lux-tool.danger-mini .lux-tool-symbol,
+body.theme-female .lux-tool .lux-tool-symbol,
+body.theme-female .lux-delta.pos,
+body.theme-female .lux-muscle-title-icon{
+  color:#f0b2d0!important;
+  border-color:rgba(240,169,202,.18)!important;
+}
+
 </style>
 <style>
 
@@ -4382,7 +4531,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.69.0";
+VERSION = "BETA 0.69.1";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};

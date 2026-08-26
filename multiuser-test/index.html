@@ -1737,6 +1737,64 @@ html,body,#app{
   .gl096-setup-brand{margin-bottom:12px}
 }
 
+
+/* =====================================================================
+   0.69.7 — active workout actions on Start
+   ===================================================================== */
+.gl097-draft-actions{
+  display:grid;
+  grid-template-columns:minmax(0,1.75fr) minmax(118px,.75fr);
+  gap:9px;
+  width:100%;
+}
+.gl097-draft-actions .gl086-start-main,
+.gl097-delete-draft{
+  margin:0!important;
+  min-height:66px!important;
+}
+.gl097-delete-draft{
+  border-radius:19px!important;
+  background:
+    linear-gradient(180deg,rgba(255,72,87,.055),rgba(255,72,87,.015)),
+    linear-gradient(180deg,#111216,#0c0d10)!important;
+  border:1px solid rgba(255,88,101,.38)!important;
+  color:#ff9da6!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  letter-spacing:.025em!important;
+  box-shadow:none!important;
+}
+.gl097-delete-draft:active{
+  transform:scale(.992);
+  background:
+    linear-gradient(180deg,rgba(255,72,87,.09),rgba(255,72,87,.025)),
+    linear-gradient(180deg,#121216,#0c0d10)!important;
+}
+body.theme-female .gl097-delete-draft{
+  /* destructive action stays clearly destructive, while the rest of
+     the female interface keeps its baby-pink accent. */
+  background:
+    linear-gradient(180deg,rgba(255,72,87,.045),rgba(255,72,87,.012)),
+    linear-gradient(180deg,#111216,#0c0d10)!important;
+  border-color:rgba(255,105,118,.34)!important;
+  color:#ff9da6!important;
+}
+@media(max-width:390px){
+  .gl097-draft-actions{
+    grid-template-columns:minmax(0,1.55fr) minmax(104px,.70fr);
+    gap:7px;
+  }
+  .gl097-draft-actions .gl086-start-main,
+  .gl097-delete-draft{
+    min-height:62px!important;
+  }
+  .gl097-delete-draft{
+    font-size:10px!important;
+    padding-left:8px!important;
+    padding-right:8px!important;
+  }
+}
+
 </style>
 <style>
 
@@ -4806,7 +4864,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.69.6";
+VERSION = "BETA 0.69.7";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -9744,6 +9802,12 @@ window.home=function(){
 
   var action=draft?"resumeDraft()":"glWorkoutSetupView()";
   var label=draft?"KONTYNUUJ TRENING":"ROZPOCZNIJ TRENING";
+  var startCta=draft
+    ?"<section class='gl086-start-cta gl097-draft-cta'><div class='gl097-draft-actions'>"+
+       "<button class='gl086-start-main gl097-continue' onclick='resumeDraft()'>KONTYNUUJ TRENING →</button>"+
+       "<button class='gl097-delete-draft' onclick='gl097DeleteDraftFromStart()'>USUŃ TRENING</button>"+
+      "</div></section>"
+    :"<section class='gl086-start-cta'><button class='gl086-start-main' onclick='glWorkoutSetupView()'>ROZPOCZNIJ TRENING →</button></section>";
 
   var html=
     "<div class='gl085-dashboard'>"+
@@ -9755,7 +9819,7 @@ window.home=function(){
         "</button>"+
       "</div>"+
 
-      "<section class='gl086-start-cta'><button class='gl086-start-main' onclick='"+action+"'>"+label+" →</button></section>"+
+      startCta+
 
       "<div class='gl085-section-head'><h2>Podsumowanie</h2><button class='gl085-text-btn' onclick='luxStatsView()'>Statystyki →</button></div>"+
       "<div class='gl086-summary-metrics'>"+metrics+"</div>"+
@@ -9997,6 +10061,27 @@ window.gl089HeaderLogoSrc=function(profile){
     if(e.touches&&e.touches.length>1)e.preventDefault();
   },{passive:false});
 })();
+
+
+
+/* ======================================================================
+   0.69.7 — quick remove of an accidentally started workout from Start.
+   Removes only the active draft; it does NOT touch completed history.
+   ====================================================================== */
+window.gl097DeleteDraftFromStart=function(){
+  if(!data||!data.draft){home();return;}
+  var training=String(data.draft.training||"ten trening");
+  var ok=window.confirm("Usunąć rozpoczęty trening „"+training+"”?\\n\\nNie zostanie dodany do historii.");
+  if(!ok)return;
+
+  try{stopTimer();}catch(e){}
+  try{luxStopWorkoutClock();}catch(e){}
+  current=null;
+  idx=0;
+  data.draft=null;
+  safeSave();
+  home();
+};
 
 
 runInstalledAppUpdates();

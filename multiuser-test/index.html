@@ -1795,6 +1795,169 @@ body.theme-female .gl097-delete-draft{
   }
 }
 
+
+/* =====================================================================
+   0.69.8 — readable managed-user history + refined profile avatar
+   ===================================================================== */
+.mu-account-card{
+  display:flex!important;
+  align-items:center!important;
+  gap:14px!important;
+}
+.mu-avatar{
+  position:relative!important;
+  width:78px!important;
+  height:78px!important;
+  min-width:78px!important;
+  border-radius:50%!important;
+  padding:3px!important;
+  overflow:hidden!important;
+  display:grid!important;
+  place-items:center!important;
+  background:linear-gradient(145deg,rgba(181,40,62,.34),rgba(69,9,18,.92))!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  box-shadow:
+    0 12px 26px rgba(0,0,0,.30),
+    0 0 0 1px rgba(255,255,255,.035) inset!important;
+}
+.mu-avatar img{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  border-radius:50%!important;
+  background:#09090b!important;
+}
+.mu-avatar-fallback,
+.mu-avatar > span{
+  width:100%!important;
+  height:100%!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:linear-gradient(145deg,#23252b,#111217)!important;
+  color:#fff!important;
+  font-size:24px!important;
+  font-weight:900!important;
+  letter-spacing:.02em!important;
+}
+.mu-account-meta{min-width:0!important;flex:1 1 auto!important}
+.mu-account-meta h2{
+  line-height:1.08!important;
+  margin:0 0 4px!important;
+}
+.mu-account-meta p{
+  margin:0!important;
+  line-height:1.35!important;
+}
+body.theme-female .mu-avatar{
+  background:linear-gradient(145deg,rgba(250,182,214,.48),rgba(122,37,78,.88))!important;
+  border-color:rgba(255,214,233,.20)!important;
+  box-shadow:
+    0 12px 26px rgba(92,28,62,.22),
+    0 0 0 1px rgba(255,224,237,.05) inset!important;
+}
+body.theme-female .mu-avatar-fallback,
+body.theme-female .mu-avatar > span{
+  background:linear-gradient(145deg,#f4cadc,#bb6e97)!important;
+  color:#421326!important;
+}
+
+.gl0698-set-stack{display:grid;gap:10px;margin-top:8px}
+.gl0698-set-line{
+  display:grid;
+  grid-template-columns:32px minmax(0,1fr);
+  gap:11px;
+  align-items:flex-start;
+  padding:10px 12px;
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(15,16,19,.96),rgba(10,10,12,.98));
+  border:1px solid rgba(255,255,255,.06);
+}
+.gl0698-set-index{
+  width:32px;height:32px;border-radius:11px;
+  display:grid;place-items:center;
+  font-size:12px;font-weight:900;
+  background:linear-gradient(180deg,rgba(166,28,48,.16),rgba(82,11,20,.22));
+  border:1px solid rgba(196,54,76,.24);
+  color:#ffd9df;
+}
+.gl0698-set-text{
+  white-space:normal;
+  line-height:1.45;
+  font-size:14px;
+  color:#f2f2f5;
+  word-break:break-word;
+}
+.gl0698-empty-sets{
+  padding:12px 14px;border-radius:15px;
+  background:rgba(255,255,255,.03);
+  border:1px dashed rgba(255,255,255,.08);
+  color:#8f8f98;font-size:13px;
+}
+.gl0698-ex-card h3{
+  margin:0 0 4px!important;
+  font-size:18px!important;
+  line-height:1.2!important;
+}
+.gl0698-detail-head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+}
+.gl0698-detail-sub{
+  color:#90919a;font-size:12px;line-height:1.45;margin-top:5px;
+}
+.gl0698-detail-actions{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;
+}
+.gl0698-history-actions{
+  display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px;
+}
+.gl0698-history-actions button,
+.gl0698-detail-actions button{
+  margin:0!important;
+}
+.gl0698-list-stats{
+  display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;
+}
+.gl0698-stat-chip{
+  border-radius:999px;padding:6px 9px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.06);
+  color:#cfd0d6;font-size:11px;font-weight:700;
+}
+.gl0698-history-card{padding:15px!important}
+.gl0698-history-card h3{margin:0!important;font-size:18px!important;line-height:1.18!important}
+.gl0698-history-card .lux-history-meta{margin-top:5px!important}
+.gl0698-notes{
+  margin-top:12px;padding:12px 14px;border-radius:16px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  color:#d3d4db;line-height:1.45;font-size:14px;
+}
+body.theme-female .gl0698-set-line,
+body.theme-female .gl0698-empty-sets,
+body.theme-female .gl0698-notes,
+body.theme-female .gl0698-stat-chip{
+  border-color:rgba(247,190,214,.12)!important;
+}
+body.theme-female .gl0698-set-index{
+  background:linear-gradient(180deg,rgba(248,179,208,.12),rgba(163,75,122,.18))!important;
+  border-color:rgba(248,192,216,.28)!important;
+  color:#ffdced!important;
+}
+@media(max-width:430px){
+  .mu-avatar{
+    width:68px!important;height:68px!important;min-width:68px!important;
+  }
+  .gl0698-set-line{
+    grid-template-columns:28px minmax(0,1fr);
+    gap:10px;padding:9px 10px;
+  }
+  .gl0698-set-index{width:28px;height:28px;font-size:11px;border-radius:10px}
+  .gl0698-detail-actions{grid-template-columns:1fr}
+  .gl0698-history-actions{grid-template-columns:1fr}
+}
+
 </style>
 <style>
 
@@ -4864,7 +5027,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.69.7";
+VERSION = "BETA 0.69.8";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -10082,6 +10245,141 @@ window.gl097DeleteDraftFromStart=function(){
   safeSave();
   home();
 };
+
+
+
+/* ======================================================================
+   0.69.8 — managed users: readable history/details + better avatar card
+   ====================================================================== */
+(function(){
+  function gl0698DurationText(v){
+    if(v===undefined||v===null||v==="")return "—";
+    if(typeof v==="number" && isFinite(v)){
+      var n=Math.max(0,Math.round(v)),h=Math.floor(n/3600),m=Math.floor((n%3600)/60),s=n%60;
+      return [h,m,s].map(function(x){return String(x).padStart(2,"0");}).join(":");
+    }
+    return String(v);
+  }
+  function gl0698EscBr(v){
+    return esc(String(v||"")).replace(/\r?\n/g,"<br>");
+  }
+  function gl0698SetLines(ex){
+    var out=[];
+    ((ex&&ex.sets)||[]).forEach(function(s){
+      var raw=typeof s==="string"?s:getSetLine(s);
+      String(raw||"").replace(/\r/g,"").split(/\n+/).forEach(function(line){
+        line=String(line||"").trim();
+        if(line)out.push(line);
+      });
+    });
+    return out;
+  }
+  function gl0698ExerciseHtml(ex,ei){
+    var lines=gl0698SetLines(ex),sets="";
+    if(!lines.length){
+      sets="<div class='gl0698-empty-sets'>Brak wpisanych serii.</div>";
+    }else{
+      lines.forEach(function(line,li){
+        sets+="<div class='gl0698-set-line'><div class='gl0698-set-index'>"+(li+1)+"</div><div class='gl0698-set-text'>"+gl0698EscBr(line)+"</div></div>";
+      });
+    }
+    var meta="";
+    if(ex&&ex.plan)meta+="<details class='lux-details'><summary>Plan na dziś</summary><div class='box'>"+gl0698EscBr(ex.plan)+"</div></details>";
+    var prev=(ex&& (ex.reportLast||ex.last)) || "";
+    if(prev)meta+="<details class='lux-details'><summary>Poprzedni wynik</summary><div class='box'>"+gl0698EscBr(prev)+"</div></details>";
+    return "<article class='card gl0698-ex-card'><h3>"+(ei+1)+". "+esc((ex&&ex.name)||"Ćwiczenie")+"</h3><div class='gl0698-set-stack'>"+sets+"</div>"+meta+"</article>";
+  }
+  function gl0698MetricsHtml(l){
+    var real="—";try{real=realWorkingSetsCount(l)||0;}catch(e){}
+    return "<div class='metricGrid'>"+
+      "<div><span>Sen</span><b>"+esc(l&&l.sleep||"—")+"</b></div>"+
+      "<div><span>Waga</span><b>"+esc(l&&l.weight||"—")+"</b></div>"+
+      "<div><span>Samopoczucie</span><b>"+esc(l&&l.mood||"—")+"</b></div>"+
+      "<div><span>Serie robocze</span><b>"+esc(real)+"</b></div>"+
+      "</div>";
+  }
+  function gl0698ManagedHistoryList(filter,page){
+    stopTimer();luxStopWorkoutClock();
+    filter=filter||window._historyCurrentFilter||"Wszystkie";
+    window._historyCurrentFilter=filter;
+    var all=["Wszystkie"];
+    glManagedPlanNames().forEach(function(n){if(all.indexOf(n)<0)all.push(n);});
+    (data.logs||[]).forEach(function(l){if(l.training&&all.indexOf(l.training)<0)all.push(l.training);});
+    var opts="";all.forEach(function(n){opts+="<option value='"+esc(n)+"'"+selected(filter,n)+">"+esc(n)+"</option>";});
+    var matches=[];(data.logs||[]).forEach(function(l,i){if(filter==="Wszystkie"||l.training===filter)matches.push({log:l,index:i});});
+    var per=4,total=Math.max(1,Math.ceil(matches.length/per));
+    page=Math.max(0,Math.min(Number(page||0),total-1));window._pwaHistoryPage=page;
+    var visible=matches.slice(page*per,page*per+per);
+    var avgW=luxAvg("weight"),avgS=luxAvg("sleep");
+    var html="<div class='lux-history-head'><h1>Historia</h1><select class='lux-filter' onchange='historyView(this.value,0)'>"+opts+"</select></div>"+
+      "<div class='lux-summary-grid'>"+
+        "<div class='lux-summary-tile'><div class='lux-summary-label'>Treningi</div><div class='lux-summary-value'>"+matches.length+"</div><div class='lux-summary-sub'>Wszystkie</div></div>"+
+        "<div class='lux-summary-tile'><div class='lux-summary-label'>Śr. waga</div><div class='lux-summary-value'>"+(avgW!=null?luxFmt(avgW,1)+"<span style=\"font-size:.72em\"> kg</span>":"—")+"</div><div class='lux-summary-sub'>z zapisanych</div></div>"+
+        "<div class='lux-summary-tile'><div class='lux-summary-label'>Śr. sen</div><div class='lux-summary-value'>"+(avgS!=null?luxFmt(avgS,1)+"<span style=\"font-size:.72em\"> h</span>":"—")+"</div><div class='lux-summary-sub'>z zapisanych</div></div>"+
+      "</div>"+
+      "<div class='lux-kicker' style='margin:4px 1px 10px'>OSTATNIE TRENINGI</div><div class='lux-history-list'>";
+    visible.forEach(function(x){
+      var l=x.log,real=0;try{real=realWorkingSetsCount(l)||0;}catch(e){}
+      var gym=getLogGymV31(l),dur=gl0698DurationText(l.duration||l.time||l.durationText||"");
+      html+="<article class='lux-history-card gl0698-history-card'><div class='lux-history-head'>"+
+        "<div><h3>"+esc(l.training||"Trening")+"</h3><div class='lux-history-meta'>"+esc(gym||"")+(gym?" • ":"")+esc(l.date||"")+"</div></div></div>"+
+        "<div class='gl0698-list-stats'>"+
+          "<span class='gl0698-stat-chip'>⚖ "+esc(l.weight||"—")+" kg</span>"+
+          "<span class='gl0698-stat-chip'>🌙 "+esc(l.sleep||"—")+" h</span>"+
+          "<span class='gl0698-stat-chip'>Serie: "+esc(real)+"</span>"+
+          "<span class='gl0698-stat-chip'>Czas: "+esc(dur)+"</span>"+
+        "</div>"+
+        "<div class='gl0698-history-actions'><button onclick='glManagedHistoryDetails("+x.index+",\""+esc(filter)+"\","+page+")'>Szczegóły</button><button class='secondary' onclick='glManagedDeleteWorkout("+x.index+",\""+esc(filter)+"\","+page+")'>Usuń</button></div></article>";
+    });
+    if(!matches.length)html+="<div class='card small'>Brak treningów.</div>";
+    html+="</div>";
+    if(matches.length>per)html+="<div class='historyPager'>"+(page>0?"<button class='secondary' onclick='historyView(\""+esc(filter)+"\","+(page-1)+")'>← Poprzednia</button>":"<span></span>")+(page<total-1?"<button class='secondary' onclick='historyView(\""+esc(filter)+"\","+(page+1)+")'>Następna →</button>":"<span></span>")+"</div>";
+    html+=luxBottomNav("history");
+    render(html);
+  }
+
+  var gl0698BaseHistoryView=window.historyView;
+  window.historyView=function(filter,page){
+    if(!(typeof glIsManagedUser==="function" && glIsManagedUser())){
+      return gl0698BaseHistoryView.apply(this,arguments);
+    }
+    return gl0698ManagedHistoryList(filter,page);
+  };
+
+  window.glManagedHistoryDetails=function(i,filter,page){
+    var l=data.logs&&data.logs[i];if(!l)return historyView(filter,page);
+    var gym=getLogGymV31(l),dur=gl0698DurationText(l.duration||l.time||l.durationText||"");
+    var exercises="";(l.exercises||[]).forEach(function(ex,ei){exercises+=gl0698ExerciseHtml(ex,ei);});
+    var notes=String(l.notes||"").trim()?("<div class='gl0698-notes'><b>Uwagi:</b><br>"+gl0698EscBr(l.notes)+"</div>"):"";
+    var map=(glFlags().muscleMap!==false&&window.muscleVisualHtml)?window.muscleVisualHtml(l):"";
+    render(
+      "<h1>Szczegóły treningu</h1><button class='secondary topMenu mu-user-back' onclick='historyView(\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>← Historia</button>"+
+      "<div class='card'><div class='gl0698-detail-head'><div><h2>"+esc(l.training||"")+"</h2><div class='gl0698-detail-sub'>"+esc(l.date||"")+(gym?" • "+esc(gym):"")+(dur!=="—"?" • "+esc(dur):"")+"</div></div></div>"+
+      gl0698MetricsHtml(l)+notes+
+      "<div class='gl0698-detail-actions'><button class='secondary' onclick='glManagedEditWorkout("+i+",\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>Edytuj trening</button><button class='danger' onclick='glManagedDeleteWorkout("+i+",\""+esc(filter||"Wszystkie")+"\","+Number(page||0)+")'>Usuń trening</button></div></div>"+
+      map+exercises+luxBottomNav("history")
+    );
+    try{requestAnimationFrame(function(){ if(typeof gl066AddShareButton==="function"){ gl066AddShareButton(l,data.logs||[],i,window.GL_PROFILE||{}); } });}catch(e){}
+  };
+
+  if(typeof window.glAdminWorkoutDetails==="function"){
+    window.glAdminWorkoutDetails=function(i,page){
+      var r=window.GL_ADMIN_SELECTED,l=r&&r.state&&r.state.logs&&r.state.logs[i];if(!l)return;
+      var gym=getLogGymV31(l),dur=gl0698DurationText(l.duration||l.time||l.durationText||"");
+      var exercises="";(l.exercises||[]).forEach(function(ex,ei){exercises+=gl0698ExerciseHtml(ex,ei);});
+      var notes=String(l.notes||"").trim()?("<div class='gl0698-notes'><b>Uwagi:</b><br>"+gl0698EscBr(l.notes)+"</div>"):"";
+      var flags=(r.profile&&r.profile.feature_flags)||{},map=(flags.muscleMap!==false&&window.muscleVisualHtml)?window.muscleVisualHtml(l):"";
+      render(
+        "<h1>Szczegóły treningu</h1><button class='secondary topMenu mu-user-back' onclick='glAdminOpenUser(\""+esc((r.profile||{}).id||"")+"\","+Number(page||0)+")'>← "+esc((r.profile||{}).display_name||"Użytkownik")+"</button>"+
+        "<div class='card'><div class='gl0698-detail-head'><div><h2>"+esc(l.training||"")+"</h2><div class='gl0698-detail-sub'>"+esc(l.date||"")+(gym?" • "+esc(gym):"")+(dur!=="—"?" • "+esc(dur):"")+"</div></div></div>"+
+        gl0698MetricsHtml(l)+notes+
+        "<div class='gl0698-detail-actions'><button onclick='glAdminEditWorkout("+i+","+Number(page||0)+")'>Edytuj trening</button><button class='danger' onclick='glAdminDeleteWorkout("+i+","+Number(page||0)+")'>Usuń trening</button></div></div>"+
+        map+exercises+luxBottomNav("more")
+      );
+      try{requestAnimationFrame(function(){ if(typeof gl066AddShareButton==="function"){ var sel=window.GL_ADMIN_SELECTED||{},logs=(sel.state&&sel.state.logs)||[]; gl066AddShareButton(l,logs,i,(sel.profile||{})); } });}catch(e){}
+    };
+  }
+})();
 
 
 runInstalledAppUpdates();

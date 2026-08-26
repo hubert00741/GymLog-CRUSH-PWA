@@ -1626,6 +1626,87 @@ body.theme-female .lux-section-title:before{
   box-shadow:0 0 12px rgba(244,168,203,.14)!important;
 }
 
+
+/* =====================================================================
+   0.69.5 — DOM text wordmark
+   GymLog = simple white typography.
+   CRUSH = real text with neon glow BEHIND the letters.
+   Female CRUSH uses a softer rounded typeface.
+   ===================================================================== */
+.gl095-wordmark{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  min-width:0;
+  white-space:nowrap;
+  padding:5px 2px 2px 0;
+  line-height:1;
+}
+.gl095-gym{
+  color:#f3f3f5;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  font-size:21px;
+  font-weight:650;
+  letter-spacing:-.035em;
+}
+.gl095-crush{
+  position:relative;
+  z-index:0;
+  color:#e9364d;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  font-size:21px;
+  font-weight:900;
+  letter-spacing:.015em;
+  text-shadow:
+    0 0 4px rgba(233,54,77,.95),
+    0 0 10px rgba(233,54,77,.62),
+    0 0 20px rgba(233,54,77,.35),
+    0 0 34px rgba(233,54,77,.18);
+}
+/* The blurred duplicate sits behind the actual letters and creates the
+   "light coming from behind CRUSH" effect without any underline. */
+.gl095-crush::before{
+  content:"CRUSH";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  color:#e9364d;
+  opacity:.52;
+  filter:blur(8px);
+  transform:scale(1.035);
+  pointer-events:none;
+}
+body.theme-female .gl095-crush{
+  color:#ffb8d8!important;
+  font-family:ui-rounded,"SF Pro Rounded","Avenir Next Rounded","Avenir Next","Trebuchet MS",-apple-system,BlinkMacSystemFont,sans-serif!important;
+  font-weight:700!important;
+  letter-spacing:.045em!important;
+  text-shadow:
+    0 0 4px rgba(255,184,216,.98),
+    0 0 10px rgba(255,184,216,.72),
+    0 0 20px rgba(244,168,203,.43),
+    0 0 34px rgba(217,129,174,.22)!important;
+}
+body.theme-female .gl095-crush::before{
+  color:#ffb8d8!important;
+  opacity:.58!important;
+  filter:blur(9px)!important;
+}
+body.theme-female .gl095-gym{
+  color:#f5f3f5!important;
+  font-weight:600!important;
+}
+body.theme-female .gl086-brand-stack{
+  gap:8px!important;
+}
+body.theme-female .gl086-woman-mark{
+  margin-top:1px!important;
+}
+@media(max-width:430px){
+  .gl095-wordmark{gap:7px}
+  .gl095-gym,.gl095-crush{font-size:20px}
+}
+
 </style>
 <style>
 
@@ -4695,7 +4776,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.69.2";
+VERSION = "BETA 0.69.5";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -9633,7 +9714,7 @@ window.home=function(){
   var html=
     "<div class='gl085-dashboard'>"+
       "<div class='gl085-top'>"+
-        "<div class='gl086-brand-stack'><div class='gl085-brand'><img src='"+gl089HeaderLogoSrc(p)+"' alt='GymLog CRUSH'></div>"+(glGender()==="female"?"<div class='gl086-woman-mark'>FOR WOMAN</div>":"")+"</div>"+
+        "<div class='gl086-brand-stack'><div class='gl095-wordmark' aria-label='GymLog CRUSH'><span class='gl095-gym'>GymLog</span><span class='gl095-crush'>CRUSH</span></div>"+(glGender()==="female"?"<div class='gl086-woman-mark'>FOR WOMAN</div>":"")+"</div>"+
         "<button class='gl086-profile-button' onclick='glAccountView(\"home\")' aria-label='Otwórz konto'>"+
           "<span class='gl085-account-copy'><b>"+esc(gl085FirstName())+"</b><span>"+(glIsManagedUser()?"Profil treningowy":"Profil główny")+"</span></span>"+
           gl086AvatarHtml(p,"gl085-avatar",gl085Initials())+
@@ -9866,8 +9947,8 @@ window.gl089IsFemaleProfile=function(profile){
 };
 window.gl089HeaderLogoSrc=function(profile){
   return (typeof glGender==="function" && glGender()==="female")
-    ? "header-logo-female.png?v=692"
-    : "header-logo.png?v=692";
+    ? "header-logo-female.png?v=694"
+    : "header-logo.png?v=694";
 };
 
 

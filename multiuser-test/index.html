@@ -5617,7 +5617,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.70.3";
+VERSION = "BETA 0.70.4";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -5781,7 +5781,7 @@ window.historyView = function(filter,page){
 window.historyDetailsView = function(i,filter){
   var l=data.logs[i];if(!l)return historyView(filter||"Wszystkie",window._pwaHistoryPage||0);
   var volume=volumeSummary(l),chips="";
-  Object.keys(volume).sort(function(a,b){return volume[b]-volume[a];}).forEach(function(k){chips+="<span class='volumeChip'>"+esc(k)+": "+volume[k]+"</span>";});
+  Object.keys(volume).sort(function(a,b){return volume[b]-volume[a];}).forEach(function(k){chips+="<span class='volumeChip'>"+esc(window.gl074MuscleLabel?gl074MuscleLabel(k):k)+": "+volume[k]+"</span>";});
   var exercises="";
   (l.exercises||[]).forEach(function(e,ei){
     var sets="";
@@ -11756,6 +11756,118 @@ if(typeof window.glAdminExportWorkout==="function"){
       fixWorkout(d.draft);
       (d.logs||[]).forEach(fixWorkout);
       return d;
+    };
+  }
+})();
+
+
+
+/* ======================================================================
+   0.70.4 — short glute DISPLAY labels
+   Internal/Supabase taxonomy remains anatomical.
+   Visible labels:
+   Pośladek - Góra / Środek / Dół / Bok
+   ====================================================================== */
+(function(){
+  var GL074_LABELS={
+    "Pośladkowy wielki — część górna":"Pośladek - Góra",
+    "Pośladkowy wielki — część środkowa":"Pośladek - Środek",
+    "Pośladkowy wielki — część dolna":"Pośladek - Dół",
+    "Pośladkowy średni":"Pośladek - Bok"
+  };
+
+  window.gl074MuscleLabel=function(name){
+    return GL074_LABELS[String(name||"")]||String(name||"");
+  };
+
+  window.gl074MuscleTechnicalName=function(name){
+    var reverse={
+      "Pośladek - Góra":"Pośladkowy wielki — część górna",
+      "Pośladek - Środek":"Pośladkowy wielki — część środkowa",
+      "Pośladek - Dół":"Pośladkowy wielki — część dolna",
+      "Pośladek - Bok":"Pośladkowy średni"
+    };
+    var n=String(name||"").trim();
+    return reverse[n]||n;
+  };
+
+  /* Editor shows short labels but checkbox values remain technical. */
+  if(typeof gl065MusclePickerHtml==="function"){
+    gl065MusclePickerHtml=function(e,i){
+      var selectedGroups=(typeof gl073CorrectGroups==="function")
+        ?gl073CorrectGroups(e&&e.name,(e&&e.groups)||[])
+        :(Array.isArray(e&&e.groups)?e.groups:[]);
+      return "<div class='gl-muscle-picker-065'>"+GL065_MUSCLE_GROUPS.map(function(g){
+        var checked=selectedGroups.indexOf(g)>=0?" checked":"";
+        return "<label class='gl-muscle-chip-065'><input type='checkbox' name='pe_groups_"+i+"' value='"+esc(g)+"'"+checked+"><span>"+esc(gl074MuscleLabel(g))+"</span></label>";
+      }).join("")+"</div>";
+    };
+  }
+
+  /* Muscle-map chips and top labels. */
+  if(typeof luxMuscleDisplayNameV502==="function"){
+    var gl074BaseMuscleDisplayName=luxMuscleDisplayNameV502;
+    luxMuscleDisplayNameV502=function(key){
+      return gl074MuscleLabel(gl074BaseMuscleDisplayName(key));
+    };
+  }
+
+  /* PNG/share graphics. */
+  if(typeof gl066MusclePercentages==="function"){
+    var gl074BaseMusclePercentages=gl066MusclePercentages;
+    gl066MusclePercentages=function(log){
+      return gl074BaseMusclePercentages(log).map(function(x){
+        return {name:gl074MuscleLabel(x.name),value:x.value,pct:x.pct};
+      });
+    };
+  }
+
+  /* Copied report / text summary. */
+  volumeSummaryText=function(log){
+    var v=volumeSummary(log);
+    var keys=Object.keys(v);
+    var realTotal=realWorkingSetsCount(log);
+
+    if(!keys.length){
+      return "Realnie wykonane: "+realTotal+" serii roboczych\n\nBrak obciążenia partii.";
+    }
+
+    var assignedTotal=0;
+    keys.forEach(function(k){assignedTotal+=v[k];});
+
+    keys.sort(function(a,b){
+      if(v[b]!==v[a])return v[b]-v[a];
+      return gl074MuscleLabel(a).localeCompare(gl074MuscleLabel(b),"pl");
+    });
+
+    var out="";
+    out+="Realnie wykonane: "+realTotal+" serii roboczych\n";
+    out+="Suma przypisań do partii: "+assignedTotal+"\n";
+    out+="Jedna seria może liczyć się do kilku partii, np. przysiad = czwórki + pośladek.\n\n";
+    out+="Udział obciążenia partii:\n";
+
+    keys.forEach(function(k){
+      var pct=assignedTotal>0?(v[k]/assignedTotal*100):0;
+      var pctText=pct.toFixed(1).replace(".0","").replace(".",",");
+      out+=gl074MuscleLabel(k)+": "+v[k]+" serii przypisanych — "+pctText+"%\n";
+    });
+    return out.trim();
+  };
+
+  /* If short aliases are pasted into plan-code import, convert them back
+     to the anatomical technical keys before saving. */
+  if(typeof glPlanTextToConfig==="function"){
+    var gl074BasePlanTextToConfig=glPlanTextToConfig;
+    glPlanTextToConfig=function(txt){
+      var cfg=gl074BasePlanTextToConfig(txt);
+      Object.keys(cfg||{}).forEach(function(plan){
+        (cfg[plan]||[]).forEach(function(ex){
+          if(Array.isArray(ex.groups)){
+            ex.groups=ex.groups.map(gl074MuscleTechnicalName);
+          }
+        });
+      });
+      return cfg;
     };
   }
 })();

@@ -5617,7 +5617,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.70.4";
+VERSION = "BETA 0.71.0";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -11872,6 +11872,470 @@ if(typeof window.glAdminExportWorkout==="function"){
   }
 })();
 
+
+/* ======================================================================
+   0.71.0 — coach workflow / active workout flow
+   - admin can manage client plans + goals directly from Users
+   - per-user report-code and goal-code toggles
+   - next exercise note for every account
+   - auto-advance to next exercise after final planned set
+   - managed clients get Skip / Substitute at bottom
+   - Users list shows last cloud activity
+   - optional Remember me on login (device-local encrypted credentials)
+   ====================================================================== */
+(function(){
+  VERSION = "BETA 0.71.0";
+
+  /* ---------- styles ---------- */
+  var style=document.createElement("style");
+  style.textContent=`
+    .gl110-next-note{margin:10px 0 12px;padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.025);font-size:11px;line-height:1.35;color:#a9a9af}
+    .gl110-next-note b{color:#fff;font-size:12px}
+    body.theme-female .gl110-next-note{border-color:rgba(255,177,210,.20);background:rgba(255,177,210,.035)}
+    .gl110-managed-actions{margin-top:18px}
+    .gl110-managed-goal{margin-top:12px;padding:12px;border-radius:13px;border:1px solid rgba(255,39,56,.22);background:rgba(255,39,56,.035)}
+    .gl110-managed-goal .k{font-size:9px;letter-spacing:.12em;color:#9b9ba2;font-weight:800;margin-bottom:6px}
+    .gl110-managed-goal .v{white-space:pre-line;font-size:13px;line-height:1.48;color:#f5f5f7}
+    body.theme-female .gl110-managed-goal{border-color:rgba(255,177,210,.28);background:rgba(255,177,210,.04)}
+    .gl110-user-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:10px}
+    .gl110-user-actions button{margin:0!important;min-height:40px;padding:9px 7px!important;font-size:10px!important}
+    .gl110-last-activity{margin-top:6px;font-size:10px;color:#8e8e95;line-height:1.35}
+    .gl110-last-activity b{color:#c7c7cc;font-weight:700}
+    .gl110-admin-quick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+    .gl110-admin-quick button{margin:0!important}
+    .gl110-code-help{font-size:10px;line-height:1.45;color:#8d8d94;margin:8px 0 12px}
+    .gl110-code-area{min-height:320px!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:11px!important;line-height:1.45!important}
+    .gl110-report-card textarea{min-height:250px!important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace!important;font-size:10px!important;line-height:1.42!important}
+    .gl110-remember{display:flex;align-items:center;gap:10px;margin:13px 1px 2px;color:#d3d3d7;font-size:12px;user-select:none}
+    .gl110-remember input{width:20px!important;height:20px!important;margin:0!important;accent-color:#a51c30}
+    body.theme-female .gl110-remember input{accent-color:#ffb1d2}
+    .gl110-remember-note{font-size:9px;line-height:1.35;color:#717178;margin:6px 1px 0}
+    .gl110-feature-stack{display:grid;gap:10px;margin-top:10px}
+    .gl110-feature-item{padding:11px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.02)}
+    .gl110-feature-item label{margin-top:0!important}
+    @media(max-width:390px){.gl110-user-actions{grid-template-columns:1fr 1fr}.gl110-user-actions .full{grid-column:1/-1}.gl110-admin-quick{grid-template-columns:1fr}}
+  `;
+  document.head.appendChild(style);
+
+  /* ---------- feature flags ---------- */
+  var gl110BaseDefaultManagedFlags=window.glDefaultManagedFlags||glDefaultManagedFlags;
+  glDefaultManagedFlags=window.glDefaultManagedFlags=function(){
+    var f={};
+    try{f=Object.assign({},gl110BaseDefaultManagedFlags());}catch(e){}
+    return Object.assign({managedMode:true,gymSelection:false,chatReport:false,goalUpdate:false,footTracking:false,muscleMap:true,bodyWeight:true,adminUsers:false,mood:true,planEdit:false},f);
+  };
+  function gl110ReportEnabled(){return !!(glIsManagedUser()&&glFlags().chatReport===true);}
+  function gl110GoalUpdateEnabled(){return !!(glIsManagedUser()&&glFlags().goalUpdate===true);}
+
+  /* ---------- managed goal storage / parsing ---------- */
+  var gl110BaseManagedExercises=window.glManagedExercises||glManagedExercises;
+  glManagedExercises=window.glManagedExercises=function(planName){
+    var out=gl110BaseManagedExercises.apply(this,arguments)||[];
+    var cfg=glManagedPlans()[planName]||[];
+    out.forEach(function(ex){
+      var src=cfg.find(function(x){return String(x&&x.name||"")===String(ex&&ex.name||"");});
+      ex.managedGoal=src&&src.goal?String(src.goal):"";
+    });
+    return out;
+  };
+
+  function gl110ParseManagedGoalUpdate(txt,plans){
+    plans=plans||{};
+    var lines=String(txt||"").replace(/\\r\\n/g,"\n").replace(/\\n/g,"\n").split(/\r?\n/);
+    var items=[],plan=null,exercise=null,buf=[];
+    function flush(){
+      if(plan&&exercise&&buf.length)items.push({plan:plan,exercise:exercise,goal:buf.join("\n").trim()});
+      exercise=null;buf=[];
+    }
+    for(var i=0;i<lines.length;i++){
+      var line=String(lines[i]||"").trim();
+      if(!line)continue;
+      if(line==="GYMLOG_PLAN_UPDATE_V1")continue;
+      if(line==="END_UPDATE"){flush();break;}
+      if(Object.prototype.hasOwnProperty.call(plans,line)){flush();plan=line;continue;}
+      if(/:$/.test(line)){
+        flush();
+        if(!plan)return {ok:false,message:"Najpierw podaj dokładną nazwę planu użytkownika."};
+        exercise=line.slice(0,-1).trim();
+        continue;
+      }
+      if(plan&&exercise)buf.push(line);
+    }
+    flush();
+    if(!items.length)return {ok:false,message:"Nie znaleziono żadnych celów do aktualizacji."};
+    var errors=[];
+    items.forEach(function(item){
+      var list=plans[item.plan]||[];
+      if(!list.some(function(ex){return String(ex&&ex.name||"")===item.exercise;}))errors.push(item.plan+" — nie znaleziono ćwiczenia: "+item.exercise);
+    });
+    if(errors.length)return {ok:false,message:"Błąd nazw:\n"+errors.join("\n")};
+    return {ok:true,items:items};
+  }
+  function gl110ApplyManagedGoalItems(plans,items){
+    var next=gl064ClonePlans(plans||{});
+    items.forEach(function(item){
+      (next[item.plan]||[]).forEach(function(ex){if(String(ex.name||"")===item.exercise)ex.goal=item.goal;});
+    });
+    return next;
+  }
+
+  window.gl110AdminManagedGoalsView=async function(uid){
+    if(!glIsAdmin())return;
+    try{
+      var r=(window.GL_ADMIN_SELECTED&&window.GL_ADMIN_SELECTED.profile&&window.GL_ADMIN_SELECTED.profile.id===uid)?window.GL_ADMIN_SELECTED:await glAdminApi({action:"get_user_state",user_id:uid});
+      window.GL_ADMIN_SELECTED=r;
+      var p=r.profile||{},plans=((p.profile_config||{}).managed_plans)||{};
+      window.GL110_GOAL_CTX={mode:"admin",profile:p,plans:plans};
+      gl110ManagedGoalsRender();
+    }catch(e){alert("Nie udało się otworzyć celów: "+String(e.message||e));}
+  };
+  window.gl110SelfManagedGoalsView=function(){
+    if(!gl110GoalUpdateEnabled()){alert("Aktualizacja celów kodem jest wyłączona na tym koncie.");return luxMoreView();}
+    var p=window.GL_PROFILE||{};
+    window.GL110_GOAL_CTX={mode:"self",profile:p,plans:((p.profile_config||{}).managed_plans)||{}};
+    gl110ManagedGoalsRender();
+  };
+  function gl110ManagedGoalsRender(){
+    var c=window.GL110_GOAL_CTX;if(!c)return;
+    var who=c.profile&&c.profile.display_name?" — "+esc(c.profile.display_name):"";
+    var back=c.mode==="admin"?"glUsersView()":"luxMoreView()";
+    render("<h1>Aktualizuj cele"+who+"</h1><button class='secondary topMenu' onclick='"+back+"'>← Wróć</button>"+
+      "<div class='card'><div class='lux-section-title'>Wklej kod aktualizacji</div>"+
+      "<div class='gl110-code-help'>Format jest taki sam jak na koncie administratora: <b>GYMLOG_PLAN_UPDATE_V1</b>, dokładna nazwa planu, nazwa ćwiczenia zakończona dwukropkiem i nowe linie celu. Kod może zawierać kilka ćwiczeń i kilka dni treningowych.</div>"+
+      "<div class='mu-plan-toolbar'><button class='clear' onclick='document.getElementById(\"gl110GoalText\").value=\"\"'>USUŃ ZAWARTOŚĆ</button><button class='paste' onclick='gl110PasteGoals()'>WKLEJ KOD</button></div>"+
+      "<textarea id='gl110GoalText' class='gl110-code-area' placeholder='GYMLOG_PLAN_UPDATE_V1\n\nPUSH\nBench Press:\n...\n\nEND_UPDATE'></textarea>"+
+      "<button onclick='gl110SaveManagedGoals()'>ZAPISZ CELE</button></div>"+luxBottomNav("more"));
+  }
+  window.gl110PasteGoals=async function(){
+    var el=document.getElementById("gl110GoalText");if(!el)return;
+    try{var t=await navigator.clipboard.readText();if(t)el.value=t;else alert("Schowek jest pusty.");}
+    catch(e){var x=prompt("Wklej kod aktualizacji celów:");if(x!==null)el.value=x;}
+  };
+  window.gl110SaveManagedGoals=async function(){
+    var c=window.GL110_GOAL_CTX,el=document.getElementById("gl110GoalText");if(!c||!el)return;
+    var parsed=gl110ParseManagedGoalUpdate(el.value,c.plans);
+    if(!parsed.ok){alert(parsed.message);return;}
+    var plans=gl110ApplyManagedGoalItems(c.plans,parsed.items);
+    try{
+      if(c.mode==="admin"){
+        var flags=Object.assign(glDefaultManagedFlags(),c.profile.feature_flags||{});
+        var cfg=Object.assign({},c.profile.profile_config||{},{managedMode:true,managed_plans:plans});
+        await glAdminApi({action:"set_features",user_id:c.profile.id,feature_flags:flags,profile_config:cfg});
+        c.profile.profile_config=cfg;
+        if(window.GL_ADMIN_SELECTED&&window.GL_ADMIN_SELECTED.profile&&window.GL_ADMIN_SELECTED.profile.id===c.profile.id)window.GL_ADMIN_SELECTED.profile.profile_config=cfg;
+      }else{
+        var r=await gl064PlanApi({action:"self_set_plans",plans:plans});
+        window.GL_PROFILE.profile_config=r.profile_config||Object.assign({},window.GL_PROFILE.profile_config||{},{managed_plans:plans});
+        glSaveProfile(window.GL_PROFILE);
+      }
+      c.plans=plans;
+      alert("Cele zaktualizowane dla "+parsed.items.length+" ćwiczeń.");
+      c.mode==="admin"?glUsersView():luxMoreView();
+    }catch(e){alert("Nie udało się zapisać celów: "+String(e.message||e));}
+  };
+
+  /* ---------- active workout enhancements for every account ---------- */
+  function gl110NextExerciseName(){
+    if(!current||!Array.isArray(current.exercises))return "";
+    var n=current.exercises[idx+1];
+    return n&&n.name?String(n.name):"Koniec treningu";
+  }
+  function gl110EnhanceExerciseScreen(){
+    if(!current||!document.getElementById("app"))return;
+    if(!document.querySelector(".lux-active-top")&&!document.querySelector(".lux-current-card"))return;
+
+    if(!document.querySelector(".gl110-next-note")){
+      var note=document.createElement("div");note.className="gl110-next-note";
+      note.innerHTML="Następne ćwiczenie: <b>"+esc(gl110NextExerciseName())+"</b>";
+      var progress=document.querySelector(".lux-active-meta")||document.querySelector(".lux-active-top");
+      if(progress&&progress.parentNode)progress.parentNode.insertBefore(note,progress.nextSibling);
+    }
+
+    if(glIsManagedUser()){
+      var e=current.exercises[idx]||{};
+      var card=document.querySelector(".lux-current-card");
+      if(card&&e.managedGoal&&!card.querySelector(".gl110-managed-goal")){
+        var goal=document.createElement("div");goal.className="gl110-managed-goal";
+        goal.innerHTML="<div class='k'>CEL NA DZIŚ</div><div class='v'>"+esc(String(e.managedGoal)).replace(/\n/g,"<br>")+"</div>";
+        var plan=card.querySelector(".lux-plan-always");
+        if(plan)card.insertBefore(goal,plan);else card.appendChild(goal);
+      }
+      if(card&&window.isSubstituteExercise&&window.isSubstituteExercise(e)){
+        var planBox=card.querySelector(".lux-plan-always");
+        if(planBox)planBox.innerHTML="<div class='lux-plan-title'>Zamiana ćwiczenia</div><div class='small'>Wpisuj serie według uznania. Zamiana nie jest liczona do progresji oryginalnego ćwiczenia.</div>";
+      }
+      if(!document.querySelector(".gl110-managed-actions")){
+        var finish=document.querySelector(".lux-finish");
+        if(finish){
+          var actions=document.createElement("div");actions.className="lux-nav-row gl110-managed-actions";
+          actions.innerHTML="<button class='secondary lux-muted-action' onclick='skipExerciseView()'>Pomiń ćwiczenie</button><button class='secondary lux-muted-action' onclick='substituteExerciseView()'>Zamień ćwiczenie</button>";
+          finish.insertAdjacentElement("afterend",actions);
+        }
+      }
+    }
+  }
+  var gl110BaseExercise=window.exercise;
+  window.exercise=function(){
+    var r=gl110BaseExercise.apply(this,arguments);
+    requestAnimationFrame(gl110EnhanceExerciseScreen);
+    return r;
+  };
+  exercise=window.exercise;
+
+  function gl110PerformedSetCount(e){
+    return (e&&Array.isArray(e.sets)?e.sets:[]).filter(function(s){return !(s&&s.skipped)&&String(s&&s.s||"").toLowerCase()!=="pominięte";}).length;
+  }
+  function gl110PlannedSetCount(e){
+    if(!e)return null;
+    if(window.isSubstituteExercise&&window.isSubstituteExercise(e))return null;
+    if(glIsManagedUser()&&Number(e.managedSets)>0)return Number(e.managedSets);
+    var text=String(e.plan||"").replace(/\\r\\n/g,"\n").replace(/\\n/g,"\n").replace(/\r/g,"\n");
+    var lines=text.split(/\n+/).map(function(x){return x.trim();}).filter(Boolean);
+    var count=lines.filter(function(line){
+      if(/^pom[ińn]/i.test(line)||/^pomiń/i.test(line))return false;
+      return /(?:\bkg\b|masa ciała|pusta sztanga|aktywacja).*?[x×]\s*\d+/i.test(line)||/^[^|]{0,35}[x×]\s*\d+/i.test(line);
+    }).length;
+    return count>0?count:null;
+  }
+
+  var gl110BaseSaveSet=window.saveSet;
+  window.saveSet=function(){
+    if(!current||!current.exercises||!current.exercises[idx])return gl110BaseSaveSet.apply(this,arguments);
+    var beforeIdx=idx,e=current.exercises[idx],before=gl110PerformedSetCount(e),target=gl110PlannedSetCount(e);
+    var wEl=document.getElementById("sw"),w=String(wEl&&wEl.value||"").trim();
+    var restSec=0;try{restSec=getRestForSet(e,w);}catch(_e){restSec=Number(e.rest||120);}
+    var result=gl110BaseSaveSet.apply(this,arguments);
+    var after=gl110PerformedSetCount(e);
+    var saved=after>before;
+    if(saved&&target&&before<target&&after>=target&&beforeIdx===idx&&idx<current.exercises.length-1){
+      idx++;
+      window.exercise();
+      startRest(restSec);
+    }
+    return result;
+  };
+  saveSet=window.saveSet;
+
+  /* ---------- managed finish report code, controlled per user ---------- */
+  var gl110BaseFinishWorkout=window.finishWorkout;
+  window.finishWorkout=function(){
+    var report="",enabled=false;
+    if(glIsManagedUser()&&current&&gl110ReportEnabled()){
+      enabled=true;
+      try{report=makeReport(JSON.parse(JSON.stringify(current)));}catch(e){try{report=makeReport(current);}catch(_e){report="";}}
+    }
+    var result=gl110BaseFinishWorkout.apply(this,arguments);
+    if(enabled&&report){
+      window.GL110_LAST_REPORT=report;
+      try{navigator.clipboard&&navigator.clipboard.writeText(report).catch(function(){});}catch(e){}
+      setTimeout(function(){
+        var app=document.getElementById("app");if(!app||document.querySelector(".gl110-report-card"))return;
+        var card=document.createElement("div");card.className="card gl110-report-card";
+        card.innerHTML="<div class='lux-section-title'>Kod raportu do analizy</div><div class='small'>Kod został wygenerowany po treningu. Możesz wkleić go do ChatGPT, a potem — jeśli administrator włączył aktualizację celów kodem — wkleić otrzymany blok GYMLOG_PLAN_UPDATE_V1 z powrotem do aplikacji.</div><textarea id='gl110FinishReport' readonly>"+esc(report)+"</textarea><button onclick='copyText(document.getElementById(\"gl110FinishReport\").value)'>KOPIUJ KOD TRENINGU</button>";
+        var menu=Array.prototype.slice.call(app.querySelectorAll("button")).find(function(b){return String(b.textContent||"").trim()==="MENU";});
+        if(menu)app.insertBefore(card,menu);else app.appendChild(card);
+      },0);
+    }
+    return result;
+  };
+  finishWorkout=window.finishWorkout;
+
+  /* ---------- Users list: last activity + direct Plan / Goals ---------- */
+  function gl110FormatActivity(value){
+    if(!value)return "brak zapisanej aktywności";
+    var d=new Date(value);if(!isFinite(d.getTime()))return String(value);
+    try{return d.toLocaleString("pl-PL",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});}catch(e){return d.toLocaleString();}
+  }
+  async function gl110FetchActivityMap(){
+    var map={};
+    try{
+      var s=await glEnsureSession();if(!s)return map;
+      var rows=await glApi("/rest/v1/user_app_state?select=user_id,updated_at",{method:"GET"},s);
+      (rows||[]).forEach(function(r){if(r&&r.user_id)map[r.user_id]=r.updated_at||"";});
+    }catch(e){console.log("Last activity:",e);}
+    return map;
+  }
+  window.gl110BackSelectedUser=function(){
+    var p=window.GL_ADMIN_SELECTED&&window.GL_ADMIN_SELECTED.profile;
+    if(p&&p.id)return glAdminOpenUser(p.id,window.GL_ADMIN_USER_PAGE||0);
+    return glUsersView();
+  };
+  window.gl110AdminOpenPlan=async function(uid,backToUser){
+    if(!glIsAdmin())return;
+    try{
+      var r=await glAdminApi({action:"get_user_state",user_id:uid});window.GL_ADMIN_SELECTED=r;
+      var back=backToUser?"gl110BackSelectedUser()":"glUsersView()";
+      gl064OpenEasyPlanEditor({mode:"admin",profile:r.profile,plans:((r.profile.profile_config||{}).managed_plans)||{},back:back});
+    }catch(e){alert(String(e.message||e));}
+  };
+  var gl110BaseUsersView=window.glUsersView;
+  window.glUsersView=async function(){
+    var r=await gl110BaseUsersView.apply(this,arguments);
+    if(!glIsAdmin())return r;
+    var activity=await gl110FetchActivityMap();
+    var cards=Array.prototype.slice.call(document.querySelectorAll(".mu-user-card"));
+    (window.GL_ADMIN_USERS||[]).forEach(function(u,i){
+      var card=cards[i];if(!card)return;
+      var head=card.querySelector(".mu-user-head > div")||card.querySelector(".mu-user-head");
+      if(head&&!card.querySelector(".gl110-last-activity")){
+        var last=document.createElement("div");last.className="gl110-last-activity";
+        last.innerHTML="Ostatnia aktywność: <b>"+esc(gl110FormatActivity(activity[u.id]))+"</b>";
+        head.appendChild(last);
+      }
+      var oldButtons=Array.prototype.slice.call(card.querySelectorAll(":scope > button"));
+      oldButtons.forEach(function(b){b.remove();});
+      var actions=document.createElement("div");actions.className="gl110-user-actions";
+      if(u.role==="admin"){
+        actions.innerHTML="<button class='secondary full' onclick='glAdminOpenUser(\""+esc(u.id)+"\")'>Otwórz konto</button>";
+      }else{
+        actions.innerHTML="<button class='secondary' onclick='glAdminOpenUser(\""+esc(u.id)+"\")'>Konto</button>"+
+          "<button class='secondary' onclick='gl110AdminOpenPlan(\""+esc(u.id)+"\",false)'>Plan</button>"+
+          "<button class='secondary full' onclick='gl110AdminManagedGoalsView(\""+esc(u.id)+"\")'>Cele kodem</button>";
+      }
+      card.appendChild(actions);
+    });
+    return r;
+  };
+
+  /* ---------- selected client: toggles + quick plan/goals actions ---------- */
+  var gl110BaseAdminRender=window.glAdminRenderSelectedUser;
+  window.glAdminRenderSelectedUser=function(page){
+    var r=gl110BaseAdminRender.apply(this,arguments);
+    requestAnimationFrame(function(){
+      var sel=window.GL_ADMIN_SELECTED&&window.GL_ADMIN_SELECTED.profile;if(!sel||sel.role==="admin")return;
+      var flags=Object.assign(glDefaultManagedFlags(),sel.feature_flags||{});
+      var anchor=document.getElementById("muEditPlanEdit")||document.getElementById("muEditMoodEnabled")||document.getElementById("muEditMuscleMap");
+      var host=anchor&&anchor.closest(".gl-feature-stack-064,.gl-admin-feature-stack-065,.mu-admin-form");
+      if(host&&!document.getElementById("muEditChatReport")){
+        var stack=document.createElement("div");stack.className="gl110-feature-stack";
+        stack.innerHTML="<div class='gl110-feature-item'><label>Kod raportu po treningu</label><select id='muEditChatReport'><option value='true' "+(flags.chatReport===true?"selected":"")+">Włączony</option><option value='false' "+(flags.chatReport!==true?"selected":"")+">Wyłączony</option></select><div class='mu-admin-toggle-note-063'>Po zakończeniu treningu użytkownik dostaje kod raportu do wklejenia do ChatGPT.</div></div>"+
+          "<div class='gl110-feature-item'><label>Aktualizacja celów kodem</label><select id='muEditGoalUpdate'><option value='true' "+(flags.goalUpdate===true?"selected":"")+">Włączona</option><option value='false' "+(flags.goalUpdate!==true?"selected":"")+">Wyłączona</option></select><div class='mu-admin-toggle-note-063'>Gdy włączona, użytkownik może sam wkleić blok GYMLOG_PLAN_UPDATE_V1 na swoim koncie. Administrator może aktualizować cele zawsze.</div></div>";
+        host.appendChild(stack);
+      }
+      if(!document.getElementById("gl110AdminQuick")){
+        var plan=document.getElementById("muPlanEditor");
+        var parent=plan&&plan.closest(".card");
+        if(parent){
+          var quick=document.createElement("div");quick.id="gl110AdminQuick";quick.className="gl110-admin-quick";
+          quick.innerHTML="<button class='secondary' onclick='gl110AdminOpenPlan(\""+esc(sel.id)+"\",true)'>EDYTUJ PLAN</button><button class='secondary' onclick='gl110AdminManagedGoalsView(\""+esc(sel.id)+"\")'>AKTUALIZUJ CELE KODEM</button>";
+          var title=parent.querySelector(".lux-section-title");if(title)title.insertAdjacentElement("afterend",quick);else parent.insertBefore(quick,parent.firstChild);
+        }
+      }
+    });
+    return r;
+  };
+
+  window.glAdminSaveIdentity=async function(){
+    var r=window.GL_ADMIN_SELECTED;if(!r)return;
+    try{
+      await glAdminApi({action:"update_user",user_id:r.profile.id,username:document.getElementById("muEditLogin").value,display_name:document.getElementById("muEditName").value});
+      if(r.profile.role!=="admin"){
+        var gender=String((document.getElementById("muEditGender")||{}).value||"male");
+        var flags=Object.assign(glDefaultManagedFlags(),r.profile.feature_flags||{});
+        flags.muscleMap=String((document.getElementById("muEditMuscleMap")||{}).value||"true")==="true";
+        flags.mood=String((document.getElementById("muEditMoodEnabled")||{}).value||"true")==="true";
+        flags.planEdit=String((document.getElementById("muEditPlanEdit")||{}).value||"false")==="true";
+        flags.chatReport=String((document.getElementById("muEditChatReport")||{}).value||String(flags.chatReport===true))==="true";
+        flags.goalUpdate=String((document.getElementById("muEditGoalUpdate")||{}).value||String(flags.goalUpdate===true))==="true";
+        var cfg=Object.assign({},r.profile.profile_config||{},{managedMode:true,gender:gender});
+        await glAdminApi({action:"set_features",user_id:r.profile.id,feature_flags:flags,profile_config:cfg});
+      }
+      alert("Ustawienia konta zapisane.");glAdminOpenUser(r.profile.id,window.GL_ADMIN_USER_PAGE||0);
+    }catch(e){alert(String(e.message||e));}
+  };
+
+  /* ---------- More: admin plans live under Users; optional self goal import ---------- */
+  var gl110BaseMore=window.luxMoreView;
+  window.luxMoreView=function(){
+    var r=gl110BaseMore.apply(this,arguments);
+    requestAnimationFrame(function(){
+      var list=document.querySelector(".lux-action-list");if(!list)return;
+      if(glIsAdmin()){
+        Array.prototype.slice.call(list.querySelectorAll("button")).forEach(function(b){
+          if(String(b.textContent||"").indexOf("Edycja planów")>=0)b.remove();
+        });
+      }else if(gl110GoalUpdateEnabled()&&!document.getElementById("gl110SelfGoalBtn")){
+        var b=document.createElement("button");b.id="gl110SelfGoalBtn";b.innerHTML="<span>◎ Aktualizuj cele kodem</span><span>›</span>";b.onclick=gl110SelfManagedGoalsView;
+        var accountBtn=Array.prototype.slice.call(list.querySelectorAll("button")).find(function(x){return String(x.textContent||"").indexOf("Konto i profil")>=0;});
+        if(accountBtn)list.insertBefore(b,accountBtn);else list.insertBefore(b,list.firstChild);
+      }
+    });
+    return r;
+  };
+
+  /* ---------- Remember me (encrypted locally on this device) ---------- */
+  var GL110_REMEMBER_BLOB="GYMLOG_CRUSH_REMEMBER_BLOB_V1";
+  var GL110_REMEMBER_KEY="GYMLOG_CRUSH_REMEMBER_KEY_V1";
+  var GL110_REMEMBER_ON="GYMLOG_CRUSH_REMEMBER_ON_V1";
+  function gl110B64(bytes){var s="";bytes.forEach(function(b){s+=String.fromCharCode(b);});return btoa(s);}
+  function gl110Unb64(str){var s=atob(str),a=new Uint8Array(s.length);for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a;}
+  async function gl110RememberCryptoKey(){
+    if(!window.crypto||!crypto.subtle)return null;
+    var raw=localStorage.getItem(GL110_REMEMBER_KEY);
+    if(!raw){var a=new Uint8Array(32);crypto.getRandomValues(a);raw=gl110B64(a);localStorage.setItem(GL110_REMEMBER_KEY,raw);}
+    return crypto.subtle.importKey("raw",gl110Unb64(raw),{name:"AES-GCM"},false,["encrypt","decrypt"]);
+  }
+  async function gl110RememberSave(username,password){
+    try{
+      var key=await gl110RememberCryptoKey();if(!key)throw new Error("Brak WebCrypto");
+      var iv=new Uint8Array(12);crypto.getRandomValues(iv);
+      var plain=new TextEncoder().encode(JSON.stringify({u:username,p:password}));
+      var enc=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv:iv},key,plain));
+      localStorage.setItem(GL110_REMEMBER_BLOB,JSON.stringify({iv:gl110B64(iv),data:gl110B64(enc)}));
+      localStorage.setItem(GL110_REMEMBER_ON,"1");
+    }catch(e){console.log("Remember save:",e);}
+  }
+  async function gl110RememberRead(){
+    try{
+      if(localStorage.getItem(GL110_REMEMBER_ON)!=="1")return null;
+      var raw=localStorage.getItem(GL110_REMEMBER_BLOB);if(!raw)return null;
+      var obj=JSON.parse(raw),key=await gl110RememberCryptoKey();if(!key)return null;
+      var dec=await crypto.subtle.decrypt({name:"AES-GCM",iv:gl110Unb64(obj.iv)},key,gl110Unb64(obj.data));
+      return JSON.parse(new TextDecoder().decode(dec));
+    }catch(e){console.log("Remember read:",e);return null;}
+  }
+  window.gl110RememberClear=function(){
+    try{localStorage.removeItem(GL110_REMEMBER_BLOB);localStorage.removeItem(GL110_REMEMBER_ON);}catch(e){}
+  };
+  async function gl110RememberFill(){
+    var remembered=await gl110RememberRead();if(!remembered)return;
+    var u=document.getElementById("glLoginUser"),p=document.getElementById("glLoginPass"),c=document.getElementById("glRememberMe");
+    if(u&&!u.value)u.value=remembered.u||"";
+    if(p&&!p.value)p.value=remembered.p||"";
+    if(c)c.checked=true;
+  }
+
+  glRenderLogin=function(message,bad){
+    stopTimer();luxStopWorkoutClock();
+    var offline=(navigator.onLine?"":"<div class='auth-offline'>Brak internetu. Pierwsze logowanie wymaga połączenia z siecią.</div>");
+    var checked="";try{checked=localStorage.getItem(GL110_REMEMBER_ON)==="1"?" checked":"";}catch(e){}
+    render("<div class='auth-shell'><div class='auth-brand'><img src='header-logo.png?v=710' alt='GymLog CRUSH'></div>"+
+      "<div class='auth-card'><div class='auth-kicker'>MULTI USER</div><div class='auth-title'>Zaloguj się</div><div class='auth-sub'>Każde konto ma własną historię, cele, statystyki i ustawienia. Nie ma publicznej rejestracji.</div>"+offline+
+      "<div class='auth-field'><label>Login</label><input id='glLoginUser' autocomplete='username' autocapitalize='none' spellcheck='false' placeholder=''></div>"+
+      "<div class='auth-field'><label>Hasło</label><input id='glLoginPass' type='password' autocomplete='current-password' placeholder='••••••••'></div>"+
+      "<label class='gl110-remember'><input id='glRememberMe' type='checkbox'"+checked+" onchange='if(!this.checked)gl110RememberClear()'><span>Zapamiętaj mnie na tym urządzeniu</span></label>"+
+      "<div class='gl110-remember-note'>Po wylogowaniu aplikacja może ponownie uzupełnić login i hasło. Dane są przechowywane tylko lokalnie na tym urządzeniu.</div>"+
+      "<button class='auth-login-btn' onclick='glLogin()'>ZALOGUJ SIĘ</button>"+
+      "<div id='glLoginMsg' class='auth-msg "+(message?"show "+(bad?"bad":"ok"):"")+"'>"+esc(message||"")+"</div>"+
+      "<div class='auth-security'>Logowanie obsługuje Supabase Auth. Dane zapamiętane przez tę opcję nie trafiają do historii treningowej ani do profilu użytkownika.</div></div></div>");
+    setTimeout(function(){gl110RememberFill();var u=document.getElementById("glLoginUser");if(u&&!u.value)u.focus();},80);
+  };
+
+  var gl110BaseLogin=window.glLogin;
+  window.glLogin=async function(){
+    var u=document.getElementById("glLoginUser"),p=document.getElementById("glLoginPass"),c=document.getElementById("glRememberMe");
+    var username=String(u&&u.value||"").toLowerCase().trim(),password=String(p&&p.value||""),remember=!!(c&&c.checked);
+    var result=await gl110BaseLogin.apply(this,arguments);
+    if(glSession()){
+      if(remember)await gl110RememberSave(username,password);else gl110RememberClear();
+    }
+    return result;
+  };
+
+  /* Make newly created managed accounts explicitly start with both code features off. */
+  var gl110BaseCreateUser=window.glAdminCreateUser;
+  window.glAdminCreateUser=async function(){return gl110BaseCreateUser.apply(this,arguments);};
+})();
 
 runInstalledAppUpdates();
 window.glAuthBootstrap();

@@ -2548,6 +2548,269 @@ body.theme-female .gl101-more-avatar-wrap{
   .gl101-more-profile-name{font-size:18px}
 }
 
+
+/* =====================================================================
+   0.71.1 — CLIENT UPDATE NOTIFICATIONS
+   Bell exists only for non-admin accounts. It is an in-app release feed,
+   not an OS push notification.
+   ===================================================================== */
+
+.gl111-top-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  min-width:0;
+}
+.gl111-top-actions .gl086-profile-button{
+  min-width:0!important;
+}
+.gl111-bell{
+  position:relative!important;
+  flex:0 0 44px!important;
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  color:#ececf0!important;
+  background:rgba(17,18,21,.92)!important;
+  border:1px solid rgba(255,255,255,.085)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 9px 22px rgba(0,0,0,.24)!important;
+  -webkit-tap-highlight-color:transparent;
+}
+.gl111-bell svg{
+  width:20px;
+  height:20px;
+  display:block;
+  stroke:currentColor;
+}
+.gl111-bell:active{
+  transform:scale(.96)!important;
+}
+.gl111-bell-badge{
+  position:absolute;
+  top:-3px;
+  right:-3px;
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+  box-sizing:border-box;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  background:var(--account-accent,#ff2738);
+  border:2px solid #0b0c0e;
+  color:#fff;
+  font-size:9px;
+  line-height:1;
+  font-weight:1000;
+  box-shadow:0 0 13px color-mix(in srgb,var(--account-accent,#ff2738) 32%,transparent);
+}
+body.theme-female .gl111-bell{
+  color:#ffd2e6!important;
+  background:#111217!important;
+  border-color:rgba(255,193,222,.20)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.03),
+    0 9px 22px rgba(0,0,0,.22)!important;
+}
+body.theme-female .gl111-bell-badge{
+  background:#f39bc4!important;
+  border-color:#0b0c0e!important;
+  box-shadow:0 0 13px rgba(243,155,196,.25)!important;
+}
+
+.gl111-notif-wrap{
+  max-width:720px;
+  margin:0 auto;
+  padding:0 0 96px;
+}
+.gl111-notif-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin:4px 0 19px;
+}
+.gl111-notif-title{
+  min-width:0;
+}
+.gl111-notif-kicker{
+  color:var(--account-accent,#ff2738);
+  font-size:10px;
+  line-height:1.2;
+  font-weight:950;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+.gl111-notif-title h1{
+  margin:5px 0 0!important;
+  font-size:28px!important;
+  line-height:1!important;
+  letter-spacing:-.045em!important;
+}
+.gl111-notif-back{
+  width:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:10px 12px!important;
+  border-radius:13px!important;
+  background:#111216!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  box-shadow:none!important;
+  color:#e8e8eb!important;
+  font-size:11px!important;
+  font-weight:900!important;
+}
+.gl111-notif-intro{
+  margin-bottom:13px;
+  color:#85868d;
+  font-size:12px;
+  line-height:1.55;
+}
+.gl111-notif-list{
+  display:grid;
+  gap:11px;
+}
+.gl111-notif-card{
+  position:relative;
+  overflow:hidden;
+  padding:17px 16px 16px;
+  border-radius:19px;
+  background:linear-gradient(155deg,#121317,#0e0f12);
+  border:1px solid rgba(255,255,255,.075);
+  box-shadow:0 12px 28px rgba(0,0,0,.18);
+}
+.gl111-notif-card.is-new{
+  border-color:color-mix(in srgb,var(--account-accent,#ff2738) 35%,rgba(255,255,255,.07));
+}
+.gl111-notif-card.is-new:before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  width:3px;
+  height:100%;
+  background:var(--account-accent,#ff2738);
+  box-shadow:0 0 14px color-mix(in srgb,var(--account-accent,#ff2738) 34%,transparent);
+}
+.gl111-notif-meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.gl111-notif-version{
+  color:#85868d;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.gl111-notif-new{
+  padding:4px 7px;
+  border-radius:999px;
+  color:#fff;
+  background:var(--account-accent,#ff2738);
+  font-size:8px;
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:.09em;
+}
+.gl111-notif-card h2{
+  margin:9px 0 4px!important;
+  color:#f5f5f7!important;
+  font-size:17px!important;
+  line-height:1.12!important;
+  letter-spacing:-.025em!important;
+}
+.gl111-notif-date{
+  color:#686a71;
+  font-size:10px;
+  font-weight:750;
+}
+.gl111-notif-changes{
+  display:grid;
+  gap:9px;
+  margin-top:14px;
+}
+.gl111-notif-change{
+  display:grid;
+  grid-template-columns:22px minmax(0,1fr);
+  gap:9px;
+  align-items:start;
+  color:#c9cacf;
+  font-size:12px;
+  line-height:1.45;
+}
+.gl111-notif-check{
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  color:var(--account-accent,#ff2738);
+  background:color-mix(in srgb,var(--account-accent,#ff2738) 9%,transparent);
+  border:1px solid color-mix(in srgb,var(--account-accent,#ff2738) 22%,transparent);
+  font-size:11px;
+  font-weight:1000;
+}
+.gl111-notif-empty{
+  padding:24px 18px;
+  border-radius:18px;
+  text-align:center;
+  color:#777980;
+  background:#101114;
+  border:1px solid rgba(255,255,255,.06);
+  font-size:12px;
+  line-height:1.5;
+}
+body.theme-female .gl111-notif-kicker,
+body.theme-female .gl111-notif-check{
+  color:#ffb9d8!important;
+}
+body.theme-female .gl111-notif-card.is-new{
+  border-color:rgba(255,191,220,.26)!important;
+}
+body.theme-female .gl111-notif-card.is-new:before,
+body.theme-female .gl111-notif-new{
+  background:#f39bc4!important;
+}
+body.theme-female .gl111-notif-check{
+  background:rgba(243,155,196,.07)!important;
+  border-color:rgba(255,191,220,.19)!important;
+}
+
+@media(max-width:430px){
+  .gl111-top-actions{gap:6px}
+  .gl111-bell{
+    width:42px!important;height:42px!important;
+    min-width:42px!important;min-height:42px!important;
+  }
+  .gl111-top-actions .gl085-account-copy span{
+    max-width:98px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+}
+@media(max-width:370px){
+  .gl111-bell{
+    width:39px!important;height:39px!important;
+    min-width:39px!important;min-height:39px!important;
+  }
+  .gl111-top-actions .gl085-account-copy{display:none!important}
+}
+
 </style>
 <style>
 
@@ -5617,7 +5880,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.71.0";
+VERSION = "BETA 0.71.1";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -12336,6 +12599,200 @@ if(typeof window.glAdminExportWorkout==="function"){
   var gl110BaseCreateUser=window.glAdminCreateUser;
   window.glAdminCreateUser=async function(){return gl110BaseCreateUser.apply(this,arguments);};
 })();
+
+
+/* ======================================================================
+   0.71.1 — CLIENT RELEASE NOTIFICATION CENTER
+   IMPORTANT:
+   - admin never receives or sees the bell/feed;
+   - each release can contain feature-gated changes;
+   - only changes enabled for that client are rendered;
+   - read state is per client + per device in localStorage.
+   Future versions only need another object in GL111_CLIENT_RELEASES.
+   ====================================================================== */
+(function(){
+  var GL111_CLIENT_RELEASES=[
+    {
+      id:"client-0711",
+      version:"BETA 0.71.1",
+      date:"31.08.2026",
+      title:"Aktualizacja GymLog CRUSH",
+      changes:[
+        {feature:"always",text:"Na ekranie startowym pojawiło się centrum powiadomień z informacjami o zmianach dotyczących Twojego konta."},
+        {feature:"always",text:"Podczas treningu aplikacja pokazuje, jakie ćwiczenie będzie następne."},
+        {feature:"always",text:"Po zapisaniu ostatniej zaplanowanej serii aplikacja automatycznie przechodzi do następnego ćwiczenia, a rozpoczęta przerwa działa dalej."},
+        {feature:"always",text:"Przyciski „Pomiń ćwiczenie” i „Zamień ćwiczenie” są teraz dostępne na dole ekranu treningu."},
+        {feature:"always",text:"Na ekranie logowania możesz użyć opcji „Zapamiętaj mnie na tym urządzeniu”, aby po wylogowaniu login i hasło zostały automatycznie uzupełnione."},
+        {feature:"chatReport",text:"Po zakończeniu treningu masz włączone generowanie kodu raportu do przekazania trenerowi / ChatGPT."},
+        {feature:"goalUpdate",text:"Na Twoim koncie jest włączona możliwość wklejania kodu aktualizacji celów treningowych."},
+        {feature:"gluteRegions",text:"Podział pośladka został rozszerzony na: Góra, Środek, Dół i Bok, a nazwy w statystykach i grafice są krótsze i czytelniejsze."}
+      ]
+    }
+  ];
+
+  function gl111Profile(){
+    try{return gl085Profile()||window.GL_PROFILE||{};}catch(e){return window.GL_PROFILE||{};}
+  }
+  function gl111IsClient(){
+    var p=gl111Profile();
+    return !!p && String(p.role||"")!=="admin";
+  }
+  function gl111Flags(){
+    var p=gl111Profile(),f={};
+    try{f=Object.assign({},p.feature_flags||{},glFlags()||{});}catch(e){f=Object.assign({},p.feature_flags||{});}
+    return f;
+  }
+  function gl111HasGluteRegions(){
+    var p=gl111Profile(),cfg=p.profile_config||{},plans=cfg.managed_plans||{};
+    try{
+      var blob=JSON.stringify(plans)+" "+JSON.stringify((data&&data.logs)||[]);
+      return /Poślad|poslad|glute/i.test(blob);
+    }catch(e){
+      return false;
+    }
+  }
+  function gl111FeatureEnabled(feature){
+    if(feature==="always")return true;
+    var f=gl111Flags();
+    if(feature==="chatReport")return f.chatReport===true;
+    if(feature==="goalUpdate")return f.goalUpdate===true;
+    if(feature==="muscleMap")return f.muscleMap!==false;
+    if(feature==="planEdit")return f.planEdit===true;
+    if(feature==="mood")return f.mood!==false;
+    if(feature==="bodyWeight")return f.bodyWeight!==false;
+    if(feature==="gluteRegions")return gl111HasGluteRegions();
+    return false;
+  }
+  function gl111VisibleRelease(release){
+    var changes=(release.changes||[]).filter(function(x){return gl111FeatureEnabled(x.feature||"always");});
+    if(!changes.length)return null;
+    return {
+      id:release.id,
+      version:release.version,
+      date:release.date,
+      title:release.title,
+      changes:changes
+    };
+  }
+  function gl111VisibleReleases(){
+    if(!gl111IsClient())return [];
+    return GL111_CLIENT_RELEASES.map(gl111VisibleRelease).filter(Boolean);
+  }
+  function gl111ReadKey(){
+    var p=gl111Profile();
+    return "GYMLOG_CRUSH_CLIENT_RELEASES_READ_V1_"+String(p.id||p.username||"client");
+  }
+  function gl111ReadIds(){
+    try{
+      var a=JSON.parse(localStorage.getItem(gl111ReadKey())||"[]");
+      return Array.isArray(a)?a:[];
+    }catch(e){return [];}
+  }
+  function gl111SetRead(ids){
+    try{localStorage.setItem(gl111ReadKey(),JSON.stringify(ids||[]));}catch(e){}
+  }
+  function gl111UnreadReleases(){
+    var read=gl111ReadIds();
+    return gl111VisibleReleases().filter(function(r){return read.indexOf(r.id)<0;});
+  }
+  function gl111MarkVisibleRead(){
+    var read=gl111ReadIds();
+    gl111VisibleReleases().forEach(function(r){
+      if(read.indexOf(r.id)<0)read.push(r.id);
+    });
+    gl111SetRead(read);
+  }
+
+  window.gl111NotificationsView=function(){
+    if(!gl111IsClient()){home();return;}
+    stopTimer();luxStopWorkoutClock();
+    glApplyProfileTheme();
+
+    var releases=gl111VisibleReleases();
+    var unreadIds=gl111UnreadReleases().map(function(r){return r.id;});
+    var cards="";
+
+    releases.forEach(function(r){
+      var isNew=unreadIds.indexOf(r.id)>=0;
+      var changes=(r.changes||[]).map(function(x){
+        return "<div class='gl111-notif-change'><span class='gl111-notif-check'>✓</span><span>"+esc(x.text)+"</span></div>";
+      }).join("");
+
+      cards+=
+        "<article class='gl111-notif-card "+(isNew?"is-new":"")+"'>"+
+          "<div class='gl111-notif-meta'>"+
+            "<span class='gl111-notif-version'>"+esc(r.version)+"</span>"+
+            (isNew?"<span class='gl111-notif-new'>NOWE</span>":"")+
+          "</div>"+
+          "<h2>"+esc(r.title)+"</h2>"+
+          "<div class='gl111-notif-date'>"+esc(r.date)+"</div>"+
+          "<div class='gl111-notif-changes'>"+changes+"</div>"+
+        "</article>";
+    });
+
+    if(!cards){
+      cards="<div class='gl111-notif-empty'>Nie ma jeszcze informacji o aktualizacjach dotyczących funkcji dostępnych na Twoim koncie.</div>";
+    }
+
+    render(
+      "<div class='gl111-notif-wrap'>"+
+        "<div class='gl111-notif-head'>"+
+          "<div class='gl111-notif-title'><div class='gl111-notif-kicker'>GymLog CRUSH</div><h1>Powiadomienia</h1></div>"+
+          "<button class='gl111-notif-back' onclick='home()'>← Wróć</button>"+
+        "</div>"+
+        "<div class='gl111-notif-intro'>Pokazujemy tutaj tylko zmiany, które dotyczą funkcji dostępnych na Twoim koncie.</div>"+
+        "<div class='gl111-notif-list'>"+cards+"</div>"+
+      "</div>"+luxBottomNav("start")
+    );
+
+    /* Keep NOWE visible during this visit; clear the bell after returning. */
+    setTimeout(gl111MarkVisibleRead,250);
+  };
+
+  function gl111BellHtml(){
+    if(!gl111IsClient())return "";
+    var n=gl111UnreadReleases().length;
+    var badge=n?"<span class='gl111-bell-badge'>"+(n>9?"9+":n)+"</span>":"";
+    return "<button class='gl111-bell' onclick='gl111NotificationsView()' aria-label='Powiadomienia o aktualizacjach'>"+
+      "<svg viewBox='0 0 24 24' fill='none' aria-hidden='true'>"+
+        "<path d='M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>"+
+        "<path d='M10 21h4' stroke-width='1.8' stroke-linecap='round'/>"+
+      "</svg>"+badge+"</button>";
+  }
+
+  function gl111InjectBell(){
+    if(!gl111IsClient())return;
+    var top=document.querySelector(".gl085-top");
+    var profile=top&&top.querySelector(".gl086-profile-button");
+    if(!top||!profile||top.querySelector(".gl111-bell"))return;
+
+    var actions=document.createElement("div");
+    actions.className="gl111-top-actions";
+    top.insertBefore(actions,profile);
+    actions.appendChild(profile);
+
+    var wrap=document.createElement("div");
+    wrap.innerHTML=gl111BellHtml();
+    var bell=wrap.firstElementChild;
+    if(bell)actions.insertBefore(bell,profile);
+  }
+
+  var gl111BaseHome=window.home;
+  window.home=home=function(){
+    var r=gl111BaseHome.apply(this,arguments);
+    requestAnimationFrame(gl111InjectBell);
+    return r;
+  };
+
+  window.gl111ClientReleaseDebug=function(){
+    return {
+      client:gl111IsClient(),
+      visible:gl111VisibleReleases(),
+      unread:gl111UnreadReleases()
+    };
+  };
+})();
+
 
 runInstalledAppUpdates();
 window.glAuthBootstrap();

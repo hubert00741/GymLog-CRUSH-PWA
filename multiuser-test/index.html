@@ -4112,6 +4112,36 @@ body.theme-female .gl085-metric-label,
 body.theme-female .gl085-week-card span{color:#ae8398}
 
 </style>
+
+<style id="gl118-final-ui">
+/* =====================================================================
+   0.71.8 — FINAL TIMER COLORS + PROFILE ACCOUNT TYPE
+   ===================================================================== */
+
+/* Idle 00:00 stays neutral. Active rest = yellow. Ready = green. */
+.gl116-rest-stat #timer.running,
+.gl116-rest-stat .timer.running{
+  color:#ffd21c!important;
+  text-shadow:0 0 18px rgba(255,210,28,.16)!important;
+}
+.gl116-rest-stat #timer.ready,
+.gl116-rest-stat .timer.ready{
+  color:#62df8b!important;
+  text-shadow:0 0 18px rgba(98,223,139,.15)!important;
+}
+
+/* The second line below the Start-screen profile name is now the account type. */
+.gl085-account-copy .gl118-account-type{
+  color:#85878e;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.015em;
+}
+body.theme-female .gl085-account-copy .gl118-account-type{
+  color:#d6aac0!important;
+}
+</style>
+
 </head>
 
 <body>
@@ -6696,7 +6726,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.71.7";
+VERSION = "BETA 0.71.8";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -13429,6 +13459,22 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0718",
+      version:"BETA 0.71.8",
+      date:"02.09.2026",
+      title:"Uproszczony ekran treningu",
+      changes:[
+        {feature:"always",text:"Ekran aktywnego treningu został uproszczony. Czas treningu i odpoczynek są teraz obok siebie u góry."},
+        {feature:"always",text:"Timer odpoczynku świeci na żółto podczas odliczania, a po zakończeniu przerwy zmienia się na zielony."},
+        {feature:"always",text:"Informacja o następnym ćwiczeniu znajduje się na dole, a przyciski nawigacji mają teraz jasne nazwy „Poprzednie ćwiczenie” i „Następne ćwiczenie”."},
+        {feature:"always",text:"Przyciski „Pomiń” i „Zamień ćwiczenie” są przeniesione pod przycisk zakończenia treningu."},
+        {feature:"always",text:"Samopoczucie nie zajmuje już miejsca na ekranie aktywnego treningu, ale nadal zapisuje się w historii treningu."},
+        {feature:"always",text:"Pod nazwą profilu na ekranie Start widoczny jest teraz typ konta: Klient, Trener, Podopieczny lub Admin."},
+        {feature:"always",text:"Plany klientów mogą teraz zawierać osobne serie rozgrzewkowe oraz różne zakresy powtórzeń dla kolejnych serii roboczych."},
+        {feature:"setNotes",text:"Na Twoim koncie administrator włączył możliwość dopisywania notatki do pojedynczej serii."}
+      ]
+    },
+    {
       id:"client-0712",
       version:"BETA 0.71.2",
       date:"02.09.2026",
@@ -13482,6 +13528,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     var f=gl111Flags();
     if(feature==="chatReport")return f.chatReport===true;
     if(feature==="goalUpdate")return f.goalUpdate===true;
+    if(feature==="setNotes")return f.setNotes===true;
     if(feature==="muscleMap")return f.muscleMap!==false;
     if(feature==="planEdit")return f.planEdit===true;
     if(feature==="mood")return f.mood!==false;
@@ -15401,6 +15448,47 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl117RemoveMoodFromActiveWorkout=gl117RemoveMoodFromActiveWorkout;
+})();
+
+
+
+/* ======================================================================
+   0.71.8 — ACCOUNT TYPE BELOW PROFILE NAME
+   ====================================================================== */
+(function(){
+  function gl118AccountTypeLabel(){
+    var p=window.GL_PROFILE||{};
+    var role=String(p.role||"").toLowerCase().trim();
+
+    if(typeof window.gl113RoleLabel==="function"){
+      try{return String(window.gl113RoleLabel(role)||"Klient");}catch(e){}
+    }
+
+    if(role==="admin")return "Admin";
+    if(role==="trainer")return "Trener";
+    if(role==="trainee")return "Podopieczny";
+    return "Klient";
+  }
+
+  function gl118ApplyAccountType(){
+    var copy=document.querySelector(".gl086-profile-button .gl085-account-copy");
+    if(!copy)return;
+    var sub=copy.querySelector("span");
+    if(!sub)return;
+    sub.classList.add("gl118-account-type");
+    sub.textContent=gl118AccountTypeLabel();
+  }
+
+  var gl118BaseHome=window.home;
+  window.home=home=function(){
+    var r=gl118BaseHome.apply(this,arguments);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(gl118ApplyAccountType);
+    });
+    return r;
+  };
+
+  window.gl118ApplyAccountType=gl118ApplyAccountType;
 })();
 
 

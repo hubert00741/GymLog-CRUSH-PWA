@@ -3284,6 +3284,235 @@ body.theme-female .gl113-owner-muscle input:checked+span{
   .gl113-owner-grid .wide{grid-column:auto}
 }
 
+
+/* =====================================================================
+   0.71.4 — OWNER PLAN EDITOR BY GYM
+   Global = structure + default targets.
+   Specific gym = target/weight layer already used by clonePlanForGymV31.
+   ===================================================================== */
+.gl114-gym-card{
+  margin-bottom:10px;
+}
+.gl114-gym-card .lux-section-title{
+  margin-bottom:10px;
+}
+.gl114-gym-select{
+  margin:0!important;
+}
+.gl114-gym-help{
+  margin-top:8px;
+  color:#777980;
+  font-size:10px;
+  line-height:1.5;
+}
+.gl114-gym-context{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:10px;
+  padding:10px 11px;
+  border-radius:13px;
+  background:#0e0f12;
+  border:1px solid rgba(255,255,255,.065);
+}
+.gl114-gym-context span{
+  color:#777980;
+  font-size:10px;
+  line-height:1.35;
+}
+.gl114-gym-context b{
+  display:block;
+  margin-top:2px;
+  color:#ececf0;
+  font-size:12px;
+}
+.gl114-gym-context button{
+  width:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:9px 10px!important;
+  border-radius:11px!important;
+  font-size:9px!important;
+}
+.gl114-mode-badge{
+  display:inline-flex;
+  align-items:center;
+  margin-top:7px;
+  padding:5px 8px;
+  border-radius:999px;
+  color:#a8a9ae;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  font-size:9px;
+  font-weight:900;
+}
+.gl114-mode-badge.is-gym{
+  color:#fff;
+  border-color:color-mix(in srgb,var(--account-accent,#ff2738) 30%,rgba(255,255,255,.07));
+  background:color-mix(in srgb,var(--account-accent,#ff2738) 8%,#0f1013);
+}
+.gl114-gym-ex{
+  padding:16px!important;
+}
+.gl114-gym-ex-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:12px;
+}
+.gl114-gym-ex-head b{
+  color:#f2f2f4;
+  font-size:14px;
+  line-height:1.2;
+}
+.gl114-override-status{
+  flex:0 0 auto;
+  padding:4px 7px;
+  border-radius:999px;
+  color:#80828a;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.065);
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.gl114-override-status.custom{
+  color:#fff;
+  border-color:color-mix(in srgb,var(--account-accent,#ff2738) 30%,rgba(255,255,255,.07));
+  background:color-mix(in srgb,var(--account-accent,#ff2738) 9%,#0f1013);
+}
+.gl114-global-preview{
+  margin-bottom:12px;
+  padding:10px 11px;
+  border-radius:13px;
+  background:#0c0d10;
+  border:1px solid rgba(255,255,255,.055);
+}
+.gl114-global-preview .k{
+  margin-bottom:5px;
+  color:#696b72;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.gl114-global-preview .v{
+  color:#92949b;
+  font-size:10px;
+  line-height:1.45;
+  white-space:pre-wrap;
+}
+.gl114-gym-ex label{
+  display:block;
+  margin:0 0 6px;
+  color:#85878e;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.gl114-gym-ex textarea{
+  min-height:132px;
+  resize:vertical;
+  margin:0!important;
+}
+.gl114-gym-ex-actions{
+  display:flex;
+  gap:8px;
+  margin-top:9px;
+}
+.gl114-gym-ex-actions button{
+  width:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:8px 10px!important;
+  border-radius:11px!important;
+  font-size:9px!important;
+}
+.gl114-save-hint{
+  margin-top:8px;
+  color:#6f7178;
+  font-size:10px;
+  line-height:1.45;
+}
+body.theme-female .gl114-mode-badge.is-gym,
+body.theme-female .gl114-override-status.custom{
+  border-color:rgba(255,185,216,.25)!important;
+  background:rgba(243,155,196,.06)!important;
+}
+@media(max-width:430px){
+  .gl114-gym-context{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .gl114-gym-context button{
+    width:100%!important;
+  }
+  .gl114-gym-ex-actions{
+    flex-direction:column;
+  }
+  .gl114-gym-ex-actions button{
+    width:100%!important;
+  }
+}
+
+
+/* =====================================================================
+   0.71.5 — SIMPLIFIED ACTIVE WORKOUT
+   ===================================================================== */
+.lux-active-meta{grid-template-columns:repeat(auto-fit,minmax(138px,1fr))!important}
+.gl086-summary-metrics{grid-template-columns:repeat(auto-fit,minmax(105px,1fr))!important}
+.gl115-ex-count{margin-bottom:7px;color:#74767d;font-size:9px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}
+.lux-current-card{padding:16px!important}
+.lux-current-card .lux-ex-name{margin-top:3px!important;font-size:24px!important;line-height:1.06!important}
+.lux-current-card .lux-ex-meta{margin-top:9px!important}
+.lux-plan-always{margin-top:12px!important;padding:12px!important;border-radius:14px!important}
+.gl115-coach-goal{margin-bottom:10px;padding:10px 11px;border-radius:12px;background:color-mix(in srgb,var(--account-accent,#ff2738) 7%,#0b0c0e);border:1px solid color-mix(in srgb,var(--account-accent,#ff2738) 22%,rgba(255,255,255,.05))}
+.gl115-coach-goal .k{margin-bottom:5px;color:var(--account-accent,#ff2738);font-size:8px;font-weight:950;letter-spacing:.09em;text-transform:uppercase}
+.gl115-coach-goal .v{color:#efeff2;font-size:11px;line-height:1.5;white-space:pre-wrap}
+.gl115-last{margin-top:10px;padding:10px 11px;border-radius:12px;background:#0c0d10;border:1px solid rgba(255,255,255,.055)}
+.gl115-last .k{margin-bottom:4px;color:#6f7178;font-size:8px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+.gl115-last .v{color:#a4a6ad;font-size:10px;line-height:1.45;overflow-wrap:anywhere}
+.gl115-plan-rows{display:grid;gap:7px}
+.gl115-plan-row{display:grid;grid-template-columns:72px minmax(0,1fr);gap:9px;align-items:center;padding:9px 10px;border-radius:12px;background:#0b0c0f;border:1px solid rgba(255,255,255,.055)}
+.gl115-plan-row .type{color:#73757c;font-size:8px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}
+.gl115-plan-row.warmup .type{color:#b69255}
+.gl115-plan-row .target{color:#ececf0;font-size:11px;font-weight:900}
+.gl115-plan-row .last{margin-top:3px;color:#71737a;font-size:9px;line-height:1.35}
+.gl115-plan-row.warmup{border-color:rgba(209,167,92,.12);background:rgba(116,88,38,.055)}
+.lux-set-entry{padding:15px!important}
+.lux-set-entry .lux-section-title{margin-bottom:10px!important}
+.gl115-current-target{display:inline-flex;align-items:center;margin:-3px 0 11px;padding:5px 8px;border-radius:999px;color:#a9abb1;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.065);font-size:8px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}
+.gl115-current-target.warmup{color:#d3ae6b;border-color:rgba(211,174,107,.16);background:rgba(113,83,33,.055)}
+.lux-set-entry .row3{gap:7px!important}
+.lux-set-entry .row3 label{font-size:8px!important;letter-spacing:.06em!important}
+.lux-set-entry #sw,.lux-set-entry #sr,.lux-set-entry #ss{min-height:48px!important}
+.gl115-note-hidden{display:none!important}
+.lux-rest-card{padding:13px 14px!important}
+.gl115-hide-progress,.gl115-hide-live-summary{display:none!important}
+.gl115-next-card{margin:11px 0 9px;padding:12px 13px;border-radius:15px;background:#101115;border:1px solid rgba(255,255,255,.065)}
+.gl115-next-card .k{color:#6e7077;font-size:8px;font-weight:950;letter-spacing:.09em;text-transform:uppercase}
+.gl115-next-card .v{margin-top:4px;color:#f0f0f3;font-size:13px;font-weight:950;line-height:1.25}
+.gl115-bottom-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 9px}
+.gl115-bottom-actions button{margin:0!important;min-height:48px!important;border-radius:14px!important;font-size:10px!important;letter-spacing:.025em!important}
+.gl115-bottom-actions .swap{border-color:color-mix(in srgb,var(--account-accent,#ff2738) 23%,rgba(255,255,255,.08))!important}
+.gl115-nav-row{opacity:.78;margin-top:5px!important}
+.gl115-nav-row button{min-height:42px!important;font-size:10px!important}
+.gl115-own-setting{margin-top:12px}
+.gl115-own-setting select{margin:8px 0 0!important}
+.gl110-next-note{display:none!important}
+body.theme-female .gl115-coach-goal,body.theme-female .gl115-plan-row{border-color:rgba(255,190,220,.09)}
+body.theme-female .gl115-current-target:not(.warmup){border-color:rgba(255,190,220,.10)}
+@media(max-width:390px){
+  .gl115-plan-row{grid-template-columns:64px minmax(0,1fr)}
+  .gl115-bottom-actions{grid-template-columns:1fr 1fr}
+}
+
 </style>
 <style>
 
@@ -6353,7 +6582,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.71.3";
+VERSION = "BETA 0.71.5";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -13858,6 +14087,7 @@ if(typeof window.glAdminExportWorkout==="function"){
       flags.planEdit=boolField("muEditPlanEdit",flags.planEdit===true);
       flags.chatReport=boolField("muEditChatReport",flags.chatReport===true);
       flags.goalUpdate=boolField("muEditGoalUpdate",flags.goalUpdate===true);
+      flags.setNotes=boolField("muEditSetNotes",flags.setNotes===true);
 
       if(role==="admin"){
         flags.adminUsers=true;
@@ -14169,6 +14399,752 @@ if(typeof window.glAdminExportWorkout==="function"){
     if(cfg.managedMode===true||flags.managedMode===true)return true;
     return role==="client"||role==="trainer"||role==="trainee";
   };
+})();
+
+
+
+/* ======================================================================
+   0.71.4 — GYM-AWARE OWNER PLAN EDITOR
+
+   Existing runtime already supports:
+   data.planOverridesByGym[gym][plan][exercise] -> exercise.plan
+   via clonePlanForGymV31().
+
+   This release exposes that layer in the owner's visual plan editor.
+   Global mode edits structure/default plan.
+   Gym mode edits the target/weights shown for that gym only.
+   ====================================================================== */
+(function(){
+  function gl114Clone(v){
+    try{return JSON.parse(JSON.stringify(v||{}));}catch(e){return {};}
+  }
+  function gl114Gyms(){
+    try{
+      if(Array.isArray(GYMS_V31)&&GYMS_V31.length)return GYMS_V31.slice();
+    }catch(e){}
+    return ["Siłownia Oskara","CityFit","Zdrofit Pruszków","Wyjazd"];
+  }
+  function gl114EnsureGymDrafts(drafts){
+    drafts=drafts&&typeof drafts==="object"?drafts:{};
+    gl114Gyms().forEach(function(g){
+      if(!drafts[g]||typeof drafts[g]!=="object")drafts[g]={};
+    });
+    return drafts;
+  }
+  function gl114GlobalPlans(){
+    var plans=(data&&data.ownerPlansV1&&typeof data.ownerPlansV1==="object")
+      ?gl114Clone(data.ownerPlansV1)
+      :gl114Clone(PLANS||{});
+
+    /* Current global goal overrides are the effective global target. */
+    Object.keys(plans).forEach(function(plan){
+      (plans[plan]||[]).forEach(function(ex){
+        try{
+          var v=data.planOverrides&&data.planOverrides[plan]&&data.planOverrides[plan][ex.name];
+          if(v)ex.plan=String(v);
+        }catch(e){}
+        if(!(Number(ex.ownerSets)>0)){
+          var lines=String(ex.plan||"").replace(/\\n/g,"\n").split(/\n+/).filter(Boolean);
+          ex.ownerSets=Math.max(1,lines.length||3);
+        }
+        if(!ex.ownerReps)ex.ownerReps="8-12";
+      });
+    });
+    return plans;
+  }
+  function gl114GymOptions(selectedGym){
+    var html="<option value='GLOBAL'"+(selectedGym==="GLOBAL"?" selected":"")+">PLAN OGÓLNY — struktura i domyślne cele</option>";
+    gl114Gyms().forEach(function(g){
+      html+="<option value='"+esc(g)+"'"+(selectedGym===g?" selected":"")+">"+esc(g)+" — cele / ciężary</option>";
+    });
+    return html;
+  }
+  function gl114PlanNames(c){
+    return Object.keys((c&&c.plans)||{});
+  }
+  function gl114GlobalText(c,planName,ex){
+    if(!ex)return "";
+    return String(ex.plan||"");
+  }
+  function gl114GymBucket(c,gym,planName,create){
+    if(!c.gymDrafts[gym]&&create)c.gymDrafts[gym]={};
+    var g=c.gymDrafts[gym]||{};
+    if(!g[planName]&&create)g[planName]={};
+    return g[planName]||null;
+  }
+  function gl114GymOverride(c,gym,planName,exName){
+    var b=gl114GymBucket(c,gym,planName,false);
+    return b&&Object.prototype.hasOwnProperty.call(b,exName)?String(b[exName]||""):"";
+  }
+  function gl114HasGymOverride(c,gym,planName,exName){
+    var b=gl114GymBucket(c,gym,planName,false);
+    return !!(b&&Object.prototype.hasOwnProperty.call(b,exName)&&String(b[exName]||"").trim());
+  }
+
+  function gl114CaptureGlobal(c){
+    if(!c||!c.planName||c.gym!=="GLOBAL")return;
+    var arr=c.plans[c.planName]||[];
+    arr.forEach(function(ex,i){
+      function q(id){return document.getElementById("gl114_"+id+"_"+i);}
+      var oldName=String(ex.name||"");
+      var newName=q("name")?String(q("name").value||"").trim():oldName;
+      if(!newName)newName="Ćwiczenie";
+
+      /* If the exercise is renamed globally, move existing gym-specific
+         targets to the new name so they are not lost. */
+      if(oldName&&newName!==oldName){
+        gl114Gyms().forEach(function(g){
+          var b=gl114GymBucket(c,g,c.planName,false);
+          if(b&&Object.prototype.hasOwnProperty.call(b,oldName)&&!Object.prototype.hasOwnProperty.call(b,newName)){
+            b[newName]=b[oldName];
+            delete b[oldName];
+          }
+        });
+      }
+
+      ex.name=newName;
+      if(q("sets"))ex.ownerSets=Math.max(1,parseInt(q("sets").value,10)||1);
+      if(q("reps"))ex.ownerReps=String(q("reps").value||"8-12").trim()||"8-12";
+      if(q("rest"))ex.rest=Math.max(0,parseInt(q("rest").value,10)||0);
+      if(q("plan")){
+        var raw=String(q("plan").value||"").trim();
+        if(!raw){
+          var lines=[];
+          for(var j=0;j<ex.ownerSets;j++)lines.push("x "+ex.ownerReps);
+          raw=lines.join("\n");
+        }
+        ex.plan=raw;
+      }
+      ex.groups=Array.prototype.slice.call(
+        document.querySelectorAll("input[name='gl114_groups_"+i+"']:checked")
+      ).map(function(x){return x.value;});
+    });
+  }
+  function gl114CaptureGym(c){
+    if(!c||!c.planName||c.gym==="GLOBAL")return;
+    var arr=c.plans[c.planName]||[];
+    var bucket=gl114GymBucket(c,c.gym,c.planName,true);
+    arr.forEach(function(ex,i){
+      var ta=document.getElementById("gl114_gym_plan_"+i);
+      if(!ta)return;
+      var val=String(ta.value||"").trim();
+      var global=gl114GlobalText(c,c.planName,ex).trim();
+
+      /* Same as global = no redundant override. */
+      if(!val||val===global)delete bucket[ex.name];
+      else bucket[ex.name]=val;
+    });
+  }
+  function gl114Capture(){
+    var c=window.GL114_OWNER_CTX;
+    if(!c)return;
+    if(c.gym==="GLOBAL")gl114CaptureGlobal(c);
+    else gl114CaptureGym(c);
+  }
+
+  function gl114MusclePicker(ex,i){
+    var selectedGroups=Array.isArray(ex.groups)?ex.groups:[];
+    return "<div class='gl113-owner-muscles'>"+GL065_MUSCLE_GROUPS.map(function(g){
+      var checked=selectedGroups.indexOf(g)>=0?" checked":"";
+      var label=window.gl074MuscleLabel?gl074MuscleLabel(g):g;
+      return "<label class='gl113-owner-muscle'><input type='checkbox' name='gl114_groups_"+i+"' value='"+esc(g)+"'"+checked+"><span>"+esc(label)+"</span></label>";
+    }).join("")+"</div>";
+  }
+
+  function gl114GlobalExerciseCard(ex,i){
+    var sets=Number(ex.ownerSets)>0?Number(ex.ownerSets):3;
+    var reps=String(ex.ownerReps||"8-12");
+    return "<div class='card gl113-owner-ex'>"+
+      "<div class='gl113-owner-ex-top'><b>"+(i+1)+". "+esc(ex.name||"Ćwiczenie")+"</b>"+
+        "<div class='gl113-owner-move'>"+
+          "<button class='secondary' onclick='gl114OwnerMove("+i+",-1)'>↑</button>"+
+          "<button class='secondary' onclick='gl114OwnerMove("+i+",1)'>↓</button>"+
+          "<button class='danger' onclick='gl114OwnerDeleteExercise("+i+")'>Usuń</button>"+
+        "</div>"+
+      "</div>"+
+      "<div class='gl113-owner-grid'>"+
+        "<div class='wide'><label>Nazwa ćwiczenia</label><input id='gl114_name_"+i+"' value='"+esc(ex.name||"")+"'></div>"+
+        "<div><label>Serie</label><input id='gl114_sets_"+i+"' inputmode='numeric' value='"+sets+"'></div>"+
+        "<div><label>Zakres powtórzeń</label><input id='gl114_reps_"+i+"' value='"+esc(reps)+"'></div>"+
+        "<div><label>Przerwa (sek.)</label><input id='gl114_rest_"+i+"' inputmode='numeric' value='"+esc(ex.rest||120)+"'></div>"+
+        "<div class='wide'><label>Partie mięśniowe</label>"+gl114MusclePicker(ex,i)+"</div>"+
+        "<div class='wide'><label>Plan / cel ogólny</label><textarea id='gl114_plan_"+i+"'>"+esc(ex.plan||"")+"</textarea></div>"+
+      "</div>"+
+    "</div>";
+  }
+
+  function gl114GymExerciseCard(c,ex,i){
+    var has=gl114HasGymOverride(c,c.gym,c.planName,ex.name);
+    var specific=has?gl114GymOverride(c,c.gym,c.planName,ex.name):gl114GlobalText(c,c.planName,ex);
+    return "<div class='card gl114-gym-ex'>"+
+      "<div class='gl114-gym-ex-head'>"+
+        "<b>"+(i+1)+". "+esc(ex.name||"Ćwiczenie")+"</b>"+
+        "<span class='gl114-override-status "+(has?"custom":"")+"'>"+(has?"Własny cel":"Plan ogólny")+"</span>"+
+      "</div>"+
+      "<div class='gl114-global-preview'>"+
+        "<div class='k'>Plan ogólny</div>"+
+        "<div class='v'>"+esc(gl114GlobalText(c,c.planName,ex)||"—")+"</div>"+
+      "</div>"+
+      "<label>Cel / ciężary — "+esc(c.gym)+"</label>"+
+      "<textarea id='gl114_gym_plan_"+i+"'>"+esc(specific||"")+"</textarea>"+
+      "<div class='gl114-gym-ex-actions'>"+
+        "<button class='secondary' onclick='gl114OwnerUseGlobal("+i+")'>UŻYJ PLANU OGÓLNEGO</button>"+
+      "</div>"+
+    "</div>";
+  }
+
+  window.gl114OwnerPlanEditor=function(){
+    if(!glIsAdmin()){luxMoreView();return;}
+    try{gl113ApplyOwnerPlans();}catch(e){}
+    var plans=gl114GlobalPlans();
+    var names=Object.keys(plans);
+    window.GL114_OWNER_CTX={
+      plans:plans,
+      planName:names[0]||"",
+      gym:"GLOBAL",
+      gymDrafts:gl114EnsureGymDrafts(gl114Clone((data&&data.planOverridesByGym)||{}))
+    };
+    gl114OwnerRender();
+  };
+
+  window.gl114OwnerRender=function(){
+    var c=window.GL114_OWNER_CTX;
+    if(!c)return luxMoreView();
+
+    var names=gl114PlanNames(c);
+    if(c.planName&&!c.plans[c.planName])c.planName=names[0]||"";
+    if(!c.planName&&names.length)c.planName=names[0];
+
+    var dayOptions=names.map(function(n){
+      return "<option value='"+esc(n)+"'"+selected(c.planName,n)+">"+esc(n)+"</option>";
+    }).join("");
+
+    var globalMode=c.gym==="GLOBAL";
+    var cards="";
+    (c.plans[c.planName]||[]).forEach(function(ex,i){
+      cards+=globalMode?gl114GlobalExerciseCard(ex,i):gl114GymExerciseCard(c,ex,i);
+    });
+    if(!c.planName)cards="<div class='card small'>Nie ma jeszcze żadnego dnia treningowego.</div>";
+
+    var defaultGym="";
+    try{defaultGym=getDefaultGymV31(c.planName);}catch(e){defaultGym=(data.gymDefaults&&data.gymDefaults[c.planName])||"CityFit";}
+
+    var gymContext=globalMode
+      ?"<div class='gl114-gym-help'>W tym widoku edytujesz wspólną strukturę planu: ćwiczenia, kolejność, przerwy, partie oraz domyślny cel. Żeby zmienić ciężary/cel tylko dla konkretnej siłowni, wybierz ją powyżej.</div>"
+      :"<div class='gl114-gym-help'>Edytujesz wyłącznie cele/ciężary dla <b>"+esc(c.gym)+"</b>. Ćwiczenia, kolejność, przerwy i partie są wspólne i edytujesz je w „Plan ogólny”.</div>"+
+       "<div class='gl114-gym-context'><span>Domyślna siłownia dla <b>"+esc(c.planName||"—")+"</b>: "+esc(defaultGym||"—")+"</span>"+
+         "<button class='secondary' onclick='gl114SetDefaultGym()'>USTAW "+esc(c.gym.toUpperCase())+" JAKO DOMYŚLNĄ</button></div>";
+
+    render(
+      "<div class='gl113-owner-wrap'>"+
+        "<div class='gl113-owner-head'>"+
+          "<div><h1>Mój plan treningowy</h1><div class='gl113-owner-sub'>Możesz teraz osobno edytować cele i ciężary dla każdej siłowni.</div>"+
+          "<span class='gl114-mode-badge "+(!globalMode?"is-gym":"")+"'>"+(globalMode?"PLAN OGÓLNY":esc(c.gym))+"</span></div>"+
+          "<button class='secondary gl112-back' onclick='luxMoreView()'>← Wróć</button>"+
+        "</div>"+
+
+        "<div class='card gl114-gym-card'>"+
+          "<div class='lux-section-title'>Siłownia / wariant planu</div>"+
+          "<select id='gl114Gym' class='gl114-gym-select' onchange='gl114OwnerSwitchGym(this.value)'>"+gl114GymOptions(c.gym)+"</select>"+
+          gymContext+
+        "</div>"+
+
+        "<div class='card'>"+
+          "<div class='lux-section-title'>Dzień treningowy</div>"+
+          "<div class='gl113-owner-day'>"+
+            (names.length?"<select id='gl114OwnerDay' onchange='gl114OwnerSwitchDay(this.value)'>"+dayOptions+"</select>":"<div class='small'>Brak dni</div>")+
+            (globalMode?"<button onclick='gl114OwnerAddDay()'>+ Dzień</button>":"")+
+            (globalMode&&c.planName?"<button class='danger gl113-delete-day' onclick='gl114OwnerDeleteDay()'>Usuń dzień</button>":"")+
+          "</div>"+
+          (globalMode&&c.planName?"<button class='secondary' onclick='gl114OwnerAddExercise()'>+ DODAJ ĆWICZENIE</button>":"")+
+        "</div>"+
+
+        cards+
+
+        "<div class='gl113-owner-actions'>"+
+          "<button onclick='gl114OwnerSave()'>ZAPISZ ZMIANY</button>"+
+          (globalMode?"<button class='secondary' onclick='gl114OwnerResetBuiltIn()'>PRZYWRÓĆ PLAN BAZOWY Z APLIKACJI</button>":"")+
+          "<div class='gl114-save-hint'>"+(globalMode
+            ?"Zmiany struktury obowiązują we wszystkich siłowniach. Istniejące cele przypisane do konkretnych siłowni zostają zachowane."
+            :"Po zapisaniu ten wariant będzie używany automatycznie, gdy rozpoczniesz "+esc(c.planName||"trening")+" na "+esc(c.gym)+".")+"</div>"+
+        "</div>"+
+      "</div>"+luxBottomNav("more")
+    );
+  };
+
+  window.gl114OwnerSwitchGym=function(gym){
+    gl114Capture();
+    var c=window.GL114_OWNER_CTX;if(!c)return;
+    c.gym=(gym==="GLOBAL")?"GLOBAL":String(gym||"GLOBAL");
+    gl114OwnerRender();
+  };
+  window.gl114OwnerSwitchDay=function(name){
+    gl114Capture();
+    var c=window.GL114_OWNER_CTX;if(!c)return;
+    c.planName=String(name||"");
+    gl114OwnerRender();
+  };
+  window.gl114SetDefaultGym=function(){
+    var c=window.GL114_OWNER_CTX;if(!c||c.gym==="GLOBAL"||!c.planName)return;
+    gl114Capture();
+    if(!data.gymDefaults)data.gymDefaults={};
+    data.gymDefaults[c.planName]=c.gym;
+    safeSave();
+    gl114OwnerRender();
+  };
+  window.gl114OwnerUseGlobal=function(i){
+    var c=window.GL114_OWNER_CTX;if(!c||c.gym==="GLOBAL")return;
+    var ex=(c.plans[c.planName]||[])[i];if(!ex)return;
+    var bucket=gl114GymBucket(c,c.gym,c.planName,true);
+    delete bucket[ex.name];
+    gl114OwnerRender();
+  };
+  window.gl114OwnerAddDay=function(){
+    gl114Capture();
+    var c=window.GL114_OWNER_CTX;if(!c||c.gym!=="GLOBAL")return;
+    var name=String(prompt("Nazwa nowego dnia treningowego:")||"").trim();
+    if(!name)return;
+    if(c.plans[name]){alert("Taki dzień już istnieje.");return;}
+    c.plans[name]=[];
+    c.planName=name;
+    gl114OwnerRender();
+  };
+  window.gl114OwnerDeleteDay=function(){
+    gl114Capture();
+    var c=window.GL114_OWNER_CTX;if(!c||c.gym!=="GLOBAL"||!c.planName)return;
+    if(!confirm("Usunąć cały dzień „"+c.planName+"” z Twojego planu?"))return;
+    var old=c.planName;
+    delete c.plans[old];
+    gl114Gyms().forEach(function(g){
+      if(c.gymDrafts[g])delete c.gymDrafts[g][old];
+    });
+    c.planName=Object.keys(c.plans)[0]||"";
+    gl114OwnerRender();
+  };
+  window.gl114OwnerAddExercise=function(){
+    gl114Capture();
+    var c=window.GL114_OWNER_CTX;if(!c||c.gym!=="GLOBAL"||!c.planName)return;
+    c.plans[c.planName].push({
+      name:"Nowe ćwiczenie",groups:[],last:"",
+      plan:"x 8-12\nx 8-12\nx 8-12",
+      rest:120,ownerSets:3,ownerReps:"8-12",sets:[]
+    });
+    gl114OwnerRender();
+  };
+  window.gl114OwnerDeleteExercise=function(i){
+    gl114Capture();
+    var c=window.GL114_OWNER_CTX,list=c&&c.plans[c.planName];
+    if(!c||c.gym!=="GLOBAL"||!list)return;
+    var ex=list[i];if(!ex)return;
+    if(!confirm("Usunąć „"+String(ex.name||"to ćwiczenie")+"” z planu?"))return;
+    gl114Gyms().forEach(function(g){
+      var b=gl114GymBucket(c,g,c.planName,false);
+      if(b)delete b[ex.name];
+    });
+    list.splice(i,1);
+    gl114OwnerRender();
+  };
+  window.gl114OwnerMove=function(i,dir){
+    gl114Capture();
+    var c=window.GL114_OWNER_CTX,list=c&&c.plans[c.planName];
+    if(!c||c.gym!=="GLOBAL"||!list)return;
+    var j=i+dir;if(j<0||j>=list.length)return;
+    var t=list[i];list[i]=list[j];list[j]=t;
+    gl114OwnerRender();
+  };
+  window.gl114OwnerSave=function(){
+    if(!glIsAdmin())return;
+    gl114Capture();
+    var c=window.GL114_OWNER_CTX;if(!c)return;
+
+    if(!data.planOverrides)data.planOverrides={};
+    data.ownerPlansV1=gl114Clone(c.plans);
+
+    /* Global plan/goal layer. */
+    Object.keys(c.plans).forEach(function(plan){
+      if(!data.planOverrides[plan])data.planOverrides[plan]={};
+      var valid={};
+      (c.plans[plan]||[]).forEach(function(ex){
+        data.planOverrides[plan][ex.name]=String(ex.plan||"");
+        valid[ex.name]=true;
+      });
+      Object.keys(data.planOverrides[plan]).forEach(function(exName){
+        if(!valid[exName])delete data.planOverrides[plan][exName];
+      });
+    });
+
+    /* Gym-specific target layer. Clean stale plans/exercises. */
+    c.gymDrafts=gl114EnsureGymDrafts(c.gymDrafts);
+    gl114Gyms().forEach(function(g){
+      var gp=c.gymDrafts[g]||{};
+      Object.keys(gp).forEach(function(plan){
+        if(!c.plans[plan]){delete gp[plan];return;}
+        var valid={};
+        (c.plans[plan]||[]).forEach(function(ex){valid[ex.name]=true;});
+        Object.keys(gp[plan]||{}).forEach(function(exName){
+          if(!valid[exName]||!String(gp[plan][exName]||"").trim())delete gp[plan][exName];
+        });
+        if(!Object.keys(gp[plan]||{}).length)delete gp[plan];
+      });
+    });
+    data.planOverridesByGym=gl114Clone(c.gymDrafts);
+
+    try{gl113ApplyOwnerPlans();}catch(e){}
+    safeSave();
+
+    alert(c.gym==="GLOBAL"
+      ?"Plan ogólny został zapisany."
+      :"Cele dla "+c.gym+" zostały zapisane.");
+    gl114OwnerRender();
+  };
+
+  /* Replace 0.71.3 owner editor entry with the gym-aware editor. */
+  window.gl113OwnerPlanEditor=window.gl114OwnerPlanEditor;
+
+  /* 0.71.3 reset button re-renders its own screen, so intercept it with a
+     gym-aware reset when called from the new editor. */
+  window.gl114OwnerResetBuiltIn=function(){
+    if(!confirm("Przywrócić bazową strukturę Twojego planu z tej wersji aplikacji? Historia treningów i cele per siłownia nie zostaną usunięte."))return;
+    try{
+      var plans=gl114Clone(GL113_BUILTIN_OWNER_PLANS||PLANS||{});
+      window.GL114_OWNER_CTX.plans=plans;
+      window.GL114_OWNER_CTX.planName=Object.keys(plans)[0]||"";
+      window.GL114_OWNER_CTX.gym="GLOBAL";
+      gl114OwnerRender();
+    }catch(e){
+      alert("Nie udało się przywrócić planu bazowego.");
+    }
+  };
+})();
+
+
+
+/* ======================================================================
+   0.71.5 — SIMPLIFIED WORKOUT + SET NOTES TOGGLE + MANAGED WARMUPS
+   ====================================================================== */
+(function(){
+  var gl115BaseDefaultFlags=glDefaultManagedFlags;
+  glDefaultManagedFlags=function(){
+    var f={};
+    try{f=gl115BaseDefaultFlags.apply(this,arguments)||{};}catch(e){}
+    return Object.assign({setNotes:false},f);
+  };
+
+  window.gl115SetNotesEnabled=function(){
+    try{return (glFlags()||{}).setNotes===true;}catch(e){return false;}
+  };
+
+  function gl115InjectUserNotesSetting(){
+    if(!glIsAdmin())return;
+    var r=window.GL_ADMIN_SELECTED,profile=r&&r.profile;
+    if(!profile||String(profile.role||"")==="admin")return;
+    var card=document.getElementById("gl113FeatureCard");
+    if(!card||document.getElementById("muEditSetNotes"))return;
+    var flags=Object.assign(glDefaultManagedFlags(),profile.feature_flags||{});
+    var row=document.createElement("div");
+    row.className="gl113-feature-row";
+    row.innerHTML=
+      "<label>Notatka do pojedynczej serii</label>"+
+      "<select id='muEditSetNotes'><option value='true' "+(flags.setNotes===true?"selected":"")+">Włączona</option><option value='false' "+(flags.setNotes!==true?"selected":"")+">Wyłączona</option></select>"+
+      "<div class='gl113-feature-note'>Domyślnie wyłączona. Po włączeniu użytkownik może dopisywać notatkę przy każdej zapisywanej serii.</div>";
+    card.appendChild(row);
+  }
+
+  var gl115BaseAdminRender=window.glAdminRenderSelectedUser;
+  window.glAdminRenderSelectedUser=function(page){
+    var r=gl115BaseAdminRender.apply(this,arguments);
+    requestAnimationFrame(gl115InjectUserNotesSetting);
+    return r;
+  };
+
+  window.gl115SaveOwnSetNotes=async function(){
+    if(!glIsAdmin())return;
+    var el=document.getElementById("gl115OwnSetNotes");if(!el)return;
+    try{
+      var s=await glEnsureSession();
+      if(!s||!s.user)throw new Error("Brak aktywnej sesji.");
+      var flags=Object.assign({},(window.GL_PROFILE&&window.GL_PROFILE.feature_flags)||{});
+      flags.setNotes=String(el.value)==="true";
+      await glApi("/rest/v1/profiles?id=eq."+encodeURIComponent(s.user.id),{
+        method:"PATCH",
+        headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+        body:JSON.stringify({feature_flags:flags})
+      },s);
+      window.GL_PROFILE.feature_flags=flags;
+      try{glSaveProfile(window.GL_PROFILE);}catch(e){}
+      alert("Ustawienie notatek do serii zostało zapisane.");
+    }catch(e){alert("Nie udało się zapisać ustawienia: "+String(e&&e.message||e));}
+  };
+
+  var gl115BaseAccountView=window.glAccountView;
+  window.glAccountView=function(back){
+    var r=gl115BaseAccountView.apply(this,arguments);
+    requestAnimationFrame(function(){
+      if(!glIsAdmin()||document.getElementById("gl115OwnNotesCard"))return;
+      var wrap=document.querySelector(".gl086-account-wrap");if(!wrap)return;
+      var flags=(window.GL_PROFILE&&window.GL_PROFILE.feature_flags)||{};
+      var card=document.createElement("div");
+      card.id="gl115OwnNotesCard";
+      card.className="gl086-account-card gl115-own-setting";
+      card.innerHTML=
+        "<h3>Trening</h3><label>Notatka do pojedynczej serii</label>"+
+        "<select id='gl115OwnSetNotes'><option value='true' "+(flags.setNotes===true?"selected":"")+">Włączona</option><option value='false' "+(flags.setNotes!==true?"selected":"")+">Wyłączona</option></select>"+
+        "<div class='gl086-account-note'>Domyślnie wyłączona również na Twoim koncie.</div>"+
+        "<button class='gl086-account-save' onclick='gl115SaveOwnSetNotes()'>ZAPISZ USTAWIENIE</button>";
+      wrap.appendChild(card);
+    });
+    return r;
+  };
+
+  window.gl115ManagedWorkReps=function(e){
+    if(e&&Array.isArray(e.managedWorkReps)&&e.managedWorkReps.length)return e.managedWorkReps.slice();
+    var n=Math.max(1,Number(e&&e.managedWorkSets||e&&e.managedSets||3)),out=[];
+    for(var i=0;i<n;i++)out.push(String(e&&e.managedReps||"8-12"));
+    return out;
+  };
+
+  glManagedExercises=function(planName){
+    var arr=glManagedPlans()[planName];if(!Array.isArray(arr))return [];
+    return arr.map(function(x){
+      var workSets=Math.max(1,parseInt(x.sets||3,10)||3);
+      var genericReps=String(x.reps||"8-12");
+      var workReps=Array.isArray(x.workReps)?x.workReps.slice(0,workSets).map(function(v){return String(v||genericReps);}):[];
+      while(workReps.length<workSets)workReps.push(genericReps);
+      var warmups=Array.isArray(x.warmups)?x.warmups.map(function(v){return String(v||"").trim();}).filter(Boolean):[];
+      return {
+        name:String(x.name||"Ćwiczenie"),
+        groups:(typeof gl073CorrectGroups==="function")?gl073CorrectGroups(x.name,x.groups):(Array.isArray(x.groups)?x.groups:[]),
+        bodyweight:x.bodyweight===true,last:"",
+        plan:(warmups.length?warmups.length+" rozgrz. + ":"")+workSets+" serie robocze",
+        rest:Math.max(0,parseInt(x.rest||120,10)||120),
+        managedSets:warmups.length+workSets,
+        managedWorkSets:workSets,
+        managedReps:genericReps,
+        managedWorkReps:workReps,
+        managedWarmups:warmups,
+        managedWarmupLabel:String(x.warmupLabel||"Rozgrzewka"),
+        managedStarter:String(x.starter||""),
+        managedGoal:x.goal?String(x.goal):"",
+        sets:[]
+      };
+    });
+  };
+
+  glManagedPlanRows=function(e){
+    var warmups=Array.isArray(e&&e.managedWarmups)?e.managedWarmups:[];
+    var workReps=gl115ManagedWorkReps(e);
+    var prev=glManagedPreviousWorkingSets(current.training,e.name),usingStarter=false;
+    if(!prev.length){prev=glManagedStarterSets(e.managedStarter,e.managedWorkSets||workReps.length);usingStarter=prev.length>0;}
+    var html="<div class='gl115-plan-rows'>";
+    warmups.forEach(function(rep){
+      html+="<div class='gl115-plan-row warmup'><div class='type'>"+esc(e.managedWarmupLabel||"Rozgrzewka")+"</div><div><div class='target'>"+esc(rep)+" powt.</div><div class='last'>Nie liczy się jako seria robocza</div></div></div>";
+    });
+    workReps.forEach(function(rep,i){
+      var label=glManagedSetShort(prev[i]),prefix=usingStarter?"Startowo":"Ostatnio";
+      html+="<div class='gl115-plan-row'><div class='type'>Seria "+(i+1)+"</div><div><div class='target'>"+esc(rep)+" powt.</div><div class='last'>"+prefix+": "+esc(label)+"</div></div></div>";
+    });
+    return html+"</div>";
+  };
+
+  glManagedPlanPreviewHtml=function(planName){
+    var ex=glManagedExercises(planName),html="<div class='mu-plan-preview'>";
+    ex.forEach(function(e){
+      var warm=(e.managedWarmups||[]).length,work=e.managedWorkSets||gl115ManagedWorkReps(e).length;
+      var ref=glManagedLastOrStarterText(planName,Object.assign({},e,{managedSets:work}));
+      var prefix=ref.source==="starter"?"Startowo":(ref.source==="last"?"Ostatni trening":"Poprzednio");
+      html+="<div class='mu-plan-preview-card'><div class='mu-plan-preview-top'><div class='mu-plan-preview-name'>"+esc(e.name)+"</div><div class='mu-plan-preview-range'>"+(warm?warm+" rozgrz. + ":"")+work+" robocze</div></div><div class='mu-plan-preview-last'><b>"+prefix+":</b> "+esc(ref.text)+"</div></div>";
+    });
+    return html+"</div>";
+  };
+
+  function gl115PerformedCount(e){
+    return (e&&Array.isArray(e.sets)?e.sets:[]).filter(function(s){return !(s&&s.skipped)&&String(s&&s.s||"").toLowerCase()!=="pominięte";}).length;
+  }
+  function gl115PlannedCount(e){
+    if(!e)return 0;
+    if(Number(e.managedSets)>0)return Number(e.managedSets);
+    var t=String(e.plan||"").replace(/\\n/g,"\n");
+    return t.split(/\n+/).filter(function(x){return /[x×]\s*\d+/.test(x);}).length||0;
+  }
+  function gl115CurrentTarget(e,performed){
+    var warm=Array.isArray(e&&e.managedWarmups)?e.managedWarmups:[];
+    if(performed<warm.length)return {warmup:true,text:(e.managedWarmupLabel||"Rozgrzewka")+" • "+warm[performed]+" powt."};
+    if(Number(e&&e.managedWorkSets)>0){
+      var wi=performed-warm.length,wr=gl115ManagedWorkReps(e);
+      return {warmup:false,text:"Seria robocza "+(wi+1)+" • "+String(wr[wi]||e.managedReps||"zakres")+" powt."};
+    }
+    return {warmup:false,text:""};
+  }
+
+  function gl115RemoveActionDuplicates(){
+    document.querySelectorAll(".mu-workout-tools-063,.gl110-managed-actions").forEach(function(el){el.remove();});
+    document.querySelectorAll(".lux-nav-row").forEach(function(row){
+      var t=String(row.textContent||"").toLowerCase();
+      if(t.indexOf("pomiń ćwiczenie")>=0||t.indexOf("zamień ćwiczenie")>=0||t.indexOf("edytuj zamianę")>=0)row.remove();
+      else if(t.indexOf("poprzednie")>=0&&t.indexOf("następne")>=0)row.classList.add("gl115-nav-row");
+    });
+  }
+
+  function gl115CompactLast(card){
+    if(!card||card.querySelector(".gl115-last"))return;
+    var details=card.querySelector(".lux-details");if(!details)return;
+    var box=details.querySelector(".box"),val=String(box&&box.textContent||"").trim();
+    var last=document.createElement("div");last.className="gl115-last";
+    last.innerHTML="<div class='k'>Ostatnio</div><div class='v'>"+esc(val||"Brak poprzedniego wyniku")+"</div>";
+    details.replaceWith(last);
+  }
+
+  function gl115HideEmptyMood(){
+    var noMood=!String(current&&current.mood||"").trim(),featureOff=false;
+    try{featureOff=glIsManagedUser()&&typeof gl064MoodEnabled==="function"&&!gl064MoodEnabled();}catch(e){}
+    if(noMood||featureOff){
+      document.querySelectorAll(".lux-active-meta .lux-stat-card").forEach(function(card){
+        var t=String(card.textContent||"").toLowerCase();
+        if(t.indexOf("gotowość")>=0||t.indexOf("samopoczucie")>=0)card.style.display="none";
+      });
+    }
+  }
+
+  function gl115SimplifyExerciseScreen(){
+    if(!current||!current.exercises||!current.exercises[idx])return;
+    var app=document.getElementById("app");if(!app||!document.querySelector(".lux-current-card"))return;
+    var e=current.exercises[idx];
+
+    document.querySelectorAll(".gl110-next-note").forEach(function(x){x.remove();});
+    gl115RemoveActionDuplicates();gl115HideEmptyMood();
+
+    document.querySelectorAll("#app > .card").forEach(function(card){
+      var txt=String(card.textContent||"").trim().toLowerCase();
+      if(txt.indexOf("postęp treningu")===0)card.classList.add("gl115-hide-progress");
+      if(txt.indexOf("podsumowanie ćwiczenia")===0)card.classList.add("gl115-hide-live-summary");
+    });
+
+    var currentCard=document.querySelector(".lux-current-card");
+    if(currentCard&&!currentCard.querySelector(".gl115-ex-count")){
+      var count=document.createElement("div");count.className="gl115-ex-count";count.textContent="ĆWICZENIE "+(idx+1)+" / "+current.exercises.length;
+      currentCard.insertBefore(count,currentCard.firstChild);
+      var oldK=currentCard.querySelector(".lux-kicker");
+      if(oldK&&String(oldK.textContent||"").toLowerCase().indexOf("aktualne")>=0)oldK.remove();
+    }
+
+    if(glIsManagedUser()&&currentCard){
+      var oldGoal=currentCard.querySelector(".gl110-managed-goal");if(oldGoal)oldGoal.remove();
+      var planBox=currentCard.querySelector(".lux-plan-always");
+      if(planBox){
+        var goal=e.managedGoal?"<div class='gl115-coach-goal'><div class='k'>Cel trenera</div><div class='v'>"+esc(String(e.managedGoal))+"</div></div>":"";
+        planBox.innerHTML="<div class='lux-plan-title'>Plan na dziś</div>"+goal+glManagedPlanRows(e);
+      }
+    }else if(currentCard){
+      var title=currentCard.querySelector(".lux-plan-title");if(title)title.textContent="Plan na dziś";
+      gl115CompactLast(currentCard);
+    }
+
+    var entry=document.querySelector(".lux-set-entry");
+    if(entry){
+      var performed=gl115PerformedCount(e),planned=gl115PlannedCount(e);
+      var title=entry.querySelector(".lux-section-title");if(title)title.textContent="SERIA "+(performed+1)+(planned?" / "+planned:"");
+      var oldTarget=entry.querySelector(".gl115-current-target");if(oldTarget)oldTarget.remove();
+      var target=gl115CurrentTarget(e,performed);
+      if(target.text){
+        var badge=document.createElement("div");badge.className="gl115-current-target"+(target.warmup?" warmup":"");badge.textContent=target.text;
+        if(title)title.insertAdjacentElement("afterend",badge);
+      }
+      var status=document.getElementById("ss");if(target.warmup&&status)status.value="rozgrzewka";
+      var reps=document.getElementById("sr");
+      if(reps&&target.text){var m=target.text.match(/•\s*(.+?)\s*powt/i);if(m)reps.placeholder=m[1];}
+      var note=document.getElementById("sn");
+      if(note){
+        var label=note.previousElementSibling;
+        if(!gl115SetNotesEnabled()){
+          note.classList.add("gl115-note-hidden");
+          if(label&&String(label.tagName||"").toLowerCase()==="label")label.classList.add("gl115-note-hidden");
+        }
+      }
+    }
+
+    var finish=document.querySelector(".lux-finish");
+    if(finish){
+      document.querySelectorAll(".gl115-next-card,.gl115-bottom-actions").forEach(function(x){x.remove();});
+      var next=current.exercises[idx+1],nextCard=document.createElement("div");
+      nextCard.className="gl115-next-card";
+      nextCard.innerHTML="<div class='k'>Następne ćwiczenie</div><div class='v'>"+esc(next&&next.name?next.name:"Koniec treningu")+"</div>";
+      var actions=document.createElement("div");actions.className="gl115-bottom-actions";
+      var isSub=window.isSubstituteExercise&&window.isSubstituteExercise(e);
+      actions.innerHTML="<button class='secondary' onclick='skipExerciseView()'>POMIŃ</button><button class='secondary swap' onclick='substituteExerciseView()'>"+(isSub?"EDYTUJ ZAMIANĘ":"ZAMIEŃ ĆWICZENIE")+"</button>";
+      finish.parentNode.insertBefore(nextCard,finish);
+      finish.parentNode.insertBefore(actions,finish);
+    }
+  }
+
+  var gl115BaseExercise=window.exercise;
+  window.exercise=exercise=function(){
+    var r=gl115BaseExercise.apply(this,arguments);
+    requestAnimationFrame(gl115SimplifyExerciseScreen);
+    return r;
+  };
+
+  function gl115CleanDashboardMood(){
+    var mood=String((data&&data.lastMeta&&data.lastMeta.mood)||"").trim();if(mood)return;
+    document.querySelectorAll(".gl085-metric").forEach(function(card){
+      if(String(card.textContent||"").toLowerCase().indexOf("samopoczucie")>=0)card.remove();
+    });
+  }
+  var gl115BaseHome=window.home;
+  window.home=home=function(){
+    var r=gl115BaseHome.apply(this,arguments);
+    requestAnimationFrame(gl115CleanDashboardMood);
+    return r;
+  };
+})();
+
+
+
+/* 0.71.5 managed suggestion alignment:
+   warmups never inherit a previous working load, and working-set history
+   remains aligned after adding warmup rows to an existing plan. */
+(function(){
+  var gl115BaseSuggestion=getSuggestion;
+  getSuggestion=function(ex){
+    if(!glIsManagedUser()||!ex||!Array.isArray(ex.managedWarmups)){
+      return gl115BaseSuggestion.apply(this,arguments);
+    }
+    if(window.isSubstituteExercise&&window.isSubstituteExercise(ex)){
+      return {w:"",r:"",s:"",n:""};
+    }
+
+    var performed=(ex.sets||[]).filter(function(s){
+      return !(s&&s.skipped)&&String(s&&s.s||"").toLowerCase()!=="pominięte";
+    }).length;
+    var warmCount=ex.managedWarmups.length;
+
+    if(performed<warmCount){
+      return {w:"",r:"",s:"rozgrzewka",n:""};
+    }
+
+    var workIndex=performed-warmCount;
+    var prev=glManagedPreviousWorkingSets(current&&current.training||"",ex.name);
+    if(prev&&prev[workIndex]){
+      var s=prev[workIndex];
+      return {
+        w:String(s.w!=null?s.w:(s.weight!=null?s.weight:"")),
+        r:String(s.r!=null?s.r:(s.reps!=null?s.reps:"")),
+        s:String(s.s||""),
+        n:""
+      };
+    }
+
+    var starter=glManagedStarterSets(ex.managedStarter,ex.managedWorkSets||3);
+    if(starter&&starter[workIndex]){
+      return {
+        w:String(starter[workIndex].w||""),
+        r:String(starter[workIndex].r||""),
+        s:"",
+        n:""
+      };
+    }
+    return {w:"",r:"",s:"",n:""};
+  };
+  window.getSuggestion=getSuggestion;
 })();
 
 

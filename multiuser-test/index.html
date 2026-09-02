@@ -3513,6 +3513,120 @@ body.theme-female .gl115-current-target:not(.warmup){border-color:rgba(255,190,2
   .gl115-bottom-actions{grid-template-columns:1fr 1fr}
 }
 
+
+/* =====================================================================
+   0.71.6 — REST TIMER AT TOP + CLEAN ACTION ORDER
+   ===================================================================== */
+
+/* Top stats: workout time left, rest right. Readiness (when present) gets
+   a clean full-width row below and disappears with no gap when absent. */
+.lux-active-meta.gl116-top-stats{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:10px!important;
+}
+.gl116-top-stats .lux-stat-card{
+  min-width:0!important;
+  margin:0!important;
+}
+.gl116-top-stats .gl116-readiness-full{
+  grid-column:1/-1!important;
+}
+.gl116-rest-stat{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+}
+.gl116-rest-stat .lux-stat-label{
+  color:#96989f!important;
+}
+.gl116-rest-stat #timer,
+.gl116-rest-stat .timer{
+  margin:7px 0 1px!important;
+  padding:0!important;
+  min-height:0!important;
+  background:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:#f5f5f7!important;
+  font-size:34px!important;
+  line-height:1!important;
+  font-weight:1000!important;
+  letter-spacing:-.04em!important;
+  text-align:left!important;
+}
+.gl116-rest-stat #timer.running,
+.gl116-rest-stat .timer.running{
+  color:#f5f5f7!important;
+}
+.gl116-rest-stat #timer.ready,
+.gl116-rest-stat .timer.ready{
+  color:#67df8f!important;
+  font-size:25px!important;
+  letter-spacing:-.02em!important;
+}
+.gl116-rest-stat .lux-stat-note{
+  min-height:14px;
+}
+
+/* Old standalone rest box is completely gone in this layout. */
+.lux-rest-card.gl116-remove-rest{
+  display:none!important;
+}
+
+/* Navigation labels have explicit "ćwiczenie". */
+.gl116-ex-nav{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:8px!important;
+}
+.gl116-ex-nav button{
+  white-space:normal!important;
+  line-height:1.2!important;
+  min-height:48px!important;
+  padding:10px 8px!important;
+  font-size:10px!important;
+}
+
+/* Finish is now before Skip / Swap. */
+.gl116-actions-after-finish{
+  margin-top:9px!important;
+  margin-bottom:10px!important;
+}
+.gl116-actions-after-finish button{
+  min-height:48px!important;
+}
+
+/* Make the hierarchy visually obvious. */
+.gl115-next-card{
+  margin-bottom:10px!important;
+}
+.lux-finish{
+  margin-bottom:0!important;
+}
+
+@media(max-width:380px){
+  .gl116-rest-stat #timer,
+  .gl116-rest-stat .timer{
+    font-size:29px!important;
+  }
+  .gl116-ex-nav button{
+    font-size:9px!important;
+  }
+}
+
+
+/* =====================================================================
+   0.71.7 — MOOD/READINESS NEVER SHOWN DURING ACTIVE WORKOUT
+   Mood is still collected before the workout and saved with the log/history.
+   ===================================================================== */
+.lux-active-meta .gl117-hide-workout-mood{
+  display:none!important;
+}
+.lux-active-meta.gl116-top-stats{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+}
+
 </style>
 <style>
 
@@ -6582,7 +6696,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.71.5";
+VERSION = "BETA 0.71.7";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -15145,6 +15259,148 @@ if(typeof window.glAdminExportWorkout==="function"){
     return {w:"",r:"",s:"",n:""};
   };
   window.getSuggestion=getSuggestion;
+})();
+
+
+
+/* ======================================================================
+   0.71.6 — FINAL ACTIVE WORKOUT LAYOUT TWEAKS
+   - rest timer beside workout clock
+   - Restart/Stop removed
+   - explicit previous/next exercise labels
+   - Skip/Swap below Finish
+   ====================================================================== */
+(function(){
+
+  function gl116TopRestTimer(){
+    var meta=document.querySelector(".lux-active-meta");
+    var restCard=document.querySelector(".lux-rest-card");
+    if(!meta||!restCard)return;
+
+    meta.classList.add("gl116-top-stats");
+
+    /* The current timer node may already be running. Move the node itself
+       rather than recreating it, so its live countdown is preserved. */
+    var timerNode=restCard.querySelector("#timer");
+    if(!timerNode)return;
+
+    var oldTop=meta.querySelector(".gl116-rest-stat");
+    if(oldTop)oldTop.remove();
+
+    var stat=document.createElement("div");
+    stat.className="lux-stat-card gl116-rest-stat";
+    stat.innerHTML="<div class='lux-stat-label'>Odpoczynek</div><div class='gl116-timer-slot'></div><div class='lux-stat-note'>Przerwa po serii</div>";
+    stat.querySelector(".gl116-timer-slot").appendChild(timerNode);
+
+    var timeCard=Array.prototype.slice.call(meta.children).find(function(card){
+      return String(card.textContent||"").toLowerCase().indexOf("czas treningu")>=0;
+    });
+
+    if(timeCard&&timeCard.nextSibling)meta.insertBefore(stat,timeCard.nextSibling);
+    else meta.appendChild(stat);
+
+    /* If readiness exists, keep it but give it a full row below.
+       If 0.71.5 hid it because mood is empty, no empty slot remains. */
+    Array.prototype.slice.call(meta.children).forEach(function(card){
+      if(card===timeCard||card===stat)return;
+      var t=String(card.textContent||"").toLowerCase();
+      if(t.indexOf("gotowość")>=0||t.indexOf("samopoczucie")>=0){
+        card.classList.add("gl116-readiness-full");
+      }
+    });
+
+    /* Remove the old rest card including Restart and Stop. */
+    restCard.classList.add("gl116-remove-rest");
+    restCard.remove();
+  }
+
+  function gl116NavigationLabels(){
+    document.querySelectorAll(".lux-nav-row").forEach(function(row){
+      var buttons=row.querySelectorAll("button");
+      if(buttons.length<2)return;
+      var joined=String(row.textContent||"").toLowerCase();
+      if(joined.indexOf("poprzed")<0||joined.indexOf("następn")<0)return;
+
+      row.classList.add("gl116-ex-nav");
+      buttons[0].textContent="‹ POPRZEDNIE ĆWICZENIE";
+      buttons[1].textContent="NASTĘPNE ĆWICZENIE ›";
+    });
+  }
+
+  function gl116ActionOrder(){
+    var finish=document.querySelector(".lux-finish");
+    var actions=document.querySelector(".gl115-bottom-actions");
+    if(!finish||!actions)return;
+
+    actions.classList.add("gl116-actions-after-finish");
+
+    /* Desired bottom order:
+       previous/next -> next exercise info -> FINISH -> skip/swap */
+    if(finish.nextSibling!==actions){
+      finish.insertAdjacentElement("afterend",actions);
+    }
+  }
+
+  function gl116ApplyWorkoutLayout(){
+    if(!current)return;
+    gl116TopRestTimer();
+    gl116NavigationLabels();
+    gl116ActionOrder();
+  }
+
+  /* 0.71.5 performs its simplification in requestAnimationFrame.
+     Run one frame later so this patch is always the final layout pass. */
+  var gl116BaseExercise=window.exercise;
+  window.exercise=exercise=function(){
+    var r=gl116BaseExercise.apply(this,arguments);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(gl116ApplyWorkoutLayout);
+    });
+    return r;
+  };
+
+  /* saveSet can start the rest immediately after an automatic exercise
+     transition. The #timer node remains the same node after being moved
+     to the top, so the countdown keeps updating there. */
+})();
+
+
+
+/* ======================================================================
+   0.71.7 — hide mood/readiness from active workout UI for everyone.
+   This is display-only: current.mood and saved history remain unchanged.
+   ====================================================================== */
+(function(){
+  function gl117RemoveMoodFromActiveWorkout(){
+    if(!current)return;
+    var meta=document.querySelector(".lux-active-meta");
+    if(!meta)return;
+
+    Array.prototype.slice.call(meta.children).forEach(function(card){
+      var t=String(card.textContent||"").toLowerCase();
+      if(t.indexOf("gotowość")>=0 || t.indexOf("samopoczucie")>=0){
+        card.classList.add("gl117-hide-workout-mood");
+        card.remove();
+      }
+    });
+
+    /* Keep the top area strictly as two equal boxes:
+       Czas treningu | Odpoczynek */
+    meta.classList.add("gl116-top-stats");
+  }
+
+  var gl117BaseExercise=window.exercise;
+  window.exercise=exercise=function(){
+    var r=gl117BaseExercise.apply(this,arguments);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        requestAnimationFrame(gl117RemoveMoodFromActiveWorkout);
+      });
+    });
+    return r;
+  };
+
+  window.gl117RemoveMoodFromActiveWorkout=gl117RemoveMoodFromActiveWorkout;
 })();
 
 

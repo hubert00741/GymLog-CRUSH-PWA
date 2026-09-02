@@ -2811,6 +2811,479 @@ body.theme-female .gl111-notif-check{
   .gl111-top-actions .gl085-account-copy{display:none!important}
 }
 
+
+/* =====================================================================
+   0.71.2 — CLIENT FEEDBACK + ADMIN INBOX BELL
+   ===================================================================== */
+
+.gl112-admin-bell{
+  position:relative!important;
+  flex:0 0 44px!important;
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  color:#f0f0f3!important;
+  background:#111216!important;
+  border:1px solid rgba(255,255,255,.085)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 9px 22px rgba(0,0,0,.24)!important;
+}
+.gl112-admin-bell svg{width:20px;height:20px;display:block;stroke:currentColor}
+.gl112-admin-bell:active{transform:scale(.96)!important}
+.gl112-admin-badge{
+  position:absolute;
+  top:-3px;
+  right:-3px;
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  border-radius:999px;
+  background:var(--account-accent,#ff2738);
+  border:2px solid #0b0c0e;
+  color:#fff;
+  font-size:9px;
+  line-height:1;
+  font-weight:1000;
+  box-shadow:0 0 13px color-mix(in srgb,var(--account-accent,#ff2738) 32%,transparent);
+}
+.gl112-more-feedback{
+  width:100%!important;
+}
+.gl112-feedback-wrap,
+.gl112-inbox-wrap{
+  max-width:720px;
+  margin:0 auto;
+  padding:0 0 96px;
+}
+.gl112-view-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin:4px 0 18px;
+}
+.gl112-view-kicker{
+  color:var(--account-accent,#ff2738);
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+.gl112-view-head h1{
+  margin:5px 0 0!important;
+  font-size:27px!important;
+  line-height:1!important;
+  letter-spacing:-.045em!important;
+}
+.gl112-back{
+  width:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:10px 12px!important;
+  border-radius:13px!important;
+  background:#111216!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  box-shadow:none!important;
+  color:#e8e8eb!important;
+  font-size:11px!important;
+  font-weight:900!important;
+}
+.gl112-form-card{
+  padding:17px 16px 16px;
+  border-radius:20px;
+  background:linear-gradient(155deg,#121317,#0e0f12);
+  border:1px solid rgba(255,255,255,.075);
+  box-shadow:0 12px 28px rgba(0,0,0,.18);
+}
+.gl112-form-card label{
+  display:block;
+  margin:0 0 7px;
+  color:#8b8d94;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.gl112-form-card select,
+.gl112-form-card input,
+.gl112-form-card textarea{
+  width:100%;
+  box-sizing:border-box;
+  margin:0 0 14px;
+  border-radius:14px!important;
+  background:#0c0d10!important;
+  border:1px solid rgba(255,255,255,.085)!important;
+  color:#f4f4f6!important;
+  box-shadow:none!important;
+}
+.gl112-form-card textarea{
+  min-height:150px;
+  resize:vertical;
+}
+.gl112-feedback-help{
+  margin:-3px 0 15px;
+  color:#71737a;
+  font-size:11px;
+  line-height:1.5;
+}
+.gl112-send{
+  min-height:54px!important;
+  margin:2px 0 0!important;
+  border-radius:16px!important;
+}
+.gl112-form-status{
+  min-height:18px;
+  margin-top:11px;
+  font-size:11px;
+  line-height:1.45;
+}
+.gl112-form-status.ok{color:#8ed8aa}
+.gl112-form-status.bad{color:#ff8e98}
+
+.gl112-inbox-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin-bottom:13px;
+}
+.gl112-inbox-stat{
+  padding:12px 11px;
+  border-radius:15px;
+  background:#111216;
+  border:1px solid rgba(255,255,255,.065);
+}
+.gl112-inbox-stat span{
+  display:block;
+  color:#72747b;
+  font-size:9px;
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+}
+.gl112-inbox-stat b{
+  display:block;
+  margin-top:4px;
+  color:#f3f3f5;
+  font-size:19px;
+}
+.gl112-inbox-list{
+  display:grid;
+  gap:11px;
+}
+.gl112-feedback-card{
+  position:relative;
+  overflow:hidden;
+  padding:16px;
+  border-radius:19px;
+  background:linear-gradient(155deg,#121317,#0e0f12);
+  border:1px solid rgba(255,255,255,.075);
+  box-shadow:0 12px 28px rgba(0,0,0,.18);
+}
+.gl112-feedback-card.is-new{
+  border-color:color-mix(in srgb,var(--account-accent,#ff2738) 34%,rgba(255,255,255,.07));
+}
+.gl112-feedback-card.is-new:before{
+  content:"";
+  position:absolute;
+  top:0;left:0;width:3px;height:100%;
+  background:var(--account-accent,#ff2738);
+}
+.gl112-feedback-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.gl112-feedback-person{
+  min-width:0;
+}
+.gl112-feedback-person b{
+  display:block;
+  color:#f5f5f7;
+  font-size:14px;
+  line-height:1.2;
+}
+.gl112-feedback-person span{
+  display:block;
+  margin-top:3px;
+  color:#74767d;
+  font-size:10px;
+}
+.gl112-feedback-kind{
+  flex:0 0 auto;
+  padding:5px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.07);
+  color:#bfc0c5;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+.gl112-feedback-card h2{
+  margin:13px 0 7px!important;
+  color:#f2f2f4!important;
+  font-size:16px!important;
+  line-height:1.25!important;
+}
+.gl112-feedback-message{
+  color:#c5c6cb;
+  font-size:12px;
+  line-height:1.55;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.gl112-feedback-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px 11px;
+  margin-top:13px;
+  color:#696b72;
+  font-size:9px;
+}
+.gl112-feedback-actions{
+  display:flex;
+  gap:8px;
+  margin-top:13px;
+}
+.gl112-feedback-actions button{
+  width:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:9px 11px!important;
+  border-radius:12px!important;
+  font-size:10px!important;
+}
+.gl112-resolved{
+  opacity:.64;
+}
+.gl112-empty{
+  padding:24px 18px;
+  border-radius:18px;
+  text-align:center;
+  color:#777980;
+  background:#101114;
+  border:1px solid rgba(255,255,255,.06);
+  font-size:12px;
+  line-height:1.5;
+}
+@media(max-width:420px){
+  .gl112-admin-bell{
+    width:42px!important;height:42px!important;
+    min-width:42px!important;min-height:42px!important;
+  }
+  .gl112-feedback-actions{flex-direction:column}
+  .gl112-feedback-actions button{width:100%!important}
+}
+
+
+/* =====================================================================
+   0.71.3 — ACCOUNT TYPES + OWNER PLAN EDITOR + RELIABLE USER FEATURES
+   ===================================================================== */
+.gl113-account-role-box{
+  margin:14px 0 12px;
+  padding:13px;
+  border-radius:15px;
+  background:#0e0f12;
+  border:1px solid rgba(255,255,255,.07);
+}
+.gl113-account-role-box label{
+  display:block;
+  margin:0 0 7px;
+  color:#8a8c93;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.gl113-account-role-box select{margin:0!important}
+.gl113-account-role-note{
+  margin-top:7px;
+  color:#6e7077;
+  font-size:10px;
+  line-height:1.45;
+}
+.gl113-feature-card .gl113-feature-row{
+  padding:13px 0;
+  border-top:1px solid rgba(255,255,255,.065);
+}
+.gl113-feature-card .gl113-feature-row:first-of-type{
+  border-top:0;
+  padding-top:3px;
+}
+.gl113-feature-row label{
+  display:block;
+  margin-bottom:7px;
+  font-size:12px;
+  font-weight:900;
+  color:#ededf0;
+}
+.gl113-feature-row select{margin:0!important}
+.gl113-feature-note{
+  margin-top:7px;
+  color:#74767d;
+  font-size:10px;
+  line-height:1.45;
+}
+.gl113-owner-wrap{
+  max-width:760px;
+  margin:0 auto;
+  padding:0 0 96px;
+}
+.gl113-owner-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin:4px 0 16px;
+}
+.gl113-owner-head h1{
+  margin:0!important;
+  font-size:27px!important;
+  letter-spacing:-.045em!important;
+}
+.gl113-owner-sub{
+  margin-top:5px;
+  color:#75777e;
+  font-size:11px;
+  line-height:1.45;
+}
+.gl113-owner-day{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  gap:8px;
+  align-items:center;
+}
+.gl113-owner-day select{margin:0!important}
+.gl113-owner-day button{
+  width:auto!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:10px 12px!important;
+}
+.gl113-owner-ex{
+  position:relative;
+}
+.gl113-owner-ex-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:12px;
+}
+.gl113-owner-ex-top b{
+  font-size:14px;
+  color:#f1f1f3;
+}
+.gl113-owner-move{
+  display:flex;
+  gap:6px;
+}
+.gl113-owner-move button{
+  width:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:7px 9px!important;
+  border-radius:10px!important;
+  font-size:10px!important;
+}
+.gl113-owner-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.gl113-owner-grid .wide{grid-column:1/-1}
+.gl113-owner-grid label{
+  display:block;
+  margin:0 0 6px;
+  color:#85878e;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.gl113-owner-grid input,
+.gl113-owner-grid textarea{
+  margin:0!important;
+}
+.gl113-owner-grid textarea{
+  min-height:118px;
+  resize:vertical;
+}
+.gl113-owner-muscles{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.gl113-owner-muscle{
+  position:relative;
+}
+.gl113-owner-muscle input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.gl113-owner-muscle span{
+  display:block;
+  padding:8px 9px;
+  border-radius:999px;
+  background:#0e0f12;
+  border:1px solid rgba(255,255,255,.08);
+  color:#9a9ca3;
+  font-size:9px;
+  font-weight:850;
+}
+.gl113-owner-muscle input:checked+span{
+  color:#fff;
+  border-color:color-mix(in srgb,var(--account-accent,#ff2738) 50%,rgba(255,255,255,.08));
+  background:color-mix(in srgb,var(--account-accent,#ff2738) 13%,#0e0f12);
+}
+.gl113-owner-actions{
+  display:grid;
+  gap:8px;
+  margin-top:12px;
+}
+.gl113-owner-danger-note{
+  color:#74767d;
+  font-size:10px;
+  line-height:1.45;
+}
+.gl113-role-pill{
+  display:inline-flex;
+  align-items:center;
+  margin-top:5px;
+  padding:4px 7px;
+  border-radius:999px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.07);
+  color:#9b9da4;
+  font-size:9px;
+  font-weight:900;
+}
+body.theme-female .gl113-owner-muscle input:checked+span{
+  border-color:rgba(255,185,216,.36)!important;
+  background:rgba(243,155,196,.08)!important;
+}
+@media(max-width:520px){
+  .gl113-owner-day{grid-template-columns:minmax(0,1fr) auto}
+  .gl113-owner-day .gl113-delete-day{grid-column:1/-1;width:100%!important}
+  .gl113-owner-grid{grid-template-columns:1fr}
+  .gl113-owner-grid .wide{grid-column:auto}
+}
+
 </style>
 <style>
 
@@ -5880,7 +6353,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.71.1";
+VERSION = "BETA 0.71.3";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -12613,6 +13086,16 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0712",
+      version:"BETA 0.71.2",
+      date:"02.09.2026",
+      title:"Nowy kontakt z administratorem",
+      changes:[
+        {feature:"always",text:"W zakładce Więcej możesz teraz bezpośrednio zgłosić błąd aplikacji, wysłać sugestię albo inną wiadomość do administratora."},
+        {feature:"always",text:"Zgłoszenie trafia do skrzynki administratora wraz z nazwą Twojego konta i wersją aplikacji."}
+      ]
+    },
+    {
       id:"client-0711",
       version:"BETA 0.71.1",
       date:"31.08.2026",
@@ -12790,6 +13273,901 @@ if(typeof window.glAdminExportWorkout==="function"){
       visible:gl111VisibleReleases(),
       unread:gl111UnreadReleases()
     };
+  };
+})();
+
+
+
+/* ======================================================================
+   0.71.2 — CLIENT FEEDBACK FORM + ADMIN FEEDBACK INBOX
+   ====================================================================== */
+(function(){
+  var GL112_ADMIN_POLL=null;
+
+  function gl112Profile(){
+    try{return gl085Profile()||window.GL_PROFILE||{};}catch(e){return window.GL_PROFILE||{};}
+  }
+  function gl112IsAdmin(){
+    var p=gl112Profile();
+    return !!p && String(p.role||"")==="admin";
+  }
+  function gl112IsClient(){
+    var p=gl112Profile();
+    return !!p && String(p.role||"")!=="admin";
+  }
+  function gl112CategoryLabel(v){
+    v=String(v||"");
+    if(v==="bug")return "Błąd";
+    if(v==="suggestion")return "Sugestia";
+    return "Inne";
+  }
+  function gl112Date(value){
+    var d=new Date(value);
+    if(!isFinite(d.getTime()))return String(value||"");
+    try{return d.toLocaleString("pl-PL",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});}
+    catch(e){return d.toLocaleString();}
+  }
+  async function gl112Session(){
+    var s=await glEnsureSession();
+    if(!s||!s.user||!s.user.id)throw new Error("Brak aktywnej sesji.");
+    return s;
+  }
+
+  /* ---------------- CLIENT: feedback form ---------------- */
+  window.gl112FeedbackView=function(){
+    if(!gl112IsClient()){home();return;}
+    stopTimer();luxStopWorkoutClock();glApplyProfileTheme();
+
+    render(
+      "<div class='gl112-feedback-wrap'>"+
+        "<div class='gl112-view-head'>"+
+          "<div><div class='gl112-view-kicker'>Kontakt</div><h1>Zgłoś błąd lub sugestię</h1></div>"+
+          "<button class='gl112-back' onclick='luxMoreView()'>← Wróć</button>"+
+        "</div>"+
+        "<div class='gl112-form-card'>"+
+          "<label>Rodzaj zgłoszenia</label>"+
+          "<select id='gl112Category'><option value='bug'>Błąd aplikacji</option><option value='suggestion'>Sugestia / pomysł</option><option value='other'>Inne</option></select>"+
+          "<label>Temat</label>"+
+          "<input id='gl112Subject' maxlength='120' placeholder='np. problem z zapisem serii'>"+
+          "<label>Opis</label>"+
+          "<textarea id='gl112Message' maxlength='4000' placeholder='Opisz dokładnie co się stało albo co chciałbyś zmienić.'></textarea>"+
+          "<div class='gl112-feedback-help'>Wiadomość trafia bezpośrednio do administratora GymLog CRUSH. Do zgłoszenia automatycznie dołączymy nazwę Twojego konta i wersję aplikacji.</div>"+
+          "<button id='gl112SendBtn' class='gl112-send' onclick='gl112SubmitFeedback()'>WYŚLIJ ZGŁOSZENIE</button>"+
+          "<div id='gl112FormStatus' class='gl112-form-status'></div>"+
+        "</div>"+
+      "</div>"+luxBottomNav("more")
+    );
+  };
+
+  window.gl112SubmitFeedback=async function(){
+    if(!gl112IsClient())return;
+    var category=String((document.getElementById("gl112Category")||{}).value||"bug");
+    var subject=String((document.getElementById("gl112Subject")||{}).value||"").trim();
+    var message=String((document.getElementById("gl112Message")||{}).value||"").trim();
+    var btn=document.getElementById("gl112SendBtn");
+    var st=document.getElementById("gl112FormStatus");
+    function setStatus(t,ok){
+      if(st){st.className="gl112-form-status "+(ok?"ok":"bad");st.textContent=t;}
+    }
+    if(!subject){setStatus("Wpisz temat zgłoszenia.",false);return;}
+    if(!message){setStatus("Opisz błąd albo sugestię.",false);return;}
+    if(subject.length>120||message.length>4000){setStatus("Zgłoszenie jest za długie.",false);return;}
+
+    try{
+      if(btn){btn.disabled=true;btn.textContent="WYSYŁAM…";}
+      setStatus("",true);
+      var s=await gl112Session();
+      await glApi("/rest/v1/app_feedback",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+        body:JSON.stringify({
+          user_id:s.user.id,
+          category:category,
+          subject:subject,
+          message:message,
+          app_version:String(VERSION||"")
+        })
+      },s);
+
+      if(document.getElementById("gl112Subject"))document.getElementById("gl112Subject").value="";
+      if(document.getElementById("gl112Message"))document.getElementById("gl112Message").value="";
+      setStatus("Zgłoszenie wysłane. Administrator zobaczy je w swoim centrum powiadomień.",true);
+    }catch(e){
+      setStatus("Nie udało się wysłać: "+String(e&&e.message||e),false);
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent="WYŚLIJ ZGŁOSZENIE";}
+    }
+  };
+
+  /* Add feedback to More only for clients. */
+  var gl112BaseMore=window.luxMoreView;
+  window.luxMoreView=function(){
+    var r=gl112BaseMore.apply(this,arguments);
+    requestAnimationFrame(function(){
+      if(!gl112IsClient())return;
+      var list=document.querySelector(".lux-action-list");
+      if(!list||document.getElementById("gl112FeedbackBtn"))return;
+      var b=document.createElement("button");
+      b.id="gl112FeedbackBtn";
+      b.className="gl112-more-feedback";
+      b.innerHTML="<span>⚑ Zgłoś błąd lub sugestię</span><span>›</span>";
+      b.onclick=gl112FeedbackView;
+
+      var accountBtn=Array.prototype.slice.call(list.querySelectorAll("button")).find(function(x){
+        return String(x.textContent||"").indexOf("Konto i profil")>=0;
+      });
+      if(accountBtn)list.insertBefore(b,accountBtn);
+      else list.appendChild(b);
+    });
+    return r;
+  };
+
+  /* ---------------- ADMIN: data ---------------- */
+  async function gl112FetchFeedback(){
+    if(!gl112IsAdmin())return [];
+    var s=await gl112Session();
+    return await glApi(
+      "/rest/v1/app_feedback?select=id,user_id,category,subject,message,app_version,status,admin_read_at,created_at&order=created_at.desc&limit=150",
+      {method:"GET"},s
+    )||[];
+  }
+  async function gl112FetchProfiles(ids){
+    var map={};
+    if(!ids.length)return map;
+    var s=await gl112Session();
+    var unique=[];
+    ids.forEach(function(id){if(id&&unique.indexOf(id)<0)unique.push(id);});
+    var filter="("+unique.map(function(x){return encodeURIComponent(x);}).join(",")+")";
+    try{
+      var rows=await glApi(
+        "/rest/v1/profiles?select=id,username,display_name&id=in."+filter,
+        {method:"GET"},s
+      );
+      (rows||[]).forEach(function(p){map[p.id]=p;});
+    }catch(e){console.log("Feedback profiles:",e);}
+    return map;
+  }
+  async function gl112UnreadCount(){
+    if(!gl112IsAdmin())return 0;
+    try{
+      var s=await gl112Session();
+      var rows=await glApi(
+        "/rest/v1/app_feedback?select=id&status=eq.new",
+        {method:"GET",headers:{"Prefer":"count=exact"}},s
+      );
+      return (rows||[]).length;
+    }catch(e){
+      console.log("Feedback unread:",e);
+      return 0;
+    }
+  }
+  async function gl112MarkAllRead(){
+    if(!gl112IsAdmin())return;
+    try{
+      var s=await gl112Session();
+      await glApi("/rest/v1/app_feedback?status=eq.new",{
+        method:"PATCH",
+        headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+        body:JSON.stringify({status:"read",admin_read_at:new Date().toISOString()})
+      },s);
+    }catch(e){console.log("Feedback mark read:",e);}
+  }
+
+  /* ---------------- ADMIN: bell ---------------- */
+  function gl112AdminBellHtml(){
+    return "<button class='gl112-admin-bell' onclick='gl112AdminInboxView()' aria-label='Wiadomości od klientów'>"+
+      "<svg viewBox='0 0 24 24' fill='none' aria-hidden='true'>"+
+        "<path d='M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>"+
+        "<path d='M10 21h4' stroke-width='1.8' stroke-linecap='round'/>"+
+      "</svg><span class='gl112-admin-badge' style='display:none'></span></button>";
+  }
+  async function gl112RefreshAdminBadge(){
+    if(!gl112IsAdmin())return;
+    var bell=document.querySelector(".gl112-admin-bell");
+    if(!bell)return;
+    var n=await gl112UnreadCount();
+    var badge=bell.querySelector(".gl112-admin-badge");
+    if(!badge)return;
+    if(n>0){
+      badge.style.display="flex";
+      badge.textContent=n>99?"99+":String(n);
+    }else{
+      badge.style.display="none";
+      badge.textContent="";
+    }
+  }
+  function gl112InjectAdminBell(){
+    if(!gl112IsAdmin())return;
+    var top=document.querySelector(".gl085-top");
+    var profile=top&&top.querySelector(".gl086-profile-button");
+    if(!top||!profile||top.querySelector(".gl112-admin-bell"))return;
+
+    var actions=top.querySelector(".gl111-top-actions");
+    if(!actions){
+      actions=document.createElement("div");
+      actions.className="gl111-top-actions";
+      top.insertBefore(actions,profile);
+      actions.appendChild(profile);
+    }
+
+    var holder=document.createElement("div");
+    holder.innerHTML=gl112AdminBellHtml();
+    var bell=holder.firstElementChild;
+    if(bell)actions.insertBefore(bell,profile);
+
+    gl112RefreshAdminBadge();
+    if(GL112_ADMIN_POLL)clearInterval(GL112_ADMIN_POLL);
+    GL112_ADMIN_POLL=setInterval(function(){
+      if(document.querySelector(".gl112-admin-bell"))gl112RefreshAdminBadge();
+    },30000);
+  }
+
+  /* ---------------- ADMIN: inbox UI ---------------- */
+  window.gl112AdminInboxView=async function(){
+    if(!gl112IsAdmin()){home();return;}
+    stopTimer();luxStopWorkoutClock();glApplyProfileTheme();
+
+    render(
+      "<div class='gl112-inbox-wrap'>"+
+        "<div class='gl112-view-head'><div><div class='gl112-view-kicker'>Klienci</div><h1>Wiadomości</h1></div><button class='gl112-back' onclick='home()'>← Wróć</button></div>"+
+        "<div class='gl112-empty'>Ładuję zgłoszenia…</div>"+
+      "</div>"+luxBottomNav("start")
+    );
+
+    try{
+      var rows=await gl112FetchFeedback();
+      var profiles=await gl112FetchProfiles(rows.map(function(x){return x.user_id;}));
+      var total=rows.length;
+      var fresh=rows.filter(function(x){return x.status==="new";}).length;
+      var resolved=rows.filter(function(x){return x.status==="resolved";}).length;
+
+      var cards="";
+      rows.forEach(function(x){
+        var p=profiles[x.user_id]||{};
+        var display=p.display_name||p.username||"Użytkownik";
+        var username=p.username?"@"+p.username:"";
+        var isNew=x.status==="new";
+        var isResolved=x.status==="resolved";
+
+        cards+=
+          "<article class='gl112-feedback-card "+(isNew?"is-new ":"")+(isResolved?"gl112-resolved":"")+"'>"+
+            "<div class='gl112-feedback-top'>"+
+              "<div class='gl112-feedback-person'><b>"+esc(display)+"</b><span>"+esc(username||"Klient")+"</span></div>"+
+              "<span class='gl112-feedback-kind'>"+esc(gl112CategoryLabel(x.category))+"</span>"+
+            "</div>"+
+            "<h2>"+esc(x.subject||"Bez tematu")+"</h2>"+
+            "<div class='gl112-feedback-message'>"+esc(x.message||"")+"</div>"+
+            "<div class='gl112-feedback-meta'>"+
+              "<span>"+esc(gl112Date(x.created_at))+"</span>"+
+              "<span>"+esc(x.app_version||"")+"</span>"+
+              "<span>"+(isResolved?"Rozwiązane":isNew?"Nowe":"Przeczytane")+"</span>"+
+            "</div>"+
+            "<div class='gl112-feedback-actions'>"+
+              (isResolved
+                ?"<button class='secondary' onclick='gl112ReopenFeedback(\""+esc(x.id)+"\")'>OTWÓRZ PONOWNIE</button>"
+                :"<button class='secondary' onclick='gl112ResolveFeedback(\""+esc(x.id)+"\")'>OZNACZ JAKO ROZWIĄZANE</button>")+
+            "</div>"+
+          "</article>";
+      });
+
+      if(!cards)cards="<div class='gl112-empty'>Nie masz jeszcze żadnych zgłoszeń od klientów.</div>";
+
+      var host=document.querySelector(".gl112-inbox-wrap");
+      if(host){
+        host.innerHTML=
+          "<div class='gl112-view-head'><div><div class='gl112-view-kicker'>Klienci</div><h1>Wiadomości</h1></div><button class='gl112-back' onclick='home()'>← Wróć</button></div>"+
+          "<div class='gl112-inbox-summary'>"+
+            "<div class='gl112-inbox-stat'><span>Wszystkie</span><b>"+total+"</b></div>"+
+            "<div class='gl112-inbox-stat'><span>Nowe</span><b>"+fresh+"</b></div>"+
+            "<div class='gl112-inbox-stat'><span>Rozwiązane</span><b>"+resolved+"</b></div>"+
+          "</div>"+
+          "<div class='gl112-inbox-list'>"+cards+"</div>";
+      }
+
+      /* Opening the inbox counts as reading currently new messages. */
+      if(fresh>0)await gl112MarkAllRead();
+    }catch(e){
+      var host2=document.querySelector(".gl112-inbox-wrap");
+      if(host2){
+        host2.innerHTML=
+          "<div class='gl112-view-head'><div><div class='gl112-view-kicker'>Klienci</div><h1>Wiadomości</h1></div><button class='gl112-back' onclick='home()'>← Wróć</button></div>"+
+          "<div class='gl112-empty'>Nie udało się pobrać wiadomości: "+esc(String(e&&e.message||e))+"</div>";
+      }
+    }
+  };
+
+  window.gl112ResolveFeedback=async function(id){
+    if(!gl112IsAdmin()||!id)return;
+    try{
+      var s=await gl112Session();
+      await glApi("/rest/v1/app_feedback?id=eq."+encodeURIComponent(id),{
+        method:"PATCH",
+        headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+        body:JSON.stringify({status:"resolved",admin_read_at:new Date().toISOString()})
+      },s);
+      gl112AdminInboxView();
+    }catch(e){alert(String(e&&e.message||e));}
+  };
+
+  window.gl112ReopenFeedback=async function(id){
+    if(!gl112IsAdmin()||!id)return;
+    try{
+      var s=await gl112Session();
+      await glApi("/rest/v1/app_feedback?id=eq."+encodeURIComponent(id),{
+        method:"PATCH",
+        headers:{"Content-Type":"application/json","Prefer":"return=minimal"},
+        body:JSON.stringify({status:"read",admin_read_at:new Date().toISOString()})
+      },s);
+      gl112AdminInboxView();
+    }catch(e){alert(String(e&&e.message||e));}
+  };
+
+  /* Wrap final home: client keeps 0.71.1 bell; admin gets feedback bell. */
+  var gl112BaseHome=window.home;
+  window.home=home=function(){
+    var r=gl112BaseHome.apply(this,arguments);
+    requestAnimationFrame(gl112InjectAdminBell);
+    return r;
+  };
+})();
+
+
+
+/* ======================================================================
+   0.71.3
+   1. Owner/admin can edit his own native plan structure.
+   2. New account types: client / admin / trainer / trainee.
+   3. Report-code and goal-code toggles are rendered in a dedicated,
+      reliable card in the selected user's settings.
+   ====================================================================== */
+(function(){
+  var GL113_ROLES=["client","admin","trainer","trainee"];
+  var GL113_BUILTIN_OWNER_PLANS={};
+  try{GL113_BUILTIN_OWNER_PLANS=JSON.parse(JSON.stringify(PLANS||{}));}catch(e){GL113_BUILTIN_OWNER_PLANS={};}
+
+  window.gl113RoleLabel=function(role){
+    role=String(role||"").toLowerCase();
+    if(role==="admin")return "Admin";
+    if(role==="trainer")return "Trener";
+    if(role==="trainee")return "Podopieczny";
+    if(role==="client"||role==="user")return "Klient";
+    return "Klient";
+  };
+  function gl113RoleValue(role){
+    role=String(role||"").toLowerCase();
+    if(role==="user")return "client";
+    return GL113_ROLES.indexOf(role)>=0?role:"client";
+  }
+  function gl113RoleOptions(selectedRole,disableAdmin){
+    var selected=gl113RoleValue(selectedRole);
+    var rows=[
+      ["client","Klient"],
+      ["admin","Admin"],
+      ["trainer","Trener"],
+      ["trainee","Podopieczny"]
+    ];
+    return rows.map(function(x){
+      return "<option value='"+x[0]+"'"+(selected===x[0]?" selected":"")+(disableAdmin&&x[0]!=="admin"?" disabled":"")+">"+x[1]+"</option>";
+    }).join("");
+  }
+  function gl113ManagedFlagsForRole(role){
+    role=gl113RoleValue(role);
+    if(role==="admin"){
+      return {
+        managedMode:false,gymSelection:true,chatReport:true,goalUpdate:true,
+        footTracking:true,muscleMap:true,bodyWeight:true,adminUsers:true,
+        planEdit:true,mood:true
+      };
+    }
+    var f={};
+    try{f=Object.assign({},glDefaultManagedFlags());}catch(e){}
+    return Object.assign(f,{
+      managedMode:true,gymSelection:false,chatReport:false,goalUpdate:false,
+      footTracking:false,muscleMap:true,bodyWeight:true,adminUsers:false,
+      planEdit:false,mood:true
+    });
+  }
+  async function gl113Session(){
+    var s=await glEnsureSession();
+    if(!s||!s.user)throw new Error("Brak aktywnej sesji.");
+    return s;
+  }
+  async function gl113PatchProfile(userId,payload){
+    var s=await gl113Session();
+    return await glApi("/rest/v1/profiles?id=eq."+encodeURIComponent(userId),{
+      method:"PATCH",
+      headers:{"Content-Type":"application/json","Prefer":"return=representation"},
+      body:JSON.stringify(payload||{})
+    },s);
+  }
+
+  /* ----------------------------------------------------------
+     ROLE LABELS IN ACCOUNT UI
+     ---------------------------------------------------------- */
+  gl086AccountRole=function(){
+    var p={};
+    try{p=gl085Profile()||{};}catch(e){p=window.GL_PROFILE||{};}
+    return gl113RoleLabel(p.role);
+  };
+  window.gl086AccountRole=gl086AccountRole;
+
+  /* ----------------------------------------------------------
+     CREATE USER: role/category selector + reliable role save
+     ---------------------------------------------------------- */
+  function gl113EnhanceUsersCreate(){
+    if(!glIsAdmin())return;
+    var gender=document.getElementById("muNewGender");
+    if(gender&&!document.getElementById("muNewRole")){
+      var oldLabel=gender.previousElementSibling;
+      if(oldLabel&&String(oldLabel.tagName||"").toLowerCase()==="label")oldLabel.textContent="Motyw / płeć";
+
+      var box=document.createElement("div");
+      box.className="gl113-account-role-box";
+      box.innerHTML=
+        "<label>Rodzaj konta</label>"+
+        "<select id='muNewRole'>"+gl113RoleOptions("client",false)+"</select>"+
+        "<div class='gl113-account-role-note'>Admin ma uprawnienia administracyjne. Klient, Trener i Podopieczny korzystają z trybu treningowego; te kategorie rozdzielają typ użytkowania konta i pozwalają dalej rozwijać uprawnienia.</div>";
+      gender.parentNode.insertBefore(box,oldLabel||gender);
+    }
+
+    var cards=Array.prototype.slice.call(document.querySelectorAll(".mu-user-card"));
+    (window.GL_ADMIN_USERS||[]).forEach(function(u,i){
+      var card=cards[i];if(!card)return;
+      var meta=card.querySelector(".mu-user-meta");
+      if(meta)meta.textContent="@"+String(u.username||"")+" • "+gl113RoleLabel(u.role);
+    });
+  }
+
+  var gl113BaseUsersView=window.glUsersView;
+  window.glUsersView=async function(){
+    var r=await gl113BaseUsersView.apply(this,arguments);
+    requestAnimationFrame(gl113EnhanceUsersCreate);
+    return r;
+  };
+
+  window.glAdminCreateUser=async function(){
+    var username=String((document.getElementById("muNewLogin")||{}).value||"").trim().toLowerCase();
+    var name=String((document.getElementById("muNewName")||{}).value||username).trim();
+    var password=String((document.getElementById("muNewPass")||{}).value||"");
+    var gender=String((document.getElementById("muNewGender")||{}).value||"male");
+    var role=gl113RoleValue((document.getElementById("muNewRole")||{}).value||"client");
+
+    if(password.length<6){alert("Hasło musi mieć minimum 6 znaków.");return;}
+    if(!username){alert("Wpisz login.");return;}
+
+    var flags=gl113ManagedFlagsForRole(role);
+    var cfg={managedMode:role!=="admin",managed_plans:{},gender:gender,accountType:role};
+
+    try{
+      /* account-settings creates the Auth user; profile role is then changed
+         through the existing admin RLS policy. */
+      var created=await glAdminApi({
+        action:"create_user",
+        username:username,
+        display_name:name,
+        password:password,
+        feature_flags:flags,
+        profile_config:cfg
+      });
+      var uid=created&&created.user&&created.user.id;
+      if(!uid)throw new Error("Konto utworzone, ale serwer nie zwrócił ID użytkownika.");
+      await gl113PatchProfile(uid,{role:role,feature_flags:flags,profile_config:cfg});
+      alert("Użytkownik utworzony jako: "+gl113RoleLabel(role)+".");
+      glUsersView();
+    }catch(e){
+      alert("Nie udało się utworzyć użytkownika: "+String(e&&e.message||e));
+    }
+  };
+
+  /* ----------------------------------------------------------
+     SELECTED USER SETTINGS:
+     - account role
+     - dedicated report-code/goal-code card
+     ---------------------------------------------------------- */
+  function gl113EnhanceSelectedUser(){
+    if(!glIsAdmin())return;
+    var r=window.GL_ADMIN_SELECTED,sel=r&&r.profile;
+    if(!sel)return;
+
+    var form=document.querySelector(".mu-admin-form");
+    if(form&&!document.getElementById("muEditAccountRole")){
+      var row=form.querySelector(".row2");
+      var selfId=(window.GL_PROFILE&&window.GL_PROFILE.id)||"";
+      var isOwner=String(sel.id||"")===String(selfId||"");
+      var roleBox=document.createElement("div");
+      roleBox.className="gl113-account-role-box";
+      roleBox.innerHTML=
+        "<label>Rodzaj konta</label>"+
+        "<select id='muEditAccountRole' "+(isOwner?"disabled":"")+">"+gl113RoleOptions(sel.role,isOwner)+"</select>"+
+        "<div class='gl113-account-role-note'>"+(isOwner?"Twoje główne konto pozostaje kontem Admin, żeby nie utracić dostępu administracyjnego.":"Możesz zmienić kategorię konta: Klient, Admin, Trener albo Podopieczny.")+"</div>";
+      if(row)row.insertAdjacentElement("afterend",roleBox);else form.insertBefore(roleBox,form.firstChild);
+    }
+
+    var gender=document.getElementById("muEditGender");
+    if(gender){
+      var glabel=gender.previousElementSibling;
+      if(glabel&&String(glabel.tagName||"").toLowerCase()==="label")glabel.textContent="Motyw / płeć";
+    }
+
+    /* Remove the older injected feature stack if present. It was dependent on
+       another DOM anchor and could disappear on some user-edit screens. */
+    var oldChat=document.getElementById("muEditChatReport");
+    if(oldChat){
+      var oldStack=oldChat.closest(".gl110-feature-stack");
+      if(oldStack)oldStack.remove();
+    }
+
+    if(sel.role!=="admin"&&!document.getElementById("gl113FeatureCard")){
+      var flags=Object.assign(glDefaultManagedFlags(),sel.feature_flags||{});
+      var cards=Array.prototype.slice.call(document.querySelectorAll("#app > .card"));
+      var accountCard=cards[0]||null;
+      var card=document.createElement("div");
+      card.id="gl113FeatureCard";
+      card.className="card gl113-feature-card";
+      card.innerHTML=
+        "<div class='lux-section-title'>Funkcje użytkownika</div>"+
+        "<div class='gl113-feature-row'>"+
+          "<label>Kod podsumowania po treningu</label>"+
+          "<select id='muEditChatReport'><option value='true' "+(flags.chatReport===true?"selected":"")+">Włączony</option><option value='false' "+(flags.chatReport!==true?"selected":"")+">Wyłączony</option></select>"+
+          "<div class='gl113-feature-note'>Po zakończeniu treningu użytkownik dostanie pełny kod raportu do skopiowania i wklejenia do ChatGPT.</div>"+
+        "</div>"+
+        "<div class='gl113-feature-row'>"+
+          "<label>Wklejanie aktualizacji celów kodem</label>"+
+          "<select id='muEditGoalUpdate'><option value='true' "+(flags.goalUpdate===true?"selected":"")+">Włączone</option><option value='false' "+(flags.goalUpdate!==true?"selected":"")+">Wyłączone</option></select>"+
+          "<div class='gl113-feature-note'>Pozwala użytkownikowi wkleić blok GYMLOG_PLAN_UPDATE_V1. Ty jako administrator możesz aktualizować jego cele niezależnie od tego przełącznika.</div>"+
+        "</div>";
+      if(accountCard&&accountCard.parentNode)accountCard.insertAdjacentElement("afterend",card);
+      else document.getElementById("app").appendChild(card);
+    }
+  }
+
+  var gl113BaseAdminRender=window.glAdminRenderSelectedUser;
+  window.glAdminRenderSelectedUser=function(page){
+    var r=gl113BaseAdminRender.apply(this,arguments);
+    requestAnimationFrame(gl113EnhanceSelectedUser);
+    return r;
+  };
+
+  window.glAdminSaveIdentity=async function(){
+    var r=window.GL_ADMIN_SELECTED;if(!r||!r.profile)return;
+    var p=r.profile;
+    try{
+      var username=String((document.getElementById("muEditLogin")||{}).value||p.username||"").trim().toLowerCase();
+      var displayName=String((document.getElementById("muEditName")||{}).value||p.display_name||username).trim();
+      var currentSelf=(window.GL_PROFILE&&String(window.GL_PROFILE.id||"")===String(p.id||""));
+      var role=gl113RoleValue((document.getElementById("muEditAccountRole")||{}).value||p.role);
+      if(currentSelf)role="admin";
+
+      await glAdminApi({
+        action:"update_user",
+        user_id:p.id,
+        username:username,
+        display_name:displayName
+      });
+
+      var gender=String((document.getElementById("muEditGender")||{}).value||((p.profile_config||{}).gender)||"male");
+      var flags=Object.assign(glDefaultManagedFlags(),p.feature_flags||{});
+
+      function boolField(id,fallback){
+        var el=document.getElementById(id);
+        if(!el)return fallback;
+        return String(el.value)==="true";
+      }
+      flags.muscleMap=boolField("muEditMuscleMap",flags.muscleMap!==false);
+      flags.mood=boolField("muEditMoodEnabled",flags.mood!==false);
+      flags.planEdit=boolField("muEditPlanEdit",flags.planEdit===true);
+      flags.chatReport=boolField("muEditChatReport",flags.chatReport===true);
+      flags.goalUpdate=boolField("muEditGoalUpdate",flags.goalUpdate===true);
+
+      if(role==="admin"){
+        flags.adminUsers=true;
+        flags.managedMode=false;
+      }else{
+        flags.adminUsers=false;
+        flags.managedMode=true;
+      }
+
+      var cfg=Object.assign({},p.profile_config||{},{
+        managedMode:role!=="admin",
+        gender:gender,
+        accountType:role
+      });
+
+      /* Role itself lives on profiles; feature/config remains through the
+         existing audited admin endpoint. */
+      await gl113PatchProfile(p.id,{role:role});
+      await glAdminApi({
+        action:"set_features",
+        user_id:p.id,
+        feature_flags:flags,
+        profile_config:cfg
+      });
+
+      p.username=username;
+      p.display_name=displayName;
+      p.role=role;
+      p.feature_flags=flags;
+      p.profile_config=cfg;
+
+      alert("Ustawienia konta zapisane.");
+      glAdminOpenUser(p.id,window.GL_ADMIN_USER_PAGE||0);
+    }catch(e){
+      alert("Nie udało się zapisać ustawień: "+String(e&&e.message||e));
+    }
+  };
+
+  /* ----------------------------------------------------------
+     OWNER / ADMIN NATIVE PLAN EDITOR
+     ---------------------------------------------------------- */
+  function gl113Clone(v){return JSON.parse(JSON.stringify(v||{}));}
+  function gl113PlanLines(plan){
+    return String(plan||"").replace(/\\r\\n/g,"\n").replace(/\\n/g,"\n").replace(/\r/g,"\n")
+      .split(/\n+/).map(function(x){return x.trim();}).filter(Boolean);
+  }
+  function gl113EstimateSets(ex){
+    if(Number(ex&&ex.ownerSets)>0)return Number(ex.ownerSets);
+    var n=gl113PlanLines(ex&&ex.plan).filter(function(line){
+      if(/^pom[ińn]/i.test(line)||/^pomiń/i.test(line))return false;
+      return /(?:\bkg\b|masa ciała|pusta sztanga|aktywacja).*?[x×]\s*\d+/i.test(line) ||
+             /^[^|]{0,35}[x×]\s*\d+/i.test(line);
+    }).length;
+    return n>0?n:3;
+  }
+  function gl113EstimateReps(ex){
+    if(ex&&ex.ownerReps)return String(ex.ownerReps);
+    var lines=gl113PlanLines(ex&&ex.plan);
+    for(var i=lines.length-1;i>=0;i--){
+      var m=lines[i].match(/[x×]\s*(\d+(?:\s*-\s*\d+)?)/i);
+      if(m)return m[1].replace(/\s+/g,"");
+    }
+    return "8-12";
+  }
+  function gl113OwnerPlanSource(){
+    var plans=(data&&data.ownerPlansV1&&typeof data.ownerPlansV1==="object")
+      ?gl113Clone(data.ownerPlansV1):gl113Clone(PLANS||{});
+
+    /* Show current generic target overrides in the editor instead of stale
+       built-in targets. Gym-specific targets remain untouched. */
+    Object.keys(plans).forEach(function(plan){
+      (plans[plan]||[]).forEach(function(ex){
+        try{
+          var x=data.planOverrides&&data.planOverrides[plan]&&data.planOverrides[plan][ex.name];
+          if(x)ex.plan=String(x);
+        }catch(e){}
+        ex.ownerSets=gl113EstimateSets(ex);
+        ex.ownerReps=gl113EstimateReps(ex);
+      });
+    });
+    return plans;
+  }
+  function gl113ApplyOwnerPlans(){
+    if(!glIsAdmin()||!data||!data.ownerPlansV1||typeof data.ownerPlansV1!=="object")return;
+    try{
+      var src=gl113Clone(data.ownerPlansV1);
+      Object.keys(PLANS).forEach(function(k){delete PLANS[k];});
+      Object.keys(src).forEach(function(k){PLANS[k]=src[k];});
+    }catch(e){console.log("Owner plan apply:",e);}
+  }
+  window.gl113ApplyOwnerPlans=gl113ApplyOwnerPlans;
+
+  function gl113OwnerMusclePicker(ex,i){
+    var selectedGroups=Array.isArray(ex.groups)?ex.groups:[];
+    return "<div class='gl113-owner-muscles'>"+GL065_MUSCLE_GROUPS.map(function(g){
+      var checked=selectedGroups.indexOf(g)>=0?" checked":"";
+      return "<label class='gl113-owner-muscle'><input type='checkbox' name='gl113_groups_"+i+"' value='"+esc(g)+"'"+checked+"><span>"+esc(window.gl074MuscleLabel?gl074MuscleLabel(g):g)+"</span></label>";
+    }).join("")+"</div>";
+  }
+  function gl113OwnerCapture(){
+    var c=window.GL113_OWNER_CTX;if(!c||!c.planName)return;
+    var arr=c.plans[c.planName]||[];
+    arr.forEach(function(ex,i){
+      function q(id){return document.getElementById("gl113_"+id+"_"+i);}
+      if(q("name"))ex.name=String(q("name").value||"").trim()||"Ćwiczenie";
+      if(q("sets"))ex.ownerSets=Math.max(1,parseInt(q("sets").value,10)||1);
+      if(q("reps"))ex.ownerReps=String(q("reps").value||"8-12").trim()||"8-12";
+      if(q("rest"))ex.rest=Math.max(0,parseInt(q("rest").value,10)||0);
+      if(q("plan")){
+        var raw=String(q("plan").value||"").trim();
+        if(!raw){
+          var lines=[];
+          for(var j=0;j<ex.ownerSets;j++)lines.push("x "+ex.ownerReps);
+          raw=lines.join("\n");
+        }
+        ex.plan=raw;
+      }
+      ex.groups=Array.prototype.slice.call(document.querySelectorAll("input[name='gl113_groups_"+i+"']:checked")).map(function(x){return x.value;});
+    });
+  }
+  window.gl113OwnerPlanEditor=function(){
+    if(!glIsAdmin()){luxMoreView();return;}
+    gl113ApplyOwnerPlans();
+    var plans=gl113OwnerPlanSource();
+    window.GL113_OWNER_CTX={plans:plans,planName:Object.keys(plans)[0]||""};
+    gl113OwnerRender();
+  };
+  window.gl113OwnerRender=function(){
+    var c=window.GL113_OWNER_CTX;if(!c)return luxMoreView();
+    var names=Object.keys(c.plans);
+    if(c.planName&&!c.plans[c.planName])c.planName=names[0]||"";
+    if(!c.planName&&names.length)c.planName=names[0];
+
+    var opts=names.map(function(n){
+      return "<option value='"+esc(n)+"'"+selected(c.planName,n)+">"+esc(n)+"</option>";
+    }).join("");
+
+    var exercises="";
+    (c.plans[c.planName]||[]).forEach(function(ex,i){
+      exercises+=
+        "<div class='card gl113-owner-ex'>"+
+          "<div class='gl113-owner-ex-top'><b>"+(i+1)+". "+esc(ex.name||"Ćwiczenie")+"</b>"+
+            "<div class='gl113-owner-move'><button class='secondary' onclick='gl113OwnerMove("+i+",-1)'>↑</button><button class='secondary' onclick='gl113OwnerMove("+i+",1)'>↓</button><button class='danger' onclick='gl113OwnerDeleteExercise("+i+")'>Usuń</button></div>"+
+          "</div>"+
+          "<div class='gl113-owner-grid'>"+
+            "<div class='wide'><label>Nazwa ćwiczenia</label><input id='gl113_name_"+i+"' value='"+esc(ex.name||"")+"'></div>"+
+            "<div><label>Serie</label><input id='gl113_sets_"+i+"' inputmode='numeric' value='"+gl113EstimateSets(ex)+"'></div>"+
+            "<div><label>Zakres powtórzeń</label><input id='gl113_reps_"+i+"' value='"+esc(gl113EstimateReps(ex))+"'></div>"+
+            "<div><label>Przerwa (sek.)</label><input id='gl113_rest_"+i+"' inputmode='numeric' value='"+esc(ex.rest||120)+"'></div>"+
+            "<div class='wide'><label>Partie mięśniowe</label>"+gl113OwnerMusclePicker(ex,i)+"</div>"+
+            "<div class='wide'><label>Plan / cel wyświetlany podczas treningu</label><textarea id='gl113_plan_"+i+"'>"+esc(ex.plan||"")+"</textarea></div>"+
+          "</div>"+
+        "</div>";
+    });
+    if(!c.planName)exercises="<div class='card small'>Nie ma jeszcze żadnego dnia treningowego.</div>";
+
+    render(
+      "<div class='gl113-owner-wrap'>"+
+        "<div class='gl113-owner-head'><div><h1>Mój plan treningowy</h1><div class='gl113-owner-sub'>Edytujesz plan używany bezpośrednio na Twoim koncie Admin. Cele dla różnych siłowni nadal pozostają niezależne.</div></div><button class='secondary gl112-back' onclick='luxMoreView()'>← Wróć</button></div>"+
+        "<div class='card'>"+
+          "<div class='lux-section-title'>Dzień treningowy</div>"+
+          "<div class='gl113-owner-day'>"+
+            (names.length?"<select id='gl113OwnerDay' onchange='gl113OwnerSwitch(this.value)'>"+opts+"</select>":"<div class='small'>Brak dni</div>")+
+            "<button onclick='gl113OwnerAddDay()'>+ Dzień</button>"+
+            (c.planName?"<button class='danger gl113-delete-day' onclick='gl113OwnerDeleteDay()'>Usuń dzień</button>":"")+
+          "</div>"+
+          (c.planName?"<button class='secondary' onclick='gl113OwnerAddExercise()'>+ DODAJ ĆWICZENIE</button>":"")+
+        "</div>"+
+        exercises+
+        "<div class='gl113-owner-actions'>"+
+          "<button onclick='gl113OwnerSave()'>ZAPISZ MÓJ PLAN</button>"+
+          "<button class='secondary' onclick='gl113OwnerResetBuiltIn()'>PRZYWRÓĆ PLAN BAZOWY Z APLIKACJI</button>"+
+          "<div class='gl113-owner-danger-note'>Edycja planu nie usuwa historii treningów. Zmienia strukturę kolejnych treningów. Osobne cele/ciężary zapisane dla CityFit, Zdrofit i Siłowni Oskara nadal działają dla ćwiczeń o tej samej nazwie.</div>"+
+        "</div>"+
+      "</div>"+luxBottomNav("more")
+    );
+  };
+  window.gl113OwnerSwitch=function(name){
+    gl113OwnerCapture();window.GL113_OWNER_CTX.planName=name;gl113OwnerRender();
+  };
+  window.gl113OwnerAddDay=function(){
+    gl113OwnerCapture();
+    var c=window.GL113_OWNER_CTX,name=String(prompt("Nazwa nowego dnia treningowego:")||"").trim();
+    if(!name)return;
+    if(c.plans[name]){alert("Taki dzień już istnieje.");return;}
+    c.plans[name]=[];c.planName=name;gl113OwnerRender();
+  };
+  window.gl113OwnerDeleteDay=function(){
+    var c=window.GL113_OWNER_CTX;if(!c||!c.planName)return;
+    if(!confirm("Usunąć cały dzień „"+c.planName+"” z Twojego planu?"))return;
+    delete c.plans[c.planName];c.planName=Object.keys(c.plans)[0]||"";gl113OwnerRender();
+  };
+  window.gl113OwnerAddExercise=function(){
+    gl113OwnerCapture();
+    var c=window.GL113_OWNER_CTX;if(!c||!c.planName)return;
+    c.plans[c.planName].push({
+      name:"Nowe ćwiczenie",groups:[],last:"",plan:"x 8-12\nx 8-12\nx 8-12",
+      rest:120,ownerSets:3,ownerReps:"8-12"
+    });
+    gl113OwnerRender();
+  };
+  window.gl113OwnerDeleteExercise=function(i){
+    gl113OwnerCapture();
+    var c=window.GL113_OWNER_CTX,list=c&&c.plans[c.planName];if(!list)return;
+    if(!confirm("Usunąć to ćwiczenie z planu?"))return;
+    list.splice(i,1);gl113OwnerRender();
+  };
+  window.gl113OwnerMove=function(i,dir){
+    gl113OwnerCapture();
+    var c=window.GL113_OWNER_CTX,list=c&&c.plans[c.planName];if(!list)return;
+    var j=i+dir;if(j<0||j>=list.length)return;
+    var t=list[i];list[i]=list[j];list[j]=t;gl113OwnerRender();
+  };
+  window.gl113OwnerSave=function(){
+    if(!glIsAdmin())return;
+    gl113OwnerCapture();
+    var c=window.GL113_OWNER_CTX;if(!c)return;
+
+    data.ownerPlansV1=gl113Clone(c.plans);
+    if(!data.planOverrides||typeof data.planOverrides!=="object")data.planOverrides={};
+
+    Object.keys(c.plans).forEach(function(plan){
+      if(!data.planOverrides[plan])data.planOverrides[plan]={};
+      (c.plans[plan]||[]).forEach(function(ex){
+        data.planOverrides[plan][ex.name]=String(ex.plan||"");
+      });
+    });
+
+    gl113ApplyOwnerPlans();
+    safeSave();
+    alert("Twój plan treningowy został zapisany.");
+    gl113OwnerRender();
+  };
+  window.gl113OwnerResetBuiltIn=function(){
+    if(!confirm("Przywrócić bazową strukturę Twojego planu z tej wersji aplikacji? Historia treningów nie zostanie usunięta."))return;
+    window.GL113_OWNER_CTX={
+      plans:gl113Clone(GL113_BUILTIN_OWNER_PLANS),
+      planName:Object.keys(GL113_BUILTIN_OWNER_PLANS)[0]||""
+    };
+    gl113OwnerRender();
+  };
+
+  /* Apply custom owner plan before screens/functions that read PLANS. */
+  var gl113BaseHome=window.home;
+  window.home=home=function(){
+    try{gl113ApplyOwnerPlans();}catch(e){}
+    return gl113BaseHome.apply(this,arguments);
+  };
+  if(typeof window.glWorkoutSetupView==="function"){
+    var gl113BaseSetup=window.glWorkoutSetupView;
+    window.glWorkoutSetupView=function(){
+      try{gl113ApplyOwnerPlans();}catch(e){}
+      return gl113BaseSetup.apply(this,arguments);
+    };
+  }
+
+  /* Add "Mój plan treningowy" back to admin More, but now it edits the
+     actual native owner plan rather than managed_plans. Also fix role label. */
+  var gl113BaseMore=window.luxMoreView;
+  window.luxMoreView=function(){
+    var r=gl113BaseMore.apply(this,arguments);
+    requestAnimationFrame(function(){
+      var p=window.GL_PROFILE||{};
+      var roleLabel=gl113RoleLabel(p.role);
+
+      var metas=Array.prototype.slice.call(document.querySelectorAll(".mu-account-meta,.gl101-more-profile-meta,.gl100-more-profile-meta"));
+      metas.forEach(function(el){
+        var t=String(el.textContent||"");
+        if(t.indexOf("@")>=0){
+          el.textContent="@"+String(p.username||"—")+" • "+roleLabel;
+        }
+      });
+
+      if(glIsAdmin()){
+        var list=document.querySelector(".lux-action-list");
+        if(list&&!document.getElementById("gl113OwnerPlanBtn")){
+          var b=document.createElement("button");
+          b.id="gl113OwnerPlanBtn";
+          b.innerHTML="<span>▤ Mój plan treningowy</span><span>›</span>";
+          b.onclick=gl113OwnerPlanEditor;
+          var users=Array.prototype.slice.call(list.querySelectorAll("button")).find(function(x){
+            return String(x.textContent||"").indexOf("Użytkownicy")>=0;
+          });
+          if(users)users.insertAdjacentElement("afterend",b);else list.insertBefore(b,list.firstChild);
+        }
+      }
+    });
+    return r;
+  };
+
+  /* Update the role label on the account page after render. */
+  var gl113BaseAccountView=window.glAccountView;
+  window.glAccountView=function(back){
+    var r=gl113BaseAccountView.apply(this,arguments);
+    requestAnimationFrame(function(){
+      var p=window.GL_PROFILE||{},label=gl113RoleLabel(p.role);
+      var copy=document.querySelector(".gl086-account-copy p");
+      if(copy)copy.textContent="@"+String(p.username||"—")+" • "+label;
+    });
+    return r;
+  };
+
+  /* Existing legacy role "user" continues to behave as Client.
+     New client/trainer/trainee profiles have managedMode=true. */
+  var gl113BaseManagedUser=window.glIsManagedUser||glIsManagedUser;
+  window.glIsManagedUser=glIsManagedUser=function(){
+    var p=window.GL_PROFILE||{},role=gl113RoleValue(p.role),cfg=p.profile_config||{},flags=p.feature_flags||{};
+    if(role==="admin"||String(p.username||"").toLowerCase().trim()==="hubert")return false;
+    if(cfg.managedMode===true||flags.managedMode===true)return true;
+    return role==="client"||role==="trainer"||role==="trainee";
   };
 })();
 

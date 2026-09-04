@@ -4195,6 +4195,15 @@ body.theme-female .gl085-account-copy .gl118-account-type{
 }
 </style>
 
+
+<style id="gl120-account-create-fix">
+/* 0.72.0 — safer account creation */
+.gl120-create-busy{
+  opacity:.65!important;
+  pointer-events:none!important;
+}
+</style>
+
 </head>
 
 <body>
@@ -6779,7 +6788,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.71.9";
+VERSION = "BETA 0.72.0";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -15561,7 +15570,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.71.9";
+  VERSION="BETA 0.72.0";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -15607,7 +15616,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.71.9";
+    VERSION="BETA 0.72.0";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -15627,6 +15636,127 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl119FixStartHeader=gl119FixStartHeader;
+})();
+
+
+
+/* ======================================================================
+   0.72.0 — ACCOUNT CREATION FIX
+   - prevent accidental double submit
+   - backend receives the selected account role directly
+   - clear Polish error for duplicate login and validation problems
+   - no second role-patch step after successful creation
+   ====================================================================== */
+(function(){
+  var GL120_CREATING_USER=false;
+
+  function gl120CreateButton(){
+    return document.querySelector("button[onclick='glAdminCreateUser()']");
+  }
+
+  function gl120ErrorText(e,username){
+    var body=e&&e.body||{};
+    var code=String(body.error||e&&e.message||"");
+    var detail=String(body.detail||"").trim();
+
+    if(code==="username_taken" || /already been registered|email.*exists|email_exists/i.test(detail)){
+      return "Login „"+String(username||"")+"” jest już zajęty. Wybierz inny login.";
+    }
+    if(code==="invalid_username"){
+      return detail || "Login musi mieć 3–32 znaki i może zawierać tylko małe litery, cyfry, kropkę, myślnik lub podkreślenie.";
+    }
+    if(code==="password_too_short"){
+      return detail || "Hasło musi mieć minimum 6 znaków.";
+    }
+    if(code==="display_name_required"){
+      return detail || "Wpisz imię lub nazwę użytkownika.";
+    }
+    if(code==="admin_required"){
+      return "Ta operacja wymaga konta administratora.";
+    }
+    return detail || code || "Nieznany błąd tworzenia konta.";
+  }
+
+  window.glAdminCreateUser=async function(){
+    if(GL120_CREATING_USER)return;
+
+    var username=String((document.getElementById("muNewLogin")||{}).value||"").trim().toLowerCase();
+    var name=String((document.getElementById("muNewName")||{}).value||username).trim();
+    var password=String((document.getElementById("muNewPass")||{}).value||"");
+    var gender=String((document.getElementById("muNewGender")||{}).value||"male");
+    var role=typeof gl113RoleValue==="function"
+      ?gl113RoleValue((document.getElementById("muNewRole")||{}).value||"client")
+      :String((document.getElementById("muNewRole")||{}).value||"client");
+
+    if(!/^[a-z0-9._-]{3,32}$/.test(username)){
+      alert("Login musi mieć 3–32 znaki i może zawierać tylko małe litery, cyfry, kropkę, myślnik lub podkreślenie.");
+      return;
+    }
+    if(!name){
+      alert("Wpisz imię lub nazwę użytkownika.");
+      return;
+    }
+    if(password.length<6){
+      alert("Hasło musi mieć minimum 6 znaków.");
+      return;
+    }
+
+    /* Immediate local duplicate check before hitting Auth. */
+    var existing=(window.GL_ADMIN_USERS||[]).find(function(u){
+      return String(u&&u.username||"").toLowerCase()===username;
+    });
+    if(existing){
+      alert("Login „"+username+"” jest już zajęty. Wybierz inny login.");
+      return;
+    }
+
+    var flags=typeof gl113ManagedFlagsForRole==="function"
+      ?gl113ManagedFlagsForRole(role)
+      :glDefaultManagedFlags();
+    var cfg={managedMode:role!=="admin",managed_plans:{},gender:gender,accountType:role};
+
+    var btn=gl120CreateButton();
+    GL120_CREATING_USER=true;
+    if(btn){
+      btn.classList.add("gl120-create-busy");
+      btn.disabled=true;
+      btn.dataset.gl120OldText=btn.textContent||"DODAJ UŻYTKOWNIKA";
+      btn.textContent="TWORZĘ KONTO…";
+    }
+
+    try{
+      /* glAdminApi routes create_user to account-settings/admin_create_user. */
+      var created=await glAdminApi({
+        action:"create_user",
+        username:username,
+        display_name:name,
+        password:password,
+        account_role:role,
+        feature_flags:flags,
+        profile_config:cfg
+      });
+
+      if(!created || !created.user || !created.user.id){
+        throw new Error("Serwer nie zwrócił utworzonego konta.");
+      }
+
+      alert("Konto utworzone: "+name+" • "+(typeof gl113RoleLabel==="function"?gl113RoleLabel(role):role)+".");
+      await glUsersView();
+    }catch(e){
+      alert("Nie udało się utworzyć użytkownika:\n"+gl120ErrorText(e,username));
+    }finally{
+      GL120_CREATING_USER=false;
+      var b=gl120CreateButton();
+      if(b){
+        b.classList.remove("gl120-create-busy");
+        b.disabled=false;
+        b.textContent=b.dataset.gl120OldText||"DODAJ UŻYTKOWNIKA";
+      }
+    }
+  };
+
+  /* Keep the final runtime version stable. */
+  VERSION="BETA 0.72.0";
 })();
 
 

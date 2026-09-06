@@ -4204,6 +4204,44 @@ body.theme-female .gl085-account-copy .gl118-account-type{
 }
 </style>
 
+
+<style id="gl121-plan-today-fix">
+/* =====================================================================
+   0.72.1 — MANAGED GOALS LIVE INSIDE "PLAN NA DZIŚ"
+   ===================================================================== */
+.gl115-coach-goal{
+  display:none!important;
+}
+.gl121-plan-free-text{
+  margin:0 0 8px;
+  padding:10px 11px;
+  border-radius:12px;
+  background:#0b0c0f;
+  border:1px solid rgba(255,255,255,.055);
+  color:#ececf0;
+  font-size:11px;
+  line-height:1.5;
+  white-space:pre-wrap;
+}
+.gl121-plan-row .target{
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:5px;
+}
+.gl121-plan-row .target .weight{
+  color:#fff;
+  font-weight:1000;
+}
+.gl121-plan-row .target .sep{
+  color:#777980;
+}
+body.theme-female .gl121-plan-free-text,
+body.theme-female .gl121-plan-row{
+  border-color:rgba(255,190,220,.09);
+}
+</style>
+
 </head>
 
 <body>
@@ -6788,7 +6826,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.72.0";
+VERSION = "BETA 0.72.1";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -13521,6 +13559,16 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0721",
+      version:"BETA 0.72.1",
+      date:"06.09.2026",
+      title:"Czytelniejszy Plan na dziś",
+      changes:[
+        {feature:"always",text:"Aktualizacje celu treningowego są teraz wpisywane bezpośrednio w sekcję „Plan na dziś”, zamiast pojawiać się jako osobny blok „Cel trenera”."},
+        {feature:"always",text:"Jeżeli plan zawiera różne ciężary lub zakresy dla kolejnych serii, każda seria pokazuje swój konkretny cel bezpośrednio w grafice planu."}
+      ]
+    },
+    {
       id:"client-0719",
       version:"BETA 0.71.9",
       date:"02.09.2026",
@@ -15570,7 +15618,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.72.0";
+  VERSION="BETA 0.72.1";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -15616,7 +15664,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.72.0";
+    VERSION="BETA 0.72.1";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -15756,7 +15804,301 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.72.0";
+  VERSION="BETA 0.72.1";
+})();
+
+
+
+/* ======================================================================
+   0.72.1 — MANAGED PLAN UPDATE = REAL "PLAN NA DZIŚ"
+   No separate "Cel trenera" card.
+   ====================================================================== */
+(function(){
+
+  function gl121Clean(v){
+    return String(v==null?"":v).trim();
+  }
+
+  window.gl121ParseTargets=function(goal){
+    var raw=gl121Clean(goal).replace(/\\r\\n/g,"\n").replace(/\\n/g,"\n").replace(/\r/g,"\n");
+    if(!raw)return [];
+
+    var out=[];
+    raw.split(/\n+/).forEach(function(line){
+      line=gl121Clean(line);
+      if(!line)return;
+
+      /* Example:
+         70 kg: 12-15,12-15
+         12,5 kg: 8-12,8-12,8-12 */
+      var colon=line.match(/^(.+?)\s*:\s*(.+)$/);
+      if(colon){
+        var weight=gl121Clean(colon[1]);
+        var reps=String(colon[2]||"").split(/[,;]+/).map(gl121Clean).filter(Boolean);
+        reps.forEach(function(rep){
+          out.push({weight:weight,reps:rep});
+        });
+        return;
+      }
+
+      /* Also accept direct one-line notation: 70 kg x 12-15 */
+      var direct=line.match(/^(.+?)\s*[x×]\s*(\d+(?:\s*[-–]\s*\d+)?)\s*(?:powt\.?)?$/i);
+      if(direct){
+        out.push({weight:gl121Clean(direct[1]),reps:gl121Clean(direct[2]).replace(/\s+/g,"")});
+      }
+    });
+    return out;
+  };
+
+  function gl121InputWeight(v){
+    var s=gl121Clean(v).replace(/\s*kg\s*$/i,"").trim();
+    return s;
+  }
+
+  function gl121NormalizeManagedExercise(ex){
+    if(!ex)return ex;
+    var targets=gl121ParseTargets(ex.managedGoal||ex.goal||"");
+    if(targets.length){
+      ex.managedWorkTargets=targets;
+      ex.managedWorkSets=targets.length;
+      ex.managedWorkReps=targets.map(function(t){return t.reps;});
+      ex.managedSets=(Array.isArray(ex.managedWarmups)?ex.managedWarmups.length:0)+targets.length;
+    }else{
+      ex.managedWorkTargets=[];
+    }
+    return ex;
+  }
+
+  /* Normalize every managed exercise after the older layers construct it. */
+  var gl121BaseManagedExercises=window.glManagedExercises||glManagedExercises;
+  glManagedExercises=window.glManagedExercises=function(planName){
+    var out=gl121BaseManagedExercises.apply(this,arguments)||[];
+    out.forEach(gl121NormalizeManagedExercise);
+    return out;
+  };
+
+  /* Plan rows now contain the actual updated target, not a separate coach box. */
+  glManagedPlanRows=function(e){
+    gl121NormalizeManagedExercise(e);
+
+    var warmups=Array.isArray(e&&e.managedWarmups)?e.managedWarmups:[];
+    var targets=Array.isArray(e&&e.managedWorkTargets)?e.managedWorkTargets:[];
+    var workReps=(typeof gl115ManagedWorkReps==="function")?gl115ManagedWorkReps(e):[];
+    var prev=glManagedPreviousWorkingSets(current.training,e.name);
+    var usingStarter=false;
+
+    if(!prev.length){
+      prev=glManagedStarterSets(e.managedStarter,e.managedWorkSets||workReps.length);
+      usingStarter=prev.length>0;
+    }
+
+    var html="<div class='gl115-plan-rows'>";
+
+    /* If the pasted plan is free text and cannot be parsed into per-set targets,
+       keep it INSIDE Plan na dziś, still without "Cel trenera". */
+    if(e.managedGoal && !targets.length){
+      html+="<div class='gl121-plan-free-text'>"+esc(String(e.managedGoal))+"</div>";
+    }
+
+    warmups.forEach(function(rep){
+      html+="<div class='gl115-plan-row warmup'>"+
+        "<div class='type'>"+esc(e.managedWarmupLabel||"Rozgrzewka")+"</div>"+
+        "<div><div class='target'>"+esc(rep)+" powt.</div>"+
+        "<div class='last'>Nie liczy się jako seria robocza</div></div></div>";
+    });
+
+    var count=Math.max(targets.length,workReps.length,Number(e.managedWorkSets||0));
+    for(var i=0;i<count;i++){
+      var target=targets[i]||null;
+      var rep=target?target.reps:String(workReps[i]||e.managedReps||"");
+      var last=glManagedSetShort(prev[i]);
+      var prefix=usingStarter?"Startowo":"Ostatnio";
+      var targetHtml=target
+        ?"<span class='weight'>"+esc(target.weight)+"</span><span class='sep'>×</span><span>"+esc(rep)+" powt.</span>"
+        :esc(rep)+" powt.";
+
+      html+="<div class='gl115-plan-row gl121-plan-row'>"+
+        "<div class='type'>Seria "+(i+1)+"</div>"+
+        "<div><div class='target'>"+targetHtml+"</div>"+
+        "<div class='last'>"+prefix+": "+esc(last)+"</div></div></div>";
+    }
+
+    return html+"</div>";
+  };
+  window.glManagedPlanRows=glManagedPlanRows;
+
+  /* The active-series badge should also reflect the actual target weight. */
+  function gl121FixCurrentSeriesBadge(){
+    if(!current||!current.exercises||!current.exercises[idx])return;
+    var e=current.exercises[idx];
+    if(!glIsManagedUser())return;
+
+    gl121NormalizeManagedExercise(e);
+    var targets=e.managedWorkTargets||[];
+    if(!targets.length)return;
+
+    var performed=(e.sets||[]).filter(function(s){
+      return !(s&&s.skipped)&&String(s&&s.s||"").toLowerCase()!=="pominięte";
+    }).length;
+    var warm=(e.managedWarmups||[]).length;
+    var workIndex=performed-warm;
+    if(workIndex<0||workIndex>=targets.length)return;
+
+    var t=targets[workIndex];
+    var badge=document.querySelector(".gl115-current-target");
+    if(badge){
+      badge.textContent="Seria robocza "+(workIndex+1)+" • "+t.weight+" × "+t.reps+" powt.";
+    }
+  }
+
+  /* Autofill the target weight for the current working set.
+     Reps/status can still inherit the last result so the user only records
+     what was actually achieved. */
+  var gl121BaseSuggestion=getSuggestion;
+  getSuggestion=function(ex){
+    var s=gl121BaseSuggestion.apply(this,arguments);
+    if(!glIsManagedUser()||!ex)return s;
+
+    gl121NormalizeManagedExercise(ex);
+    var targets=ex.managedWorkTargets||[];
+    if(!targets.length)return s;
+
+    var performed=(ex.sets||[]).filter(function(x){
+      return !(x&&x.skipped)&&String(x&&x.s||"").toLowerCase()!=="pominięte";
+    }).length;
+    var warm=(ex.managedWarmups||[]).length;
+    var workIndex=performed-warm;
+    if(workIndex>=0&&workIndex<targets.length){
+      s=s||{w:"",r:"",s:"",n:""};
+      s.w=gl121InputWeight(targets[workIndex].weight);
+    }
+    return s;
+  };
+  window.getSuggestion=getSuggestion;
+
+  /* Replace managed goal-save semantics.
+     The pasted code now updates:
+     - the visible goal source text,
+     - per-set reps,
+     - number of working sets inferred from the target lines.
+     This preserves history; only the CURRENT plan config changes. */
+  function gl121ParseUpdate(txt,plans){
+    plans=plans||{};
+    var lines=String(txt||"").replace(/\\r\\n/g,"\n").replace(/\\n/g,"\n").split(/\r?\n/);
+    var items=[],plan=null,exercise=null,buf=[];
+
+    function flush(){
+      if(plan&&exercise&&buf.length){
+        items.push({plan:plan,exercise:exercise,goal:buf.join("\n").trim()});
+      }
+      exercise=null;buf=[];
+    }
+
+    for(var i=0;i<lines.length;i++){
+      var line=String(lines[i]||"").trim();
+      if(!line)continue;
+      if(line==="GYMLOG_PLAN_UPDATE_V1")continue;
+      if(line==="END_UPDATE"){flush();break;}
+
+      if(Object.prototype.hasOwnProperty.call(plans,line)){
+        flush();plan=line;continue;
+      }
+      if(/:$/.test(line)){
+        flush();
+        if(!plan)return {ok:false,message:"Najpierw podaj dokładną nazwę planu użytkownika."};
+        exercise=line.slice(0,-1).trim();
+        continue;
+      }
+      if(plan&&exercise)buf.push(line);
+    }
+    flush();
+
+    if(!items.length)return {ok:false,message:"Nie znaleziono żadnych celów do aktualizacji."};
+
+    var errors=[];
+    items.forEach(function(item){
+      var list=plans[item.plan]||[];
+      if(!list.some(function(ex){return String(ex&&ex.name||"")===item.exercise;})){
+        errors.push(item.plan+" — nie znaleziono ćwiczenia: "+item.exercise);
+      }
+    });
+    if(errors.length)return {ok:false,message:"Błąd nazw:\n"+errors.join("\n")};
+    return {ok:true,items:items};
+  }
+
+  function gl121ApplyItems(plans,items){
+    var next=gl064ClonePlans(plans||{});
+    items.forEach(function(item){
+      (next[item.plan]||[]).forEach(function(ex){
+        if(String(ex.name||"")!==item.exercise)return;
+
+        ex.goal=item.goal;
+        var targets=gl121ParseTargets(item.goal);
+        if(targets.length){
+          ex.sets=targets.length;
+          ex.workReps=targets.map(function(t){return t.reps;});
+          ex.workTargets=targets.map(function(t){return {weight:t.weight,reps:t.reps};});
+        }else{
+          delete ex.workTargets;
+        }
+      });
+    });
+    return next;
+  }
+
+  window.gl110SaveManagedGoals=async function(){
+    var c=window.GL110_GOAL_CTX,el=document.getElementById("gl110GoalText");
+    if(!c||!el)return;
+
+    var parsed=gl121ParseUpdate(el.value,c.plans);
+    if(!parsed.ok){alert(parsed.message);return;}
+
+    var plans=gl121ApplyItems(c.plans,parsed.items);
+
+    try{
+      if(c.mode==="admin"){
+        var flags=Object.assign(glDefaultManagedFlags(),c.profile.feature_flags||{});
+        var cfg=Object.assign({},c.profile.profile_config||{},{managedMode:true,managed_plans:plans});
+        await glAdminApi({action:"set_features",user_id:c.profile.id,feature_flags:flags,profile_config:cfg});
+        c.profile.profile_config=cfg;
+        if(window.GL_ADMIN_SELECTED&&window.GL_ADMIN_SELECTED.profile&&window.GL_ADMIN_SELECTED.profile.id===c.profile.id){
+          window.GL_ADMIN_SELECTED.profile.profile_config=cfg;
+        }
+      }else{
+        var r=await gl064PlanApi({action:"self_set_plans",plans:plans});
+        window.GL_PROFILE.profile_config=r.profile_config||Object.assign({},window.GL_PROFILE.profile_config||{},{managed_plans:plans});
+        glSaveProfile(window.GL_PROFILE);
+      }
+
+      c.plans=plans;
+      alert("Plan na dziś zaktualizowany dla "+parsed.items.length+" ćwiczeń.");
+      c.mode==="admin"
+        ?gl110AdminManagedGoalsView(c.profile.id)
+        :gl110SelfManagedGoalsView();
+
+    }catch(e){
+      alert("Nie udało się zapisać aktualizacji: "+String(e&&e.message||e));
+    }
+  };
+
+  /* Last render pass: delete any legacy coach-goal card and fix current badge. */
+  function gl121FinalWorkoutPass(){
+    document.querySelectorAll(".gl115-coach-goal").forEach(function(x){x.remove();});
+    gl121FixCurrentSeriesBadge();
+  }
+
+  var gl121BaseExercise=window.exercise;
+  window.exercise=exercise=function(){
+    var r=gl121BaseExercise.apply(this,arguments);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        requestAnimationFrame(gl121FinalWorkoutPass);
+      });
+    });
+    return r;
+  };
+
+  VERSION="BETA 0.72.1";
 })();
 
 

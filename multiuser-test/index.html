@@ -4242,6 +4242,90 @@ body.theme-female .gl121-plan-row{
 }
 </style>
 
+
+<style id="gl122-admin-impersonation">
+/* =====================================================================
+   0.72.2 — ADMIN "LOGIN AS USER"
+   ===================================================================== */
+.gl122-user-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.gl122-user-actions button{
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  min-height:42px!important;
+  padding:9px 10px!important;
+  border-radius:13px!important;
+  font-size:10px!important;
+}
+.gl122-login-user{
+  border-color:color-mix(in srgb,var(--account-accent,#ff2738) 33%,rgba(255,255,255,.09))!important;
+}
+.gl122-selected-login{
+  margin-top:10px!important;
+}
+.gl122-loading{
+  opacity:.65!important;
+  pointer-events:none!important;
+}
+</style>
+
+
+<style id="gl123-portrait-lock">
+/* =====================================================================
+   0.72.3 — PORTRAIT ONLY
+   ===================================================================== */
+#gl123PortraitGuard{
+  position:fixed;
+  inset:0;
+  z-index:2147483647;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:
+    max(28px, env(safe-area-inset-top))
+    max(28px, env(safe-area-inset-right))
+    max(28px, env(safe-area-inset-bottom))
+    max(28px, env(safe-area-inset-left));
+  box-sizing:border-box;
+  background:#070707;
+  color:#f4f4f6;
+  text-align:center;
+  font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+}
+#gl123PortraitGuard .inner{
+  max-width:360px;
+}
+#gl123PortraitGuard .icon{
+  font-size:42px;
+  line-height:1;
+  margin-bottom:15px;
+}
+#gl123PortraitGuard b{
+  display:block;
+  font-size:21px;
+  line-height:1.15;
+  letter-spacing:-.025em;
+}
+#gl123PortraitGuard span{
+  display:block;
+  margin-top:8px;
+  color:#85878e;
+  font-size:12px;
+  line-height:1.45;
+}
+body.gl123-landscape #gl123PortraitGuard{
+  display:flex;
+}
+body.gl123-landscape{
+  overflow:hidden!important;
+}
+</style>
+
 </head>
 
 <body>
@@ -6826,7 +6910,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.72.1";
+VERSION = "BETA 0.72.3";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -13559,6 +13643,15 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0723",
+      version:"BETA 0.72.3",
+      date:"07.09.2026",
+      title:"Tryb pionowy aplikacji",
+      changes:[
+        {feature:"always",text:"GymLog CRUSH działa teraz wyłącznie w orientacji pionowej. Obracanie telefonu nie przełącza interfejsu treningowego do widoku poziomego."}
+      ]
+    },
+    {
       id:"client-0721",
       version:"BETA 0.72.1",
       date:"06.09.2026",
@@ -15618,7 +15711,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.72.1";
+  VERSION="BETA 0.72.3";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -15664,7 +15757,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.72.1";
+    VERSION="BETA 0.72.3";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -15804,7 +15897,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.72.1";
+  VERSION="BETA 0.72.3";
 })();
 
 
@@ -16098,7 +16191,380 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.72.1";
+  VERSION="BETA 0.72.3";
+})();
+
+
+
+/* ======================================================================
+   0.72.2 — ADMIN DIRECT LOGIN AS USER
+
+   Security model:
+   - only a real Admin session can request impersonation;
+   - backend creates a one-time magic-link token for a non-admin user;
+   - user's password is never read or changed;
+   - original Admin session is preserved locally only on this device;
+   - "Wyloguj się" while impersonating logs out the temporary session
+     and restores the original Admin session.
+   ====================================================================== */
+(function(){
+  var GL122_RETURN_KEY="GYMLOG_CRUSH_ADMIN_RETURN_SESSION_V1";
+  var GL122_SWITCHING=false;
+
+  function gl122ReadReturn(){
+    try{
+      var raw=localStorage.getItem(GL122_RETURN_KEY);
+      return raw?JSON.parse(raw):null;
+    }catch(e){return null;}
+  }
+  function gl122WriteReturn(v){
+    try{
+      if(v)localStorage.setItem(GL122_RETURN_KEY,JSON.stringify(v));
+      else localStorage.removeItem(GL122_RETURN_KEY);
+    }catch(e){}
+  }
+  function gl122IsImpersonating(){
+    var x=gl122ReadReturn();
+    return !!(x&&x.session&&x.session.user&&x.session.user.id);
+  }
+
+  function gl122FindUser(uid){
+    return (window.GL_ADMIN_USERS||[]).find(function(u){
+      return String(u&&u.id||"")===String(uid||"");
+    })||null;
+  }
+
+  function gl122CanLoginUser(u){
+    if(!u)return false;
+    if(String(u.role||"")==="admin")return false;
+    if(u.is_active===false)return false;
+    return true;
+  }
+
+  async function gl122FlushCurrentAdminState(){
+    try{
+      var s=glSession();
+      if(!s||!s.user||!s.user.id)return;
+      var dirty=false;
+      try{dirty=localStorage.getItem(glDirtyKey(s.user.id))==="1";}catch(e){}
+      if(dirty&&typeof glPushCloudState==="function"){
+        await glPushCloudState();
+      }
+    }catch(e){
+      console.log("Admin state flush before impersonation:",e);
+    }
+  }
+
+  window.gl122LoginAsUser=async function(uid){
+    if(GL122_SWITCHING)return;
+    if(!glIsAdmin()){
+      alert("Ta funkcja jest dostępna tylko dla administratora.");
+      return;
+    }
+
+    var u=gl122FindUser(uid);
+    if(u&&!gl122CanLoginUser(u)){
+      alert(String(u.role||"")==="admin"
+        ?"Nie można wejść w inne konto administratora."
+        :"To konto jest wyłączone.");
+      return;
+    }
+
+    var label=u?(u.display_name||u.username||"użytkownika"):"użytkownika";
+    if(!confirm("Zalogować się na konto „"+label+"” i zobaczyć aplikację dokładnie z jego poziomu?\n\nWylogowanie z tego konta przywróci Twoje konto Admin."))return;
+
+    var adminSession=glSession();
+    var adminProfile=window.GL_PROFILE||glSavedProfile();
+    if(!adminSession||!adminSession.user||!adminSession.user.id){
+      alert("Brak aktywnej sesji administratora.");
+      return;
+    }
+
+    GL122_SWITCHING=true;
+    document.body.classList.add("gl122-loading");
+
+    try{
+      await gl122FlushCurrentAdminState();
+
+      var link=await gl086AccountApi({
+        action:"admin_impersonate_user",
+        user_id:String(uid||"")
+      });
+      if(!link||!link.token_hash){
+        throw new Error("Serwer nie zwrócił sesji podglądu użytkownika.");
+      }
+
+      /* Exchange the one-time magic-link hash for a REAL target-user session.
+         Pass {} as sessionOverride so the Admin bearer token is not attached
+         to the Auth verify request. */
+      var auth=await glApi(
+        "/auth/v1/verify",
+        {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({
+            type:"magiclink",
+            token_hash:String(link.token_hash)
+          })
+        },
+        {}
+      );
+
+      if(!auth||!auth.access_token||!auth.refresh_token||!auth.user){
+        throw new Error("Nie udało się utworzyć sesji użytkownika.");
+      }
+
+      /* Store Admin return context only after target authentication succeeded. */
+      gl122WriteReturn({
+        session:adminSession,
+        profile:adminProfile||null,
+        target:link.target||null,
+        created_at:new Date().toISOString()
+      });
+
+      var targetSession={
+        access_token:auth.access_token,
+        refresh_token:auth.refresh_token,
+        expires_at:Date.now()+Number(auth.expires_in||3600)*1000,
+        user:auth.user
+      };
+
+      glClearAuth();
+      glSaveSession(targetSession);
+
+      /* Clear in-memory Admin state before the normal user bootstrap takes over. */
+      STORE=glUserStore(targetSession.user.id);
+      data=glEmptyState();
+      window.GL_PROFILE=null;
+      GL_AUTH_READY=false;
+
+      await glAfterAuthenticated(targetSession,false);
+    }catch(e){
+      console.log("Login as user:",e);
+      gl122WriteReturn(null);
+
+      /* The Admin session was not deliberately logged out. Restore it if
+         anything failed after local auth state changed. */
+      try{
+        glClearAuth();
+        if(adminSession){
+          glSaveSession(adminSession);
+          if(adminProfile)glSaveProfile(adminProfile);
+          window.GL_PROFILE=adminProfile||null;
+          await glAfterAuthenticated(adminSession,false);
+        }
+      }catch(restoreErr){
+        console.log("Admin restore after failed impersonation:",restoreErr);
+      }
+
+      alert("Nie udało się wejść na konto użytkownika:\n"+String((e&&e.body&&e.body.detail)||e&&e.message||e));
+    }finally{
+      GL122_SWITCHING=false;
+      document.body.classList.remove("gl122-loading");
+    }
+  };
+
+  /* Users list: Otwórz + Zaloguj on every active non-admin account. */
+  function gl122EnhanceUserCards(){
+    if(!glIsAdmin())return;
+    var cards=Array.prototype.slice.call(document.querySelectorAll(".mu-user-card"));
+    var users=window.GL_ADMIN_USERS||[];
+
+    cards.forEach(function(card,i){
+      if(card.querySelector(".gl122-user-actions"))return;
+      var u=users[i];
+      if(!u)return;
+
+      var openBtn=Array.prototype.slice.call(card.querySelectorAll("button")).find(function(b){
+        return String(b.textContent||"").trim().toLowerCase()==="otwórz";
+      });
+      if(!openBtn)return;
+
+      var actions=document.createElement("div");
+      actions.className="gl122-user-actions";
+      openBtn.parentNode.insertBefore(actions,openBtn);
+      actions.appendChild(openBtn);
+
+      if(gl122CanLoginUser(u)){
+        var login=document.createElement("button");
+        login.className="secondary gl122-login-user";
+        login.textContent="ZALOGUJ";
+        login.onclick=function(){gl122LoginAsUser(u.id);};
+        actions.appendChild(login);
+      }else{
+        actions.style.gridTemplateColumns="1fr";
+      }
+    });
+  }
+
+  var gl122BaseUsersView=window.glUsersView;
+  window.glUsersView=async function(){
+    var r=await gl122BaseUsersView.apply(this,arguments);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(gl122EnhanceUserCards);
+    });
+    return r;
+  };
+
+  /* Selected user page: also expose the direct login button there. */
+  function gl122EnhanceSelectedUser(){
+    if(!glIsAdmin())return;
+    var r=window.GL_ADMIN_SELECTED,u=r&&r.profile;
+    if(!gl122CanLoginUser(u))return;
+    if(document.getElementById("gl122SelectedLogin"))return;
+
+    var app=document.getElementById("app");
+    if(!app)return;
+
+    var back=Array.prototype.slice.call(app.querySelectorAll("button")).find(function(b){
+      return String(b.textContent||"").indexOf("Użytkownicy")>=0;
+    });
+    if(!back)return;
+
+    var btn=document.createElement("button");
+    btn.id="gl122SelectedLogin";
+    btn.className="secondary gl122-selected-login";
+    btn.textContent="ZALOGUJ NA TO KONTO";
+    btn.onclick=function(){gl122LoginAsUser(u.id);};
+    back.insertAdjacentElement("afterend",btn);
+  }
+
+  var gl122BaseAdminRender=window.glAdminRenderSelectedUser;
+  window.glAdminRenderSelectedUser=function(page){
+    var r=gl122BaseAdminRender.apply(this,arguments);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(gl122EnhanceSelectedUser);
+    });
+    return r;
+  };
+
+  /* While on the impersonated account, normal "Wyloguj się" becomes the
+     route back to the preserved Admin session. There is no extra UI banner,
+     so the account is viewed exactly as the real user sees it. */
+  var gl122BaseLogout=window.glLogout;
+  window.glLogout=async function(){
+    var ret=gl122ReadReturn();
+    if(!ret||!ret.session||!ret.session.user){
+      return gl122BaseLogout.apply(this,arguments);
+    }
+
+    var target=ret.target||{};
+    var targetName=target.display_name||target.username||"użytkownika";
+    if(!confirm("Wylogować się z konta „"+targetName+"” i wrócić do Twojego konta Admin?"))return;
+
+    GL122_SWITCHING=true;
+    try{
+      /* Save any legitimate changes made while testing this account. */
+      try{
+        var s=glSession(),dirty=false;
+        if(s&&s.user){
+          try{dirty=localStorage.getItem(glDirtyKey(s.user.id))==="1";}catch(e){}
+          if(dirty&&typeof glPushCloudState==="function")await glPushCloudState();
+        }
+      }catch(e){console.log("Target state flush:",e);}
+
+      /* Revoke only the temporary target session. */
+      try{
+        var targetSession=glSession();
+        if(targetSession&&navigator.onLine){
+          await glApi("/auth/v1/logout",{method:"POST"},targetSession);
+        }
+      }catch(e){console.log("Temporary target logout:",e);}
+
+      var adminSession=ret.session;
+      var adminProfile=ret.profile||null;
+
+      glClearAuth();
+      gl122WriteReturn(null);
+      glSaveSession(adminSession);
+      if(adminProfile)glSaveProfile(adminProfile);
+      window.GL_PROFILE=adminProfile;
+
+      STORE=glUserStore(adminSession.user.id);
+      data=glNormalizeState(safeLoad());
+      GL_AUTH_READY=false;
+
+      await glAfterAuthenticated(adminSession,false);
+    }catch(e){
+      console.log("Return to admin:",e);
+      alert("Nie udało się automatycznie wrócić do konta Admin. Twoja sesja administratora jest zachowana na urządzeniu.");
+    }finally{
+      GL122_SWITCHING=false;
+    }
+  };
+
+  window.gl122IsImpersonating=gl122IsImpersonating;
+  VERSION="BETA 0.72.3";
+})();
+
+
+
+/* ======================================================================
+   0.72.3 — PORTRAIT ORIENTATION LOCK
+   ====================================================================== */
+(function(){
+  function gl123EnsureGuard(){
+    var guard=document.getElementById("gl123PortraitGuard");
+    if(guard)return guard;
+    guard=document.createElement("div");
+    guard.id="gl123PortraitGuard";
+    guard.setAttribute("aria-live","polite");
+    guard.innerHTML=
+      "<div class='inner'>"+
+        "<div class='icon'>↻</div>"+
+        "<b>Obróć telefon pionowo</b>"+
+        "<span>GymLog CRUSH działa wyłącznie w orientacji pionowej.</span>"+
+      "</div>";
+    document.body.appendChild(guard);
+    return guard;
+  }
+
+  function gl123UpdateGuard(){
+    if(!document.body)return;
+    gl123EnsureGuard();
+    var landscape=window.innerWidth>window.innerHeight;
+    document.body.classList.toggle("gl123-landscape",landscape);
+  }
+
+  async function gl123TryPortraitLock(){
+    try{
+      if(screen.orientation && typeof screen.orientation.lock==="function"){
+        try{
+          await screen.orientation.lock("portrait-primary");
+          return true;
+        }catch(e1){
+          try{
+            await screen.orientation.lock("portrait");
+            return true;
+          }catch(e2){}
+        }
+      }
+    }catch(e){}
+    return false;
+  }
+
+  function gl123ApplyPortrait(){
+    gl123TryPortraitLock();
+    gl123UpdateGuard();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",gl123ApplyPortrait,{once:true});
+  }else{
+    gl123ApplyPortrait();
+  }
+
+  window.addEventListener("pageshow",gl123ApplyPortrait);
+  window.addEventListener("resize",gl123UpdateGuard);
+  window.addEventListener("orientationchange",function(){
+    setTimeout(gl123ApplyPortrait,60);
+  });
+  document.addEventListener("visibilitychange",function(){
+    if(!document.hidden)gl123ApplyPortrait();
+  });
+
+  window.gl123ApplyPortrait=gl123ApplyPortrait;
+  VERSION="BETA 0.72.3";
 })();
 
 

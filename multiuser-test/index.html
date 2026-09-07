@@ -4326,6 +4326,61 @@ body.gl123-landscape{
 }
 </style>
 
+
+<style id="gl124-admin-account-actions">
+/* =====================================================================
+   0.72.4 — VISIBLE LOGIN-AS + PERMANENT DELETE
+   ===================================================================== */
+.gl110-user-actions.gl124-expanded{
+  grid-template-columns:1fr 1fr!important;
+}
+.gl110-user-actions.gl124-expanded .full:not(.gl124-delete){
+  grid-column:auto!important;
+}
+.gl124-login{
+  border-color:color-mix(in srgb,var(--account-accent,#ff2738) 32%,rgba(255,255,255,.09))!important;
+}
+.gl124-delete{
+  grid-column:1/-1!important;
+  color:#ff9da5!important;
+  border-color:rgba(255,64,80,.25)!important;
+  background:rgba(96,8,18,.22)!important;
+}
+.gl124-delete:active{
+  background:rgba(130,10,24,.33)!important;
+}
+.gl124-selected-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin:10px 0 13px;
+}
+.gl124-selected-actions button{
+  margin:0!important;
+  min-height:46px!important;
+}
+.gl124-selected-actions .gl124-delete{
+  grid-column:auto!important;
+}
+.gl124-selected-actions.one{
+  grid-template-columns:1fr;
+}
+.gl124-selected-actions.one .gl124-delete{
+  grid-column:1!important;
+}
+@media(max-width:390px){
+  .gl110-user-actions.gl124-expanded{
+    grid-template-columns:1fr 1fr!important;
+  }
+  .gl124-selected-actions{
+    grid-template-columns:1fr;
+  }
+  .gl124-selected-actions .gl124-delete{
+    grid-column:1!important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -6910,7 +6965,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.72.3";
+VERSION = "BETA 0.72.4";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -15711,7 +15766,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.72.3";
+  VERSION="BETA 0.72.4";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -15757,7 +15812,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.72.3";
+    VERSION="BETA 0.72.4";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -15897,7 +15952,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.72.3";
+  VERSION="BETA 0.72.4";
 })();
 
 
@@ -16191,7 +16246,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.72.3";
+  VERSION="BETA 0.72.4";
 })();
 
 
@@ -16494,7 +16549,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.72.3";
+  VERSION="BETA 0.72.4";
 })();
 
 
@@ -16564,7 +16619,252 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.72.3";
+  VERSION="BETA 0.72.4";
+})();
+
+
+
+/* ======================================================================
+   0.72.4 — FIX ADMIN "LOGIN AS USER" VISIBILITY + DELETE ACCOUNT
+   ====================================================================== */
+(function(){
+  var GL124_DELETING=false;
+
+  function gl124CurrentAdminId(){
+    try{
+      var s=glSession();
+      return s&&s.user&&s.user.id?String(s.user.id):"";
+    }catch(e){return "";}
+  }
+
+  function gl124FindUser(uid){
+    return (window.GL_ADMIN_USERS||[]).find(function(u){
+      return String(u&&u.id||"")===String(uid||"");
+    })||null;
+  }
+
+  function gl124CanLogin(u){
+    return !!(u && u.is_active!==false && String(u.role||"")!=="admin");
+  }
+
+  function gl124CanDelete(u){
+    return !!(u && String(u.id||"")!==gl124CurrentAdminId());
+  }
+
+  window.gl124DeleteUser=async function(uid){
+    if(GL124_DELETING)return;
+    if(!glIsAdmin()){
+      alert("Ta funkcja jest dostępna tylko dla administratora.");
+      return;
+    }
+
+    var u=gl124FindUser(uid) ||
+      (window.GL_ADMIN_SELECTED&&window.GL_ADMIN_SELECTED.profile&&
+       String(window.GL_ADMIN_SELECTED.profile.id||"")===String(uid||"")
+        ?window.GL_ADMIN_SELECTED.profile:null);
+
+    if(!u){
+      alert("Nie znaleziono tego użytkownika.");
+      return;
+    }
+
+    if(!gl124CanDelete(u)){
+      alert("Nie możesz usunąć własnego konta administratora.");
+      return;
+    }
+
+    var username=String(u.username||"").trim();
+    var display=String(u.display_name||username||"użytkownik").trim();
+
+    var first=confirm(
+      "USUNĄĆ KONTO „"+display+"” CAŁKOWICIE?\n\n"+
+      "Ta operacja jest nieodwracalna. Z systemu zostaną usunięte konto logowania, profil, plany, historia treningów, ustawienia, zgłoszenia, powiadomienia i zdjęcie profilowe."
+    );
+    if(!first)return;
+
+    var typed=prompt(
+      "Dla potwierdzenia wpisz dokładny login konta:\n"+username,
+      ""
+    );
+    if(typed===null)return;
+    typed=String(typed||"").trim().toLowerCase();
+
+    if(typed!==username.toLowerCase()){
+      alert("Login nie zgadza się. Konto NIE zostało usunięte.");
+      return;
+    }
+
+    GL124_DELETING=true;
+    document.body.classList.add("gl122-loading");
+
+    try{
+      var result=await gl086AccountApi({
+        action:"admin_delete_user",
+        user_id:String(uid),
+        confirm_username:typed
+      });
+
+      if(!result||result.ok!==true){
+        throw new Error("Serwer nie potwierdził usunięcia konta.");
+      }
+
+      /* Clean this Admin device's local cache for the deleted account. */
+      try{
+        localStorage.removeItem(glUserStore(uid));
+        localStorage.removeItem(glDirtyKey(uid));
+        localStorage.removeItem(glRevisionKey(uid));
+
+        var remove=[];
+        for(var i=0;i<localStorage.length;i++){
+          var k=localStorage.key(i);
+          if(k && k.indexOf(String(uid))>=0)remove.push(k);
+        }
+        remove.forEach(function(k){localStorage.removeItem(k);});
+      }catch(e){}
+
+      window.GL_ADMIN_SELECTED=null;
+      window.GL_ADMIN_USERS=(window.GL_ADMIN_USERS||[]).filter(function(x){
+        return String(x&&x.id||"")!==String(uid);
+      });
+
+      alert("Konto @"+username+" zostało całkowicie usunięte z systemu.");
+      await glUsersView();
+
+    }catch(e){
+      alert(
+        "Nie udało się usunąć konta:\n"+
+        String((e&&e.body&&e.body.detail)||e&&e.message||e)
+      );
+    }finally{
+      GL124_DELETING=false;
+      document.body.classList.remove("gl122-loading");
+    }
+  };
+
+  /* The previous 0.72.2 injector searched for a button called "Otwórz".
+     In the current Users UI those buttons are already replaced with
+     Konto / Plan / Cele kodem, so ZALOGUJ never appeared.
+     This final pass injects directly into the REAL .gl110-user-actions. */
+  function gl124EnhanceUserCards(){
+    if(!glIsAdmin())return;
+
+    var cards=Array.prototype.slice.call(document.querySelectorAll(".mu-user-card"));
+    var users=window.GL_ADMIN_USERS||[];
+
+    cards.forEach(function(card,i){
+      var u=users[i];
+      if(!u)return;
+
+      var actions=card.querySelector(".gl110-user-actions");
+      if(!actions){
+        actions=document.createElement("div");
+        actions.className="gl110-user-actions";
+        card.appendChild(actions);
+      }
+
+      actions.classList.add("gl124-expanded");
+
+      /* Remove obsolete 0.72.2 wrapper if it ever appeared. */
+      card.querySelectorAll(".gl122-user-actions").forEach(function(x){x.remove();});
+
+      var login=actions.querySelector(".gl124-login");
+      if(gl124CanLogin(u)){
+        if(!login){
+          login=document.createElement("button");
+          login.className="secondary gl124-login";
+          login.textContent="ZALOGUJ";
+          login.onclick=function(){gl122LoginAsUser(u.id);};
+          actions.appendChild(login);
+        }
+      }else if(login){
+        login.remove();
+      }
+
+      var del=actions.querySelector(".gl124-delete");
+      if(gl124CanDelete(u)){
+        if(!del){
+          del=document.createElement("button");
+          del.className="secondary gl124-delete";
+          del.textContent="USUŃ KONTO";
+          del.onclick=function(){gl124DeleteUser(u.id);};
+          actions.appendChild(del);
+        }
+      }else if(del){
+        del.remove();
+      }
+    });
+  }
+
+  var gl124BaseUsersView=window.glUsersView;
+  window.glUsersView=async function(){
+    var r=await gl124BaseUsersView.apply(this,arguments);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        requestAnimationFrame(gl124EnhanceUserCards);
+      });
+    });
+    return r;
+  };
+
+  /* Selected account page gets a permanent, obvious Admin action row. */
+  function gl124EnhanceSelectedUser(){
+    if(!glIsAdmin())return;
+    var r=window.GL_ADMIN_SELECTED,u=r&&r.profile;
+    if(!u)return;
+
+    var app=document.getElementById("app");
+    if(!app)return;
+
+    /* Remove unreliable older button to avoid duplicates. */
+    var old=document.getElementById("gl122SelectedLogin");
+    if(old)old.remove();
+
+    var existing=document.getElementById("gl124SelectedActions");
+    if(existing)existing.remove();
+
+    if(!gl124CanLogin(u) && !gl124CanDelete(u))return;
+
+    var back=Array.prototype.slice.call(app.querySelectorAll("button")).find(function(b){
+      return String(b.textContent||"").indexOf("Użytkownicy")>=0;
+    });
+    if(!back)return;
+
+    var row=document.createElement("div");
+    row.id="gl124SelectedActions";
+    row.className="gl124-selected-actions";
+
+    if(gl124CanLogin(u)){
+      var login=document.createElement("button");
+      login.className="secondary gl124-login";
+      login.textContent="ZALOGUJ NA TO KONTO";
+      login.onclick=function(){gl122LoginAsUser(u.id);};
+      row.appendChild(login);
+    }
+
+    if(gl124CanDelete(u)){
+      var del=document.createElement("button");
+      del.className="secondary gl124-delete";
+      del.textContent="USUŃ KONTO";
+      del.onclick=function(){gl124DeleteUser(u.id);};
+      row.appendChild(del);
+    }
+
+    if(row.children.length===1)row.classList.add("one");
+    back.insertAdjacentElement("afterend",row);
+  }
+
+  var gl124BaseAdminRender=window.glAdminRenderSelectedUser;
+  window.glAdminRenderSelectedUser=function(page){
+    var r=gl124BaseAdminRender.apply(this,arguments);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        requestAnimationFrame(gl124EnhanceSelectedUser);
+      });
+    });
+    return r;
+  };
+
+  VERSION="BETA 0.72.4";
 })();
 
 

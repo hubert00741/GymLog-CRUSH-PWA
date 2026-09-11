@@ -4381,6 +4381,34 @@ body.gl123-landscape{
 }
 </style>
 
+
+<style id="gl125-users-recovery-fix">
+/* =====================================================================
+   0.72.5 — ADMIN USERS LOAD + CLIENT DATA RECOVERY
+   ===================================================================== */
+.gl125-recovery{
+  max-width:680px;
+  margin:30px auto 100px;
+  padding:22px 18px;
+  border-radius:20px;
+  background:#111216;
+  border:1px solid rgba(255,255,255,.075);
+  text-align:center;
+}
+.gl125-recovery b{
+  display:block;
+  color:#f4f4f6;
+  font-size:17px;
+}
+.gl125-recovery span{
+  display:block;
+  margin-top:8px;
+  color:#85878e;
+  font-size:11px;
+  line-height:1.5;
+}
+</style>
+
 </head>
 
 <body>
@@ -6965,7 +6993,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.72.4";
+VERSION = "BETA 0.72.5";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -13698,6 +13726,15 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0725",
+      version:"BETA 0.72.5",
+      date:"11.09.2026",
+      title:"Poprawiona synchronizacja danych",
+      changes:[
+        {feature:"always",text:"Poprawiono zachowanie aplikacji po chwilowym problemie z połączeniem. Jeżeli dane z chmury nie mogą zostać pobrane, aplikacja nie pokazuje już pustego konta jak po utracie danych."}
+      ]
+    },
+    {
       id:"client-0723",
       version:"BETA 0.72.3",
       date:"07.09.2026",
@@ -15766,7 +15803,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.72.4";
+  VERSION="BETA 0.72.5";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -15812,7 +15849,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.72.4";
+    VERSION="BETA 0.72.5";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -15952,7 +15989,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.72.4";
+  VERSION="BETA 0.72.5";
 })();
 
 
@@ -16246,7 +16283,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.72.4";
+  VERSION="BETA 0.72.5";
 })();
 
 
@@ -16549,7 +16586,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.72.4";
+  VERSION="BETA 0.72.5";
 })();
 
 
@@ -16619,7 +16656,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.72.4";
+  VERSION="BETA 0.72.5";
 })();
 
 
@@ -16864,7 +16901,140 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.72.4";
+  VERSION="BETA 0.72.5";
+})();
+
+
+
+/* ======================================================================
+   0.72.5 — USERS PAGE RECOVERY + CLOUD-DATA SAFETY
+   ====================================================================== */
+(function(){
+  function gl125Sleep(ms){
+    return new Promise(function(resolve){setTimeout(resolve,ms);});
+  }
+
+  async function gl125WithRetry(fn){
+    try{
+      return await fn();
+    }catch(e){
+      var msg=String(e&&e.message||e||"").toLowerCase();
+      if(msg.indexOf("load failed")<0 &&
+         msg.indexOf("failed to fetch")<0 &&
+         msg.indexOf("network")<0){
+        throw e;
+      }
+      await gl125Sleep(650);
+      return await fn();
+    }
+  }
+
+  async function gl125AdminListUsersDirect(){
+    var s=await glEnsureSession();
+    if(!s)throw new Error("Brak sesji administratora.");
+
+    var path="/rest/v1/profiles?select=id,username,display_name,role,is_active,feature_flags,profile_config,created_at,updated_at&order=created_at.asc";
+    var rows=await gl125WithRetry(function(){
+      return glApi(path,{method:"GET"},s);
+    });
+    return {users:Array.isArray(rows)?rows:[]};
+  }
+
+  async function gl125AdminGetUserStateDirect(uid){
+    var s=await glEnsureSession();
+    if(!s)throw new Error("Brak sesji administratora.");
+    uid=String(uid||"").trim();
+    if(!uid)throw new Error("Brak ID użytkownika.");
+
+    var profilePath="/rest/v1/profiles?select=id,username,display_name,role,is_active,feature_flags,profile_config,created_at,updated_at&id=eq."+encodeURIComponent(uid)+"&limit=1";
+    var statePath="/rest/v1/user_app_state?select=state,sync_revision,updated_at&user_id=eq."+encodeURIComponent(uid)+"&limit=1";
+
+    var pair=await Promise.all([
+      gl125WithRetry(function(){return glApi(profilePath,{method:"GET"},s);}),
+      gl125WithRetry(function(){return glApi(statePath,{method:"GET"},s);})
+    ]);
+
+    var profile=pair[0]&&pair[0][0];
+    var stateRow=pair[1]&&pair[1][0];
+    if(!profile)throw new Error("Nie znaleziono profilu użytkownika.");
+
+    return {
+      profile:profile,
+      state:(stateRow&&stateRow.state)||{},
+      sync_revision:(stateRow&&stateRow.sync_revision)||0,
+      updated_at:(stateRow&&stateRow.updated_at)||null
+    };
+  }
+
+  /* The Users screen and selected-user screen no longer depend on
+     admin-users Edge Function for READ operations. They read Supabase REST
+     directly through the existing admin RLS policies. */
+  var gl125BaseAdminApi=glAdminApi;
+  glAdminApi=async function(payload){
+    payload=payload||{};
+    var action=String(payload.action||"");
+
+    if(action==="list_users"){
+      try{
+        return await gl125AdminListUsersDirect();
+      }catch(e){
+        /* Last fallback: keep the old edge action available. */
+        return await gl125BaseAdminApi(payload);
+      }
+    }
+
+    if(action==="get_user_state"){
+      try{
+        return await gl125AdminGetUserStateDirect(payload.user_id);
+      }catch(e){
+        return await gl125BaseAdminApi(payload);
+      }
+    }
+
+    return await gl125BaseAdminApi(payload);
+  };
+  window.glAdminApi=glAdminApi;
+
+  /* Prevent a temporary network error from LOOKING like all client data
+     disappeared. The cloud data is not modified here. */
+  function gl125ShouldHoldEmptyClientHome(){
+    try{
+      if(glIsAdmin())return false;
+      if(!window.GL_PROFILE)return false;
+      if(!window.GL_AUTH_TRANSIENT_ERROR)return false;
+      if(typeof glMeaningful==="function" && glMeaningful(data))return false;
+      return true;
+    }catch(e){return false;}
+  }
+
+  function gl125RenderRecovery(){
+    render(
+      "<div class='gl125-recovery'>"+
+        "<b>Przywracam Twoje dane…</b>"+
+        "<span>Połączenie z chmurą jest chwilowo niedostępne. Dane nie zostały usunięte — aplikacja automatycznie ponowi synchronizację.</span>"+
+      "</div>"+luxBottomNav("start")
+    );
+  }
+
+  var gl125BaseHome=window.home;
+  window.home=home=function(){
+    if(gl125ShouldHoldEmptyClientHome()){
+      gl125RenderRecovery();
+      try{glScheduleAuthRetry(1200);}catch(e){}
+      return;
+    }
+    return gl125BaseHome.apply(this,arguments);
+  };
+
+  /* One more retry after returning to the foreground, especially useful on iOS. */
+  document.addEventListener("visibilitychange",function(){
+    if(document.visibilityState!=="visible")return;
+    if(!glSession())return;
+    if(!window.GL_AUTH_TRANSIENT_ERROR)return;
+    try{glScheduleAuthRetry(400);}catch(e){}
+  });
+
+  VERSION="BETA 0.72.5";
 })();
 
 

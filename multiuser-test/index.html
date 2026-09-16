@@ -6,7 +6,7 @@
 <meta charset="utf-8">
 <meta name="theme-color" content="#070707">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="GymLog CRUSH">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -4681,6 +4681,96 @@ body.theme-female .gl127-mode-pill.gym{
 }
 </style>
 
+
+<style id="gl128-ios27-owner-last">
+/* =====================================================================
+   0.72.8 — iOS 27 TOP EDGE + ADMIN "OSTATNIO" PER WORKING SET
+   ===================================================================== */
+
+/* Real viewport-fixed element is used as the status-bar backing surface.
+   It also gives WebKit a viewport-constrained top-edge element. */
+#gl128TopEdgeShield{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:max(1px, env(safe-area-inset-top));
+  background:#000;
+  pointer-events:none;
+  z-index:2147483000;
+  transform:translateZ(0);
+  -webkit-transform:translateZ(0);
+}
+
+/* Keep the app content itself fully opaque at the top edge. */
+html,
+body{
+  background-color:#000!important;
+}
+
+/* Full/admin plan rows now visually match the client plan layout while
+   preserving exact target weights from the owner's plan. */
+.gl128-owner-plan-rows{
+  display:grid;
+  gap:7px;
+}
+.gl128-owner-plan-row{
+  display:grid;
+  grid-template-columns:112px minmax(0,1fr);
+  gap:10px;
+  align-items:center;
+  padding:10px 11px;
+  border-radius:13px;
+  background:#0b0c0f;
+  border:1px solid rgba(255,255,255,.06);
+}
+.gl128-owner-plan-row.warmup{
+  background:rgba(116,88,38,.05);
+  border-color:rgba(211,174,107,.15);
+}
+.gl128-owner-plan-row .type{
+  color:#787a81;
+  font-size:8px;
+  font-weight:1000;
+  letter-spacing:.075em;
+  text-transform:uppercase;
+}
+.gl128-owner-plan-row.warmup .type{
+  color:#c59d59;
+}
+.gl128-owner-plan-row .target{
+  color:#f2f2f4;
+  font-size:12px;
+  line-height:1.3;
+  font-weight:950;
+}
+.gl128-owner-plan-row .last{
+  margin-top:4px;
+  color:#777980;
+  font-size:9px;
+  line-height:1.35;
+}
+.gl128-owner-plan-note{
+  margin-top:8px;
+  padding:9px 10px;
+  border-radius:11px;
+  color:#a0a2a8;
+  background:rgba(255,255,255,.025);
+  border-left:2px solid rgba(255,255,255,.12);
+  font-size:10px;
+  line-height:1.45;
+  white-space:pre-wrap;
+}
+body.theme-female .gl128-owner-plan-row:not(.warmup){
+  border-color:rgba(255,190,220,.09);
+}
+@media(max-width:420px){
+  .gl128-owner-plan-row{
+    grid-template-columns:98px minmax(0,1fr);
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -7265,7 +7355,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.72.7";
+VERSION = "BETA 0.72.8";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -13998,6 +14088,15 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0728",
+      version:"BETA 0.72.8",
+      date:"16.09.2026",
+      title:"Poprawka górnej części ekranu na iOS 27",
+      changes:[
+        {feature:"always",text:"Dostosowano górny pasek aplikacji do zmian w iOS 27, aby ograniczyć systemowy efekt rozmycia przy status barze."}
+      ]
+    },
+    {
       id:"client-0727",
       version:"BETA 0.72.7",
       date:"16.09.2026",
@@ -16096,7 +16195,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.72.7";
+  VERSION="BETA 0.72.8";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16142,7 +16241,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.72.7";
+    VERSION="BETA 0.72.8";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16282,7 +16381,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.72.7";
+  VERSION="BETA 0.72.8";
 })();
 
 
@@ -16576,7 +16675,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.72.7";
+  VERSION="BETA 0.72.8";
 })();
 
 
@@ -16879,7 +16978,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.72.7";
+  VERSION="BETA 0.72.8";
 })();
 
 
@@ -16949,7 +17048,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.72.7";
+  VERSION="BETA 0.72.8";
 })();
 
 
@@ -17194,7 +17293,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.72.7";
+  VERSION="BETA 0.72.8";
 })();
 
 
@@ -17327,7 +17426,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.72.7";
+  VERSION="BETA 0.72.8";
 })();
 
 
@@ -17489,7 +17588,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.72.7";
+  VERSION="BETA 0.72.8";
 })();
 
 
@@ -18630,7 +18729,148 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.72.7";
+  VERSION="BETA 0.72.8";
+})();
+
+
+
+/* ======================================================================
+   0.72.8 — iOS 27 TOP EDGE + OWNER LAST RESULT UNDER EACH TARGET
+   ====================================================================== */
+(function(){
+
+  /* ---------------- iOS 27 top-edge shield ---------------- */
+  function gl128EnsureTopEdgeShield(){
+    if(document.getElementById("gl128TopEdgeShield"))return;
+    var shield=document.createElement("div");
+    shield.id="gl128TopEdgeShield";
+    shield.setAttribute("aria-hidden","true");
+    document.body.appendChild(shield);
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",gl128EnsureTopEdgeShield,{once:true});
+  }else{
+    gl128EnsureTopEdgeShield();
+  }
+
+  /* ---------------- owner's Plan na dziś ---------------- */
+  function gl128Clean(v){
+    return String(v==null?"":v).trim();
+  }
+
+  function gl128ShortLast(set,ex){
+    if(!set)return "brak";
+    var s=typeof set==="string"?parseSetLine(set,ex):set;
+    var w=s&&s.w!=null?s.w:(s&&s.weight!=null?s.weight:"");
+    var r=s&&s.r!=null?s.r:(s&&s.reps!=null?s.reps:"");
+
+    if((w==null||w==="")&&(r==null||r===""))return "brak";
+
+    var left="";
+    if(isBodyweightExercise(ex)){
+      left=prettyBodyweightLoad(w);
+    }else if(w!=null&&w!==""){
+      left=displayNumber(w)+" kg";
+    }else{
+      left="—";
+    }
+
+    return left+" × "+(r==null||r===""?"—":r);
+  }
+
+  function gl128OwnerPlanRows(ex,gym){
+    if(!ex)return "<div class='small'>Brak planu.</div>";
+
+    var parsed;
+    try{
+      parsed=(typeof gl127ParsePlanText==="function")
+        ?gl127ParsePlanText(ex.plan,ex)
+        :null;
+    }catch(e){parsed=null;}
+
+    if(!parsed || !Array.isArray(parsed.series) || !parsed.series.length){
+      return planPrettyHtml(ex.plan);
+    }
+
+    var previous=[];
+    try{
+      previous=getLastSetsForGymExerciseV31(gym,ex.name)||[];
+    }catch(e){previous=[];}
+
+    var previousWorking=previous.filter(function(s){
+      try{return isWorkingSet(s);}catch(e){return true;}
+    });
+
+    var workIndex=0;
+    var html="<div class='gl128-owner-plan-rows'>";
+
+    parsed.series.forEach(function(s){
+      var warm=s.type==="warmup";
+      var type=warm?"ROZGRZEWKA":"SERIA "+(++workIndex);
+      var weight=gl128Clean(s.weight);
+      var reps=gl128Clean(s.reps);
+      var target=(weight?esc(weight)+" × ":"")+esc(reps||"—")+" powt.";
+
+      if(gl128Clean(s.note)){
+        target+=" <span style='color:#8b8d94;font-weight:700'>• "+esc(s.note)+"</span>";
+      }
+
+      html+="<div class='gl128-owner-plan-row "+(warm?"warmup":"")+"'>"+
+        "<div class='type'>"+type+"</div>"+
+        "<div><div class='target'>"+target+"</div>"+
+          (warm
+            ?"<div class='last'>Nie liczy się jako seria robocza</div>"
+            :"<div class='last'>Ostatnio: "+esc(gl128ShortLast(previousWorking[workIndex-1],ex))+"</div>")+
+        "</div>"+
+      "</div>";
+    });
+
+    html+="</div>";
+
+    if(gl128Clean(parsed.note)){
+      html+="<div class='gl128-owner-plan-note'>"+esc(parsed.note)+"</div>";
+    }
+
+    return html;
+  }
+
+  function gl128ApplyOwnerPlanLast(){
+    if(!current || !current.exercises || !current.exercises[idx])return;
+    if(glIsManagedUser())return;
+
+    var card=document.querySelector(".lux-current-card");
+    if(!card)return;
+
+    var planBox=card.querySelector(".lux-plan-always");
+    if(!planBox)return;
+
+    var ex=current.exercises[idx];
+    var gym=safeGymV31(current.gym||getDefaultGymV31(current.training));
+
+    planBox.innerHTML=
+      "<div class='lux-plan-title'>Plan na dziś</div>"+
+      gl128OwnerPlanRows(ex,gym);
+
+    /* The old collapsed "Ostatnio na tej siłowni" is redundant once
+       each working target already has its own previous result. */
+    var details=card.querySelector(".lux-details");
+    if(details)details.remove();
+  }
+
+  var gl128BaseExercise=window.exercise;
+  window.exercise=exercise=function(){
+    var r=gl128BaseExercise.apply(this,arguments);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        requestAnimationFrame(gl128ApplyOwnerPlanLast);
+      });
+    });
+    return r;
+  };
+
+  window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
+  VERSION="BETA 0.72.8";
 })();
 
 

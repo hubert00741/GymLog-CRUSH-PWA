@@ -7408,7 +7408,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.73.0";
+VERSION = "BETA 0.73.1";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -14141,6 +14141,15 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0731",
+      version:"BETA 0.73.1",
+      date:"07.10.2026",
+      title:"Poprawione aktualizacje planu z rozgrzewkami",
+      changes:[
+        {feature:"always",text:"Aktualizacja planu kodem poprawnie rozpoznaje serie rozgrzewkowe. Rozgrzewki są wyświetlane osobno na pomarańczowo i nie są numerowane jako serie robocze."}
+      ]
+    },
+    {
       id:"client-0730",
       version:"BETA 0.73.0",
       date:"06.10.2026",
@@ -16257,7 +16266,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16303,7 +16312,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.73.0";
+    VERSION="BETA 0.73.1";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16443,7 +16452,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 })();
 
 
@@ -16737,7 +16746,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 })();
 
 
@@ -17040,7 +17049,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 })();
 
 
@@ -17110,7 +17119,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 })();
 
 
@@ -17355,7 +17364,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 })();
 
 
@@ -17488,7 +17497,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 })();
 
 
@@ -17650,7 +17659,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 })();
 
 
@@ -18791,7 +18800,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 })();
 
 
@@ -18934,7 +18943,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 })();
 
 
@@ -18966,7 +18975,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
 })();
 
 
@@ -19373,7 +19382,301 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.73.0";
+  VERSION="BETA 0.73.1";
+})();
+
+
+
+/* ======================================================================
+   0.73.1 — GYMLOG_PLAN_UPDATE_V1: REAL WARMUPS FOR MANAGED USERS
+
+   Important: 0.73.0 fixed the FULL PLAN importer.
+   This patch fixes the separate "Cele kodem / aktualizacja planu" importer.
+
+   Exact supported example:
+   GYMLOG_PLAN_UPDATE_V1
+   LEGS
+   BB SQUAT:
+   Rozgrzewka | | 6-10
+   Rozgrzewka | | 6-10
+   Seria 1 | | 6-10
+   Seria 2 | | 6-10
+   END_UPDATE
+   ====================================================================== */
+(function(){
+  function gl131Clean(v){
+    return String(v==null?"":v).trim();
+  }
+  function gl131Norm(v){
+    return gl131Clean(v).toLowerCase()
+      .replace(/[ąćęłńóśźż]/g,function(ch){
+        return ({ą:"a",ć:"c",ę:"e",ł:"l",ń:"n",ó:"o",ś:"s",ź:"z",ż:"z"})[ch]||ch;
+      })
+      .replace(/\s+/g," ");
+  }
+  function gl131PlanName(plans,line){
+    var n=gl131Norm(line),keys=Object.keys(plans||{});
+    for(var i=0;i<keys.length;i++){
+      if(gl131Norm(keys[i])===n)return keys[i];
+    }
+    return null;
+  }
+  function gl131Exercise(list,name){
+    var n=gl131Norm(name);
+    for(var i=0;i<(list||[]).length;i++){
+      if(gl131Norm(list[i]&&list[i].name)===n)return list[i];
+    }
+    return null;
+  }
+  function gl131SeriesLine(line){
+    var p=String(line||"").split("|").map(function(x){return x.trim();});
+    if(p.length<2)return null;
+
+    var label=gl131Norm(p[0]);
+    var type=null;
+
+    if(/^rozgrzewka(?: \d+)?$/.test(label) || /^r(?: \d+)?$/.test(label) || /^warm.?up(?: \d+)?$/.test(label)){
+      type="warmup";
+    }else if(/^seria(?: robocza)?(?: \d+)?$/.test(label) || /^s\d*$/.test(label)){
+      type="work";
+    }else{
+      return null;
+    }
+
+    return {
+      type:type,
+      weight:gl131Clean(p[1]),
+      reps:gl131Clean(p[2]||"").replace(/[–—]/g,"-").replace(/\s+/g,"") || "—",
+      note:gl131Clean(p.slice(3).join(" | "))
+    };
+  }
+
+  function gl131LegacyTargets(lines){
+    var targets=[];
+    (lines||[]).forEach(function(line){
+      var m=String(line||"").match(/^(.+?)\s*:\s*(.+)$/);
+      if(!m)return;
+      var weight=gl131Clean(m[1]);
+      String(m[2]||"").split(/[,;]+/).map(gl131Clean).filter(Boolean).forEach(function(rep){
+        targets.push({weight:weight,reps:rep,note:""});
+      });
+    });
+    return targets;
+  }
+
+  window.gl131ParseManagedUpdate=function(txt,plans){
+    plans=plans||{};
+    var lines=String(txt||"")
+      .replace(/\\r\\n/g,"\n")
+      .replace(/\\n/g,"\n")
+      .replace(/\r/g,"\n")
+      .split(/\n/);
+
+    var items=[],plan=null,exercise=null,buf=[];
+
+    function flush(){
+      if(plan&&exercise&&buf.length){
+        var structured=[],free=[];
+        buf.forEach(function(line){
+          var s=gl131SeriesLine(line);
+          if(s)structured.push(s);
+          else if(gl131Clean(line))free.push(gl131Clean(line));
+        });
+
+        items.push({
+          plan:plan,
+          exercise:exercise,
+          lines:buf.slice(),
+          structured:structured,
+          free:free
+        });
+      }
+      exercise=null;
+      buf=[];
+    }
+
+    for(var i=0;i<lines.length;i++){
+      var line=gl131Clean(lines[i]);
+      if(!line)continue;
+      if(line==="GYMLOG_PLAN_UPDATE_V1")continue;
+      if(line==="END_UPDATE"){flush();break;}
+
+      var matchedPlan=gl131PlanName(plans,line);
+      if(matchedPlan){
+        flush();
+        plan=matchedPlan;
+        continue;
+      }
+
+      if(/:$/.test(line)){
+        flush();
+        if(!plan){
+          return {ok:false,message:"Najpierw podaj dokładną nazwę planu użytkownika."};
+        }
+        exercise=line.slice(0,-1).trim();
+        continue;
+      }
+
+      if(plan&&exercise)buf.push(line);
+    }
+    flush();
+
+    if(!items.length){
+      return {ok:false,message:"Nie znaleziono żadnych ćwiczeń do aktualizacji."};
+    }
+
+    var errors=[];
+    items.forEach(function(item){
+      var ex=gl131Exercise(plans[item.plan],item.exercise);
+      if(!ex)errors.push(item.plan+" — nie znaleziono ćwiczenia: "+item.exercise);
+    });
+
+    if(errors.length){
+      return {ok:false,message:"Błąd nazw:\n"+errors.join("\n")};
+    }
+
+    return {ok:true,items:items};
+  };
+
+  window.gl131ApplyManagedUpdate=function(plans,items){
+    var next=gl064ClonePlans(plans||{});
+
+    (items||[]).forEach(function(item){
+      var ex=gl131Exercise(next[item.plan],item.exercise);
+      if(!ex)return;
+
+      var structured=item.structured||[];
+
+      if(structured.length){
+        var warm=structured.filter(function(s){return s.type==="warmup";});
+        var work=structured.filter(function(s){return s.type==="work";});
+
+        /* This block is the source of truth for the exercise series.
+           Warmups are NOT counted in ex.sets. */
+        ex.warmupTargets=warm.map(function(s){
+          return {weight:s.weight,reps:s.reps,note:s.note};
+        });
+        ex.warmups=warm.map(function(s){
+          var line=(s.weight?s.weight+" ":"")+"x "+s.reps;
+          if(s.note)line+=" "+s.note;
+          return line;
+        });
+
+        ex.workTargets=work.map(function(s){
+          return {weight:s.weight,reps:s.reps,note:s.note};
+        });
+        ex.workReps=work.map(function(s){return s.reps;});
+        ex.sets=Math.max(1,work.length||1);
+        ex.reps=work.length?(work[0].reps||ex.reps||"8-12"):(ex.reps||"8-12");
+
+        /* Any non-series lines remain as the general plan note. */
+        ex.planNote=(item.free||[]).join("\n").trim();
+
+        var goalLines=work.map(function(s){
+          var line=(s.weight?s.weight+" ":"")+"x "+s.reps;
+          if(s.note)line+=" "+s.note;
+          return line;
+        });
+        if(ex.planNote)goalLines.push(ex.planNote);
+        ex.goal=goalLines.join("\n");
+
+        return;
+      }
+
+      /* Backward compatibility with the older goal format:
+         70 kg: 12-15,12-15
+         75 kg: 10-12,10-12 */
+      var legacy=gl131LegacyTargets(item.lines);
+      if(legacy.length){
+        ex.goal=item.lines.join("\n").trim();
+        ex.workTargets=legacy;
+        ex.workReps=legacy.map(function(t){return t.reps;});
+        ex.sets=legacy.length;
+        ex.reps=legacy[0].reps||ex.reps||"8-12";
+        /* Existing warmups are intentionally preserved in legacy goal updates. */
+      }else{
+        /* Free-text-only update: preserve structure, only update note. */
+        ex.planNote=item.lines.join("\n").trim();
+        ex.goal=ex.planNote;
+      }
+    });
+
+    return next;
+  };
+
+  /* Final override of the actual button used by "Cele kodem". */
+  window.gl110SaveManagedGoals=async function(){
+    var c=window.GL110_GOAL_CTX;
+    var el=document.getElementById("gl110GoalText");
+    if(!c||!el)return;
+
+    var parsed=window.gl131ParseManagedUpdate(el.value,c.plans);
+    if(!parsed.ok){
+      alert(parsed.message);
+      return;
+    }
+
+    var plans=window.gl131ApplyManagedUpdate(c.plans,parsed.items);
+
+    try{
+      if(c.mode==="admin"){
+        var flags=Object.assign(glDefaultManagedFlags(),c.profile.feature_flags||{});
+        var cfg=Object.assign({},c.profile.profile_config||{},{
+          managedMode:true,
+          managed_plans:plans
+        });
+
+        await glAdminApi({
+          action:"set_features",
+          user_id:c.profile.id,
+          feature_flags:flags,
+          profile_config:cfg
+        });
+
+        c.profile.profile_config=cfg;
+
+        if(window.GL_ADMIN_SELECTED &&
+           window.GL_ADMIN_SELECTED.profile &&
+           window.GL_ADMIN_SELECTED.profile.id===c.profile.id){
+          window.GL_ADMIN_SELECTED.profile.profile_config=cfg;
+        }
+      }else{
+        var r=await gl064PlanApi({action:"self_set_plans",plans:plans});
+        window.GL_PROFILE.profile_config=
+          r.profile_config ||
+          Object.assign({},window.GL_PROFILE.profile_config||{},{
+            managed_plans:plans
+          });
+        glSaveProfile(window.GL_PROFILE);
+      }
+
+      c.plans=plans;
+
+      var warmCount=0,workCount=0;
+      parsed.items.forEach(function(item){
+        (item.structured||[]).forEach(function(s){
+          if(s.type==="warmup")warmCount++;
+          else if(s.type==="work")workCount++;
+        });
+      });
+
+      alert(
+        "Plan zaktualizowany dla "+parsed.items.length+" ćwiczeń."+
+        (warmCount||workCount
+          ?"\nRozgrzewki: "+warmCount+" • serie robocze: "+workCount
+          :"")
+      );
+
+      c.mode==="admin"
+        ?gl110AdminManagedGoalsView(c.profile.id)
+        :gl110SelfManagedGoalsView();
+
+    }catch(e){
+      alert("Nie udało się zapisać aktualizacji: "+String(e&&e.message||e));
+    }
+  };
+
+  VERSION="BETA 0.73.1";
 })();
 
 

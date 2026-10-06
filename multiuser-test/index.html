@@ -4771,6 +4771,59 @@ body.theme-female .gl128-owner-plan-row:not(.warmup){
 }
 </style>
 
+
+<style id="gl130-warmup-importer">
+/* =====================================================================
+   0.73.0 — STRUCTURED PLAN IMPORT WITH REAL WARMUPS
+   ===================================================================== */
+.gl130-import-help{
+  margin:10px 0 12px;
+  padding:12px;
+  border-radius:14px;
+  background:#0c0d10;
+  border:1px solid rgba(255,255,255,.065);
+  color:#85878f;
+  font-size:10px;
+  line-height:1.5;
+}
+.gl130-import-help b{
+  color:#f1f1f3;
+}
+.gl130-import-help code{
+  display:block;
+  margin-top:7px;
+  padding:9px 10px;
+  border-radius:11px;
+  background:#07080a;
+  color:#c8c9ce;
+  font-size:9px;
+  line-height:1.55;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.gl130-import-legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+.gl130-import-chip{
+  padding:5px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.07);
+  background:rgba(255,255,255,.03);
+  color:#9a9ca3;
+  font-size:8px;
+  font-weight:950;
+  letter-spacing:.04em;
+}
+.gl130-import-chip.warmup{
+  color:#d2a65e;
+  border-color:rgba(210,166,94,.18);
+  background:rgba(120,88,34,.05);
+}
+</style>
+
 </head>
 
 <body>
@@ -7355,7 +7408,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.72.8";
+VERSION = "BETA 0.73.0";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -14088,6 +14141,15 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0730",
+      version:"BETA 0.73.0",
+      date:"06.10.2026",
+      title:"Poprawione serie rozgrzewkowe",
+      changes:[
+        {feature:"always",text:"Serie rozgrzewkowe w planach są teraz rozpoznawane jako osobny typ serii i na ekranie treningu wyświetlają się jako pomarańczowa „Rozgrzewka”, a nie jako seria robocza."}
+      ]
+    },
+    {
       id:"client-0728",
       version:"BETA 0.72.8",
       date:"16.09.2026",
@@ -16195,7 +16257,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.72.8";
+  VERSION="BETA 0.73.0";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16241,7 +16303,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.72.8";
+    VERSION="BETA 0.73.0";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16381,7 +16443,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.72.8";
+  VERSION="BETA 0.73.0";
 })();
 
 
@@ -16675,7 +16737,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.72.8";
+  VERSION="BETA 0.73.0";
 })();
 
 
@@ -16978,7 +17040,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.72.8";
+  VERSION="BETA 0.73.0";
 })();
 
 
@@ -17048,7 +17110,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.72.8";
+  VERSION="BETA 0.73.0";
 })();
 
 
@@ -17293,7 +17355,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.72.8";
+  VERSION="BETA 0.73.0";
 })();
 
 
@@ -17426,7 +17488,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.72.8";
+  VERSION="BETA 0.73.0";
 })();
 
 
@@ -17588,7 +17650,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.72.8";
+  VERSION="BETA 0.73.0";
 })();
 
 
@@ -18729,7 +18791,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.72.8";
+  VERSION="BETA 0.73.0";
 })();
 
 
@@ -18852,10 +18914,12 @@ if(typeof window.glAdminExportWorkout==="function"){
       "<div class='lux-plan-title'>Plan na dziś</div>"+
       gl128OwnerPlanRows(ex,gym);
 
-    /* The old collapsed "Ostatnio na tej siłowni" is redundant once
-       each working target already has its own previous result. */
-    var details=card.querySelector(".lux-details");
-    if(details)details.remove();
+    /* The old exercise-level "Ostatnio" is redundant once each working
+       target already shows its own previous result. 0.71.5 may have already
+       converted .lux-details into .gl115-last, so remove BOTH variants. */
+    card.querySelectorAll(".lux-details,.gl115-last").forEach(function(node){
+      node.remove();
+    });
   }
 
   var gl128BaseExercise=window.exercise;
@@ -18870,7 +18934,446 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.72.8";
+  VERSION="BETA 0.73.0";
+})();
+
+
+
+/* ======================================================================
+   0.72.9 — OWNER: REMOVE DUPLICATE EXERCISE-LEVEL "OSTATNIO"
+   ====================================================================== */
+(function(){
+  function gl129RemoveOwnerDuplicateLast(){
+    if(!current || glIsManagedUser())return;
+    var card=document.querySelector(".lux-current-card");
+    if(!card)return;
+    card.querySelectorAll(".lux-details,.gl115-last").forEach(function(node){
+      node.remove();
+    });
+  }
+
+  var gl129BaseExercise=window.exercise;
+  window.exercise=exercise=function(){
+    var r=gl129BaseExercise.apply(this,arguments);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          requestAnimationFrame(gl129RemoveOwnerDuplicateLast);
+        });
+      });
+    });
+    return r;
+  };
+
+  window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
+  VERSION="BETA 0.73.0";
+})();
+
+
+/* ======================================================================
+   0.73.0 — PLAN IMPORTER WITH FIRST-CLASS WARMUP SETS
+
+   Supported:
+   1) OLD format (100% backwards compatible)
+      Bench Press | 3 | 6-8 | 180 | Klatka, Triceps | 80 kg: 8,8,8
+
+   2) NEW structured format
+      Ćwiczenie: Bench Press | 180 | Klatka, Triceps
+      Rozgrzewka | pusta sztanga | 10
+      Rozgrzewka | 60 kg | 3
+      Rozgrzewka | 80 kg | 1
+      Seria 1 | 105 kg | 6-8
+      Seria 2 | 100 kg | 6-8
+      Seria 3 | 97,5 kg | 7-9
+
+   Also accepts:
+      R | 60 kg | 3
+      S1 | 105 kg | 6-8
+      Rozgrzewka: 60 kg x 3
+      Seria 1: 105 kg x 6-8
+   ====================================================================== */
+(function(){
+  function gl130Clean(v){
+    return String(v==null?"":v).trim();
+  }
+  function gl130NormReps(v){
+    return gl130Clean(v).replace(/[–—]/g,"-").replace(/\s+/g,"");
+  }
+  function gl130Groups(raw){
+    return gl130Clean(raw).split(",").map(function(x){
+      x=x.trim();
+      if(!x)return "";
+      if(typeof gl074MuscleTechnicalName==="function"){
+        try{return gl074MuscleTechnicalName(x);}catch(e){}
+      }
+      return x;
+    }).filter(Boolean);
+  }
+  function gl130SplitNote(v){
+    var s=gl130Clean(v);
+    if(!s)return {main:"",note:""};
+    var m=s.match(/^(.*?)(?:\s+[—–-]\s+)(.+)$/);
+    return m?{main:gl130Clean(m[1]),note:gl130Clean(m[2])}:{main:s,note:""};
+  }
+  function gl130SeriesFromPipe(line){
+    var p=line.split("|").map(function(x){return x.trim();});
+    if(p.length<2)return null;
+
+    var label=String(p[0]||"").toLowerCase()
+      .replace(/[ąćęłńóśźż]/g,function(ch){
+        return ({ą:"a",ć:"c",ę:"e",ł:"l",ń:"n",ó:"o",ś:"s",ź:"z",ż:"z"})[ch]||ch;
+      });
+
+    var type=null;
+    if(/^r(?:ozgrzewka)?(?:\s*\d+)?$/.test(label) || /^warm.?up(?:\s*\d+)?$/.test(label)){
+      type="warmup";
+    }else if(/^s(?:eria)?(?:\s*(?:robocza)?\s*\d*)?$/.test(label) || /^seria\s+\d+$/.test(label)){
+      type="work";
+    }
+    if(!type)return null;
+
+    var weight=gl130Clean(p[1]);
+    var reps=gl130NormReps(p[2]||"");
+    var note=gl130Clean(p.slice(3).join(" | "));
+
+    /* Allow "Rozgrzewka | 60 kg x 3" too. */
+    if(!reps){
+      var direct=weight.match(/^(.*?)\s*[x×]\s*(\d+(?:[.,]\d+)?(?:\s*[-–]\s*\d+(?:[.,]\d+)?)?)(.*)$/i);
+      if(direct){
+        weight=gl130Clean(direct[1]);
+        reps=gl130NormReps(direct[2]);
+        note=gl130Clean((direct[3]||"")+" "+note);
+      }
+    }
+
+    return {type:type,weight:weight,reps:reps||"—",note:note};
+  }
+
+  function gl130SeriesFromColon(line){
+    var m=line.match(/^(rozgrzewka|r|warm.?up|seria(?:\s+robocza)?(?:\s*\d+)?|s\d*)\s*:\s*(.+)$/i);
+    if(!m)return null;
+
+    var label=String(m[1]).toLowerCase();
+    var type=/^(rozgrzewka|r|warm)/i.test(label)?"warmup":"work";
+    var body=gl130SplitNote(m[2]);
+    var d=body.main.match(/^(.*?)\s*[x×]\s*(\d+(?:[.,]\d+)?(?:\s*[-–]\s*\d+(?:[.,]\d+)?)?)$/i);
+    if(!d)return null;
+
+    return {
+      type:type,
+      weight:gl130Clean(d[1]),
+      reps:gl130NormReps(d[2]),
+      note:body.note
+    };
+  }
+
+  function gl130LooseSeries(line){
+    var warm=/\brozgrzewk|\bwarm.?up/i.test(line);
+    var stripped=line
+      .replace(/\b(?:rozgrzewka|warm.?up)\b/ig,"")
+      .replace(/\s*[—–-]\s*$/,"")
+      .trim();
+    var body=gl130SplitNote(stripped);
+    var d=body.main.match(/^(.*?)\s*[x×]\s*(\d+(?:[.,]\d+)?(?:\s*[-–]\s*\d+(?:[.,]\d+)?)?)$/i);
+    if(!d)return null;
+    return {
+      type:warm?"warmup":"work",
+      weight:gl130Clean(d[1]),
+      reps:gl130NormReps(d[2]),
+      note:body.note
+    };
+  }
+
+  function gl130CommitStructured(ex,series,generalNote){
+    var warm=series.filter(function(s){return s.type==="warmup";});
+    var work=series.filter(function(s){return s.type!=="warmup";});
+
+    ex.warmupTargets=warm.map(function(s){
+      return {weight:gl130Clean(s.weight),reps:gl130Clean(s.reps),note:gl130Clean(s.note)};
+    });
+    ex.warmups=warm.map(function(s){
+      var line=(gl130Clean(s.weight)?gl130Clean(s.weight)+" ":"")+"x "+(gl130Clean(s.reps)||"—");
+      if(gl130Clean(s.note))line+=" "+gl130Clean(s.note);
+      return line;
+    });
+
+    ex.workTargets=work.map(function(s){
+      return {weight:gl130Clean(s.weight),reps:gl130Clean(s.reps),note:gl130Clean(s.note)};
+    });
+    ex.workReps=work.map(function(s){return gl130Clean(s.reps)||"8-12";});
+    ex.sets=Math.max(1,work.length||1);
+    ex.reps=work.length?(gl130Clean(work[0].reps)||"8-12"):(gl130Clean(ex.reps)||"8-12");
+    ex.planNote=gl130Clean(generalNote);
+
+    var goal=[];
+    work.forEach(function(s){
+      var line=(gl130Clean(s.weight)?gl130Clean(s.weight)+" ":"")+"x "+(gl130Clean(s.reps)||"—");
+      if(gl130Clean(s.note))line+=" "+gl130Clean(s.note);
+      goal.push(line);
+    });
+    if(ex.planNote)goal.push(ex.planNote);
+    ex.goal=goal.join("\n");
+  }
+
+  function gl130StructuredHeader(line){
+    var src=gl130Clean(line);
+    var explicit=src.match(/^Ćwiczenie\s*:\s*(.+)$/i);
+    if(explicit)src=explicit[1].trim();
+
+    var p=src.split("|").map(function(x){return x.trim();});
+    if(explicit){
+      return {
+        name:p[0]||"Ćwiczenie",
+        rest:Math.max(0,parseInt((p[1]||"").replace(/\D+/g,""),10)||120),
+        groups:gl130Groups(p[2]||""),
+        bodyweight:/masa ciała|bodyweight/i.test(p[3]||"")
+      };
+    }
+
+    /* Natural exercise header:
+       Bench Press:
+       1. Bench Press:
+       Metadata such as Przerwa / Partie can follow on the next lines. */
+    var simple=src.match(/^(?:\d+[.)]\s*)?([^:]+):$/);
+    if(simple && !/^(?:rozgrzewka|r|warm.?up|seria|s\d*|przerwa|rest|partie|grupy|mięśnie|miesnie)$/i.test(gl130Clean(simple[1]))){
+      return {
+        name:gl130Clean(simple[1])||"Ćwiczenie",
+        rest:120,
+        groups:[],
+        bodyweight:false
+      };
+    }
+
+    /* Alternate structured header:
+       Bench Press | przerwa 180 | Klatka, Triceps */
+    if(p.length>=2 && /przerwa|rest/i.test(p[1])){
+      return {
+        name:p[0]||"Ćwiczenie",
+        rest:Math.max(0,parseInt((p[1]||"").replace(/\D+/g,""),10)||120),
+        groups:gl130Groups(p[2]||""),
+        bodyweight:/masa ciała|bodyweight/i.test(p[3]||"")
+      };
+    }
+    return null;
+  }
+
+  glPlanTextToConfig=window.glPlanTextToConfig=function(txt){
+    var plans={},planName=null,current=null,series=[],notes=[];
+
+    function flushExercise(){
+      if(!current)return;
+      if(series.length)gl130CommitStructured(current,series,notes.join("\n"));
+      else if(notes.length)current.planNote=notes.join("\n").trim();
+
+      if(!plans[planName])plans[planName]=[];
+      plans[planName].push(current);
+      current=null;series=[];notes=[];
+    }
+
+    String(txt||"").replace(/\\r\\n/g,"\n").replace(/\\n/g,"\n").split(/\r?\n/).forEach(function(raw){
+      var line=gl130Clean(raw);
+      if(!line)return;
+
+      var plan=line.match(/^\[(.+)\]$/);
+      if(plan){
+        flushExercise();
+        planName=plan[1].trim();
+        if(!plans[planName])plans[planName]=[];
+        return;
+      }
+
+      if(!planName){
+        throw new Error("Najpierw dodaj nazwę planu w nawiasach, np. [Day 1 PUSH]");
+      }
+
+      var header=gl130StructuredHeader(line);
+      if(header){
+        flushExercise();
+        current={
+          name:header.name,
+          sets:1,
+          reps:"8-12",
+          rest:header.rest,
+          groups:header.groups,
+          starter:"",
+          bodyweight:header.bodyweight===true
+        };
+        return;
+      }
+
+      /* Structured series belongs to the last exercise. */
+      if(current){
+        var restMeta=line.match(/^(?:Przerwa|Rest)\s*:\s*(\d+)/i);
+        if(restMeta){
+          current.rest=Math.max(0,parseInt(restMeta[1],10)||120);
+          return;
+        }
+
+        var groupsMeta=line.match(/^(?:Partie|Grupy|Mięśnie|Miesnie)\s*:\s*(.+)$/i);
+        if(groupsMeta){
+          current.groups=gl130Groups(groupsMeta[1]);
+          return;
+        }
+
+        var structured=gl130SeriesFromPipe(line)||gl130SeriesFromColon(line);
+
+        /* A loose "60 kg x 3 — rozgrzewka" line is only interpreted as a
+           series inside a structured exercise block. */
+        if(!structured && /[x×]/.test(line)){
+          structured=gl130LooseSeries(line);
+        }
+        if(structured){
+          series.push(structured);
+          return;
+        }
+
+        /* Free text after series becomes the exercise note. */
+        if(series.length){
+          notes.push(line);
+          return;
+        }
+      }
+
+      /* Legacy one-line exercise format. */
+      var p=line.split("|").map(function(x){return x.trim();});
+      if(p.length>=4){
+        flushExercise();
+        var ex={
+          name:p[0],
+          sets:Math.max(1,parseInt(p[1],10)||3),
+          reps:p[2]||"8-12",
+          rest:Math.max(0,parseInt(p[3],10)||120),
+          groups:gl130Groups(p[4]||""),
+          starter:(p[5]||"").trim()
+        };
+
+        /* Optional 7th legacy field may contain explicit warmups, e.g.
+           "pusta sztanga x 10; 60 kg x 3; 80 kg x 1". */
+        if(p[6]){
+          var warms=String(p[6]).split(";").map(function(v){
+            var s=gl130LooseSeries(v+" — rozgrzewka");
+            return s;
+          }).filter(Boolean);
+
+          if(warms.length){
+            ex.warmupTargets=warms.map(function(s){
+              return {weight:s.weight,reps:s.reps,note:s.note};
+            });
+            ex.warmups=warms.map(function(s){
+              return (s.weight?s.weight+" ":"")+"x "+s.reps;
+            });
+          }
+        }
+
+        plans[planName].push(ex);
+        return;
+      }
+
+      throw new Error(
+        "Nie rozpoznano linii: "+line+
+        "\\n\\nUżyj starego formatu albo nowego bloku: Ćwiczenie: Nazwa | przerwa | partie, a pod nim Rozgrzewka / Seria."
+      );
+    });
+
+    flushExercise();
+    return plans;
+  };
+
+  glPlanConfigToText=window.glPlanConfigToText=function(cfg){
+    var plans=(cfg&&cfg.managed_plans)||{},out=[];
+
+    Object.keys(plans).forEach(function(planName){
+      out.push("["+planName+"]");
+
+      (plans[planName]||[]).forEach(function(ex){
+        var warm=Array.isArray(ex.warmupTargets)?ex.warmupTargets:[];
+        var work=Array.isArray(ex.workTargets)?ex.workTargets:[];
+
+        if(warm.length||work.length){
+          out.push(
+            "Ćwiczenie: "+(ex.name||"Ćwiczenie")+
+            " | "+(ex.rest||120)+
+            " | "+((ex.groups||[]).map(function(g){
+              return typeof gl074MuscleLabel==="function"?gl074MuscleLabel(g):g;
+            }).join(", "))
+          );
+
+          warm.forEach(function(s){
+            out.push(
+              "Rozgrzewka | "+gl130Clean(s.weight)+
+              " | "+gl130Clean(s.reps||"8")+
+              (gl130Clean(s.note)?" | "+gl130Clean(s.note):"")
+            );
+          });
+
+          work.forEach(function(s,i){
+            out.push(
+              "Seria "+(i+1)+" | "+gl130Clean(s.weight)+
+              " | "+gl130Clean(s.reps||ex.reps||"8-12")+
+              (gl130Clean(s.note)?" | "+gl130Clean(s.note):"")
+            );
+          });
+
+          if(gl130Clean(ex.planNote)){
+            out.push(gl130Clean(ex.planNote));
+          }
+        }else{
+          var row=[
+            ex.name||"",
+            ex.sets||3,
+            ex.reps||"8-12",
+            ex.rest||120,
+            (ex.groups||[]).map(function(g){
+              return typeof gl074MuscleLabel==="function"?gl074MuscleLabel(g):g;
+            }).join(",")
+          ];
+          if(ex.starter)row.push(ex.starter);
+          out.push(row.join(" | "));
+        }
+
+        out.push("");
+      });
+    });
+
+    return out.join("\n").trim();
+  };
+
+  /* Give the old admin textarea screen a correct format hint too, if it is
+     still reached through a legacy path. */
+  function gl130UpgradeLegacyImporterHelp(){
+    var ta=document.getElementById("muPlanEditor");
+    if(!ta)return;
+
+    var old=document.querySelector(".mu-plan-format");
+    if(old){
+      old.innerHTML=
+        "<b>Nowy format obsługuje prawdziwe rozgrzewki.</b><br>"+
+        "Nagłówek: Ćwiczenie: Nazwa | przerwa | partie. "+
+        "Pod nim dodaj Rozgrzewka | ciężar | powt. oraz Seria 1 | ciężar | zakres.";
+    }
+
+    if(!ta.parentNode.querySelector(".gl130-import-help")){
+      var help=document.createElement("div");
+      help.className="gl130-import-help";
+      help.innerHTML=
+        "<b>Przykład z rozgrzewkami:</b>"+
+        "<code>[Day 1 PUSH]\\nĆwiczenie: Bench Press | 180 | Klatka, Triceps\\nRozgrzewka | pusta sztanga | 10\\nRozgrzewka | 60 kg | 3\\nRozgrzewka | 80 kg | 1\\nSeria 1 | 105 kg | 6-8\\nSeria 2 | 100 kg | 6-8\\nSeria 3 | 97,5 kg | 7-9</code>"+
+        "<div class='gl130-import-legend'><span class='gl130-import-chip warmup'>ROZGRZEWKA = pomarańczowa</span><span class='gl130-import-chip'>SERIA = robocza</span></div>";
+      ta.insertAdjacentElement("beforebegin",help);
+    }
+  }
+
+  var gl130BaseAdminOpenUser=window.glAdminOpenUser;
+  window.glAdminOpenUser=async function(uid){
+    var r=await gl130BaseAdminOpenUser.apply(this,arguments);
+    requestAnimationFrame(gl130UpgradeLegacyImporterHelp);
+    return r;
+  };
+
+  /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
+     so it automatically receives first-class warmups after this override. */
+
+  VERSION="BETA 0.73.0";
 })();
 
 

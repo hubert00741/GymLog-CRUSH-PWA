@@ -4906,6 +4906,50 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 @keyframes gl751-track{0%{transform:translateX(-110%)}100%{transform:translateX(230%)}}
 @media(prefers-reduced-motion:reduce){.gl751-splash,.gl751-splash *,.gl751-splash::before,.gl751-splash::after{animation:none!important;transition:none!important;filter:none!important;transform:none!important;opacity:1!important}}
 </style>
+<style id="gl753-splash-account-css">
+/* 0.75.3 — distinctive male and female launch motion. */
+/* Footer signature shown on regular and full intro, no impact on workouts. */
+.gl753-powered{position:absolute;left:0;right:0;bottom:max(17px,calc(env(safe-area-inset-bottom) + 9px));padding:0 18px;z-index:4;pointer-events:none;text-align:center;font-size:11px;font-weight:650;letter-spacing:.035em;color:rgba(218,218,225,.75);text-shadow:0 1px 8px rgba(0,0,0,.5);animation:gl751-rise .65s .4s ease-out both}
+.gl751-splash[data-account="male"] .gl753-powered{color:rgba(237,165,177,.83)}
+.gl751-splash[data-account="female"] .gl753-powered{color:rgba(249,189,216,.88)}
+.gl751-splash[data-mode="regular"] .gl753-powered{animation-duration:.3s;animation-delay:.14s}
+@media(prefers-reduced-motion:reduce){.gl753-powered{animation:none!important;opacity:1!important}}
+
+.gl751-splash[data-account="male"] .gl751-crest{transform:rotate(-2deg)}
+.gl751-splash[data-account="male"] .gl751-crest::before{border-width:3px;box-shadow:0 0 28px rgba(234,39,65,.20)}
+.gl751-splash[data-account="male"] .gl751-word span{animation-name:gl753-heavy-strike}
+.gl751-splash[data-account="male"] .gl751-redline{height:4px;width:90px}
+.gl751-splash[data-account="female"] .gl751-crest::before,
+.gl751-splash[data-account="female"] .gl751-crest::after{clip-path:none;border-radius:36% 64% 63% 37% / 39% 39% 61% 61%;border-width:2px;box-shadow:0 0 35px rgba(239,147,193,.23)}
+.gl751-splash[data-account="female"] .gl751-crest::after{animation:gl753-soft-orbit 3.4s ease-in-out infinite}
+.gl751-splash[data-account="female"] .gl751-c{font-style:normal;text-indent:0;letter-spacing:0;text-shadow:0 0 32px rgba(250,163,204,.34)}
+.gl751-splash[data-account="female"] .gl751-word{font-style:normal;letter-spacing:.005em;gap:2px}
+.gl751-splash[data-account="female"] .gl751-word span{animation-name:gl753-soft-rise;animation-delay:calc(.20s + var(--i)*.105s)}
+.gl751-splash[data-account="female"] .gl751-redline{height:2px;width:106px;background:linear-gradient(90deg,transparent,#eeaad1,#ffcee4,transparent)}
+.gl751-splash[data-account="female"] .gl751-tagline{letter-spacing:.24em;font-size:10px;color:#e2b7cb}
+.gl751-splash[data-account="female"]{background:radial-gradient(ellipse 70% 47% at 50% 36%,rgba(191,89,139,.17),transparent 75%),linear-gradient(158deg,#110b12 0%,#08070b 72%,#180c15 100%)}
+.gl751-splash[data-account="female"][data-mode="regular"]{background:radial-gradient(ellipse 70% 44% at 50% 36%,rgba(191,89,139,.14),transparent 76%),#0a080e}
+@keyframes gl753-heavy-strike{0%{opacity:0;transform:translate3d(-12px,31px,0) scale(1.13) skewX(-13deg);filter:blur(6px)}70%{opacity:1;transform:translate3d(1px,-3px,0) scale(.98)}100%{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}}
+@keyframes gl753-soft-rise{0%{opacity:0;transform:translate3d(0,18px,0) scale(.92);filter:blur(8px)}75%{opacity:1;transform:translate3d(0,-2px,0) scale(1.01)}100%{opacity:1;transform:none;filter:blur(0)}}
+@keyframes gl753-soft-orbit{0%,100%{opacity:.18;transform:rotate(-20deg) scale(1.04)}50%{opacity:.45;transform:rotate(38deg) scale(1.15)}}
+@media(prefers-reduced-motion:reduce){.gl751-splash[data-account] .gl751-word span,.gl751-splash[data-account] .gl751-crest::after{animation:none!important;filter:none!important;opacity:1!important;transform:none!important}}
+</style>
+<style id="gl753-import-css">
+.gl753-import-launch{border-color:rgba(235,61,86,.22)!important}
+.gl753-warn{font-size:12px;line-height:1.55;background:rgba(58,37,18,.25);padding:12px 13px;border:1px solid rgba(232,171,88,.24);border-radius:12px;color:#d8c7ae}
+.gl753-section{margin:12px 0}.gl753-section select{font-size:15px!important}
+.gl753-gymgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.gl753-gymcheck{display:flex!important;gap:10px;align-items:center;text-transform:none!important;letter-spacing:0!important;font-size:12px!important;padding:10px;background:rgba(255,255,255,.04);border-radius:10px}
+.gl753-gymcheck input{width:18px!important;height:18px!important;flex:0 0 auto}
+#gl753Gyms[hidden]{display:none!important}
+.gl753-code{height:350px!important;min-height:300px!important;font-size:12px!important;font-family:ui-monospace,Menlo,monospace!important;line-height:1.5!important}
+.gl753-preview{margin:15px 0;padding:14px;border:1px solid rgba(101,215,153,.26);background:rgba(20,69,44,.12);border-radius:16px}
+.gl753-preview-row{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);display:grid;gap:5px}
+.gl753-preview-row span{font-size:12px;color:#d9dce1}.gl753-preview-row small{color:#989da6}
+.gl753-commit{background:linear-gradient(140deg,#995022,#b16428)!important;border-color:rgba(255,183,94,.43)!important}
+#gl753Status:not(:empty){margin-top:12px;padding:12px;white-space:pre-wrap}
+@media(max-width:370px){.gl753-gymgrid{grid-template-columns:1fr}}
+</style>
 </head>
 
 <body>
@@ -4919,8 +4963,9 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
     <div class="gl751-redline"></div>
     <div class="gl751-tagline">READY TO TRAIN</div>
   </div>
-  <span class="gl751-version">BETA 0.75.1</span>
+  <span class="gl751-version">BETA 0.75.3</span>
   <span class="gl751-progress"><i></i></span>
+  <span class="gl753-powered">Powered by Stephan.os</span>
 </div>
 <div id="app">
   <h1>GymLog CRUSH</h1>
@@ -4929,7 +4974,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 <script id="gl751-splash-manager">
 (function(){
   'use strict';
-  var VERSION='0.75.1';
+  var VERSION='0.75.3';
   var KEY='GYMLOG_CRUSH_LAST_SPLASH_VERSION';
   var splash=document.getElementById('gl751Splash');
   var app=document.getElementById('app');
@@ -4938,10 +4983,21 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
   try{reduced=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);}catch(e){}
   var last='';try{last=localStorage.getItem(KEY)||'';}catch(e){}
   var firstOrUpdated=last!==VERSION;
+  var GENDER_KEY='GYMLOG_CRUSH_LAST_LAUNCH_GENDER';
+  var tagline=splash.querySelector('.gl751-tagline');
+  function setGender(g){
+    var gender=String(g||'male')==='female'?'female':'male';
+    splash.dataset.account=gender;
+    if(tagline)tagline.textContent=gender==='female'?'STRONG IN YOUR WAY':'READY TO TRAIN';
+    try{localStorage.setItem(GENDER_KEY,gender);}catch(e){}
+  }
+  var startGender='male';try{startGender=localStorage.getItem(GENDER_KEY)||'male';}catch(e){}
+  setGender(startGender);
+  window.gl753SetSplashGender=setGender;
   var mode=firstOrUpdated?'full':'regular';
   var hiddenAt=0, initialDone=false, showing=true, began=Date.now(), delayTimer=0, guardTimer=0;
-  var MIN=reduced?130:(firstOrUpdated?1500:570);
-  var LIMIT=firstOrUpdated?3400:1800;
+  var MIN=reduced?120:(firstOrUpdated?2350:1250);
+  var LIMIT=firstOrUpdated?4650:3000;
   splash.dataset.mode=mode;
   function uiReady(){
     return !!(app&&app.innerHTML.indexOf('<div class="badge">Ładowanie...</div>')<0);
@@ -4980,7 +5036,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
     void splash.offsetWidth;
     splash.classList.add('gl751-visible');
     if(delayTimer)clearTimeout(delayTimer);
-    delayTimer=setTimeout(dismiss,reduced?120:620);
+    delayTimer=setTimeout(dismiss,reduced?120:1280);
     hiddenAt=0;
   }
   document.addEventListener('visibilitychange',function(){
@@ -4996,8 +5052,10 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 })();
 </script>
 
-<script src="./gl-quality.js?v=0751"></script>
-<script src="./gl-ui.js?v=0751"></script>
+<script src="./gl-quality.js?v=0753"></script>
+<script src="./gl-ui.js?v=0753"></script>
+<script src="./gl-motion.js?v=0753"></script>
+<script src="./gl-fullplan.js?v=0753"></script>
 <script>
 window.onerror = function(msg, url, line, col, err){
   document.getElementById("app").innerHTML =
@@ -7574,7 +7632,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.75.1";
+VERSION="BETA 0.75.3";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -14414,6 +14472,20 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0753", version:"BETA 0.75.3", date:"17.10.2026",
+      title:"Importer całych planów i animacje kont",
+      changes:[
+        {feature:"always",text:"Ekran uruchamiania został wydłużony i zawiera osobne animacje w motywach męskim i żeńskim oraz podpis Powered by Stephan.os. Import całych planów treningowych według siłowni jest dostępny tylko na koncie administratora."}
+      ]
+    },
+    {
+      id:"client-0752", version:"BETA 0.75.2", date:"17.10.2026",
+      title:"Subtelne animacje w aplikacji",
+      changes:[
+        {feature:"always",text:"Płynne przejścia między ekranami i ćwiczeniami, potwierdzenie zapisania serii, efekt nowego rekordu ciężaru oraz zakończenia treningu. Animacje można wyłączyć w Wygląd i dźwięk; uwzględniają funkcję iOS Ogranicz ruch."}
+      ]
+    },
+    {
       id:"client-0751", version:"BETA 0.75.1", date:"17.10.2026",
       title:"Nowa animacja uruchamiania",
       changes:[
@@ -16604,7 +16676,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16650,7 +16722,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.75.1";
+    VERSION="BETA 0.75.3";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16790,7 +16862,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -17084,7 +17156,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -17387,7 +17459,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -17457,7 +17529,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -17702,7 +17774,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -17835,7 +17907,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -17997,7 +18069,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -19138,7 +19210,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -19281,7 +19353,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -19313,7 +19385,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -19723,7 +19795,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -20017,7 +20089,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -20128,7 +20200,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -20230,7 +20302,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -20500,7 +20572,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -20605,7 +20677,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Repaint from the persisted absolute deadline when resumed.
   setInterval(function(){if(!document.hidden&&current&&gl136RestEnd)gl136PaintRest();},1000);
 
-  VERSION="BETA 0.75.1";
+  VERSION="BETA 0.75.3";
 })();
 
 
@@ -20815,6 +20887,41 @@ if(window.GymLogUI){
   };
 }
 
+/* 0.75.2 motion layer — hooks run after all legacy wrappers and after GymLogUI. */
+if(window.GymLogMotion)window.GymLogMotion.install({
+  userId:function(){try{var s=glSession();return s&&s.user&&s.user.id||'offline';}catch(e){return 'offline';}},
+  getWorkout:function(){return current;},
+  getIndex:function(){return idx;},
+  getData:function(){return data;},
+  setRenderAlias:function(f){render=f;},
+  setSaveAlias:function(f){saveSet=f;},
+  setFinishAlias:function(f){finishWorkout=f;}
+});
+/* 0.75.3 — full plan import for native owner account only. */
+if(window.GymLogFullPlan)window.GymLogFullPlan.install({
+  isOwner:function(){
+    try{return glIsAdmin()&&(!window.gl122IsImpersonating||!window.gl122IsImpersonating())&&
+      !!(glSession()&&glSession().user&&window.GL_PROFILE&&String(glSession().user.id)===String(window.GL_PROFILE.id));}catch(e){return false;}
+  },
+  getData:function(){return data;},getPlans:function(){return PLANS;},
+  parsePlan:function(txt){return glPlanTextToConfig(txt);},
+  gyms:function(){return GYMS_V31;},
+  applyOwnerPlans:function(){if(typeof gl113ApplyOwnerPlans==='function')gl113ApplyOwnerPlans();},
+  save:function(){safeSave();},render:function(markup){render(markup);},
+  nav:function(tab){return luxBottomNav(tab);},
+  userId:function(){var ss=glSession();return ss&&ss.user&&ss.user.id||'offline';},
+  setGoalsAlias:function(fn){goalsView=fn;},
+  wrapGymClone:function(replacer){
+    var oldClone=clonePlanForGymV31;
+    clonePlanForGymV31=function(plan,gym){return replacer(plan,gym,oldClone);};
+  }
+});
+/* Sync the pre-auth splash with the real profile once login resolves. */
+if(typeof window.gl753SetSplashGender==='function'){
+  var gl753PreviousApplyProfileTheme=glApplyProfileTheme;
+  glApplyProfileTheme=function(){var r=gl753PreviousApplyProfileTheme.apply(this,arguments);
+    try{window.gl753SetSplashGender(glGender());}catch(e){}return r;};
+}
 runInstalledAppUpdates();
 window.glAuthBootstrap();
 })();

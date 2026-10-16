@@ -1,9 +1,11 @@
-/* GymLog CRUSH Service Worker 0.74.0.
+/* GymLog CRUSH Service Worker 0.75.0.
    Installing a new release requires the application shell and its JS module.
    Failure to fetch optional images must NOT break an otherwise valid update. */
-const CACHE='gymlog-crush-multiuser-test-v0740';
-const SHELL=['./index.html','./gl-quality.js'];
-const OPTIONAL=['./','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png','./header-logo-female.png'];
+const CACHE='gymlog-crush-multiuser-test-v0750';
+// Cache the same versioned URLs that index.html actually requests, so the
+// first offline launch after upgrading has both modules available.
+const SHELL=['./index.html','./gl-quality.js?v=0750','./gl-ui.js?v=0750'];
+const OPTIONAL=['./','./gl-quality.js','./gl-ui.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png','./header-logo-female.png'];
 
 self.addEventListener('install', event=>{
   event.waitUntil((async()=>{

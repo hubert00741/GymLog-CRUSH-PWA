@@ -4870,7 +4870,8 @@ body.theme-female .gl135-option{border-color:rgba(255,177,210,.16)!important}
   <div class="badge">Ładowanie...</div>
 </div>
 
-<script src="./gl-quality.js?v=0740"></script>
+<script src="./gl-quality.js?v=0750"></script>
+<script src="./gl-ui.js?v=0750"></script>
 <script>
 window.onerror = function(msg, url, line, col, err){
   document.getElementById("app").innerHTML =
@@ -7447,7 +7448,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.74.0";
+VERSION="BETA 0.75.0";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -11984,6 +11985,8 @@ function gl0683UnlockAudio(){
   }catch(e){}
 }
 function gl0683Beep(){
+  // BETA 0.75.0: one bell, rather than the old three quiet beeps.
+  if(window.GymLogUI && window.GymLogUI.playBell())return;
   try{
     var Ctx=window.AudioContext||window.webkitAudioContext;
     if(!Ctx)return;
@@ -11991,16 +11994,15 @@ function gl0683Beep(){
     var ctx=GL0683_AUDIO_CTX;
     if(ctx.state==="suspended")ctx.resume().catch(function(){});
     var now=ctx.currentTime;
-    [0,.22,.44].forEach(function(off,i){
-      var osc=ctx.createOscillator(),gain=ctx.createGain();
-      osc.type="sine";
-      osc.frequency.setValueAtTime(i===2?1040:880,now+off);
-      gain.gain.setValueAtTime(.0001,now+off);
-      gain.gain.exponentialRampToValueAtTime(.22,now+off+.015);
-      gain.gain.exponentialRampToValueAtTime(.0001,now+off+.16);
-      osc.connect(gain);gain.connect(ctx.destination);
-      osc.start(now+off);osc.stop(now+off+.18);
-    });
+    // Single fallback strike as well; never restore the old triple beep.
+    var osc=ctx.createOscillator(),gain=ctx.createGain();
+    osc.type="sine";
+    osc.frequency.setValueAtTime(940,now);
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(.52,now+.012);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+1.10);
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.start(now);osc.stop(now+1.12);
   }catch(e){}
 }
 function gl0683DismissRestAlert(){
@@ -12036,6 +12038,7 @@ window.gl0683ForegroundAlert=gl0683ForegroundAlert;
 var gl0683BaseSaveSet=window.saveSet;
 window.saveSet=function(){
   gl0683UnlockAudio();
+  if(window.GymLogUI)window.GymLogUI.primeSound();
   return gl0683BaseSaveSet.apply(this,arguments);
 };
 saveSet=window.saveSet;
@@ -14283,6 +14286,14 @@ if(typeof window.glAdminExportWorkout==="function"){
    ====================================================================== */
 (function(){
   var GL111_CLIENT_RELEASES=[
+    {
+      id:"client-0750", version:"BETA 0.75.0", date:"17.10.2026",
+      title:"Czytelniejszy interfejs i dzwonek końca przerwy",
+      changes:[
+        {feature:"always",text:"Odświeżone karty, typografia i dolna nawigacja, wspólne dla trzech motywów: burgund, pudrowy róż i grafit."},
+        {feature:"always",text:"Jeden wyraźny dzwonek po zakończeniu przerwy, test dźwięku i wybór motywu w ustawieniach. Głośność zależy od systemu iPhone'a."}
+      ]
+    },
     {id:"client-0740",version:"BETA 0.74.0",date:"17.10.2026",title:"Niezawodność i zamienniki 1:1",changes:[
       {feature:"always",text:"Zamienniki są proponowane z osobnego katalogu dla tego samego ruchu i nie pochodzą z Twojego planu. Nadal możesz wpisać dowolny zamiennik."},
       {feature:"always",text:"Synchronizacja sprawdza rewizję serwera przed zapisem, chroniąc przed nieświadomym nadpisaniem nowszych danych."},
@@ -16459,7 +16470,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16505,7 +16516,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.74.0";
+    VERSION="BETA 0.75.0";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16645,7 +16656,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -16939,7 +16950,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -17242,7 +17253,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -17312,7 +17323,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -17557,7 +17568,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -17690,7 +17701,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -17852,7 +17863,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -18993,7 +19004,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -19136,7 +19147,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -19168,7 +19179,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -19578,7 +19589,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -19872,7 +19883,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -19983,7 +19994,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -20085,7 +20096,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -20355,7 +20366,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -20460,7 +20471,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Repaint from the persisted absolute deadline when resumed.
   setInterval(function(){if(!document.hidden&&current&&gl136RestEnd)gl136PaintRest();},1000);
 
-  VERSION="BETA 0.74.0";
+  VERSION="BETA 0.75.0";
 })();
 
 
@@ -20651,6 +20662,24 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl74CheckWorkoutInactivity=autoFinish;
   window.gl74IdleMs=THRESHOLD;
 })();
+
+/* 0.75.0 — attach visual/audio layer after the complete old UI stack. */
+if(window.GymLogUI)window.GymLogUI.install({
+  userId:function(){var s=glSession();return s&&s.user&&s.user.id||'offline';},
+  gender:function(){return typeof glGender==='function'?glGender():'male';},
+  render:function(markup){return render(markup);},
+  bottomNav:function(tab){return luxBottomNav(tab||'more');}
+});
+/* Keep the legacy lexical render binding in sync with the installed wrapper. */
+if(window.GymLogUI){
+  render=window.render;
+  var gl75BaseApplyProfileTheme=glApplyProfileTheme;
+  glApplyProfileTheme=function(){
+    var result=gl75BaseApplyProfileTheme.apply(this,arguments);
+    window.GymLogUI.applyTheme();
+    return result;
+  };
+}
 
 runInstalledAppUpdates();
 window.glAuthBootstrap();

@@ -4824,6 +4824,34 @@ body.theme-female .gl128-owner-plan-row:not(.warmup){
 }
 </style>
 
+<style id="gl133-ios-bottom-nav-fix">
+/* 0.73.3 — viewport repair on iOS PWA resume.
+   When portaled out of #app, the menu is positioned against the document
+   viewport instead of any rendering/scrolling container. */
+body > nav.lux-bottom-nav{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:max(8px,env(safe-area-inset-bottom))!important;
+  transform:translate3d(-50%,var(--gl133-offset-y,0px),0)!important;
+  -webkit-transform:translate3d(-50%,var(--gl133-offset-y,0px),0)!important;
+  z-index:9999!important;
+}
+@media(max-width:430px){
+  body > nav.lux-bottom-nav{width:calc(100% - 14px)!important}
+}
+</style>
+
+<style id="gl135-swap-ui">
+.gl135-suggestions{display:grid;grid-template-columns:1fr;gap:7px;margin:14px 0}
+.gl135-option{display:flex!important;flex-direction:column!important;align-items:flex-start!important;text-align:left!important;gap:3px;padding:12px 14px!important;margin:0!important;background:#101013!important;border:1px solid rgba(255,255,255,.12)!important}
+.gl135-option span{font-size:13px;font-weight:900}.gl135-option small{font-size:10px;color:#a9a9b0;font-weight:500}
+.gl135-option:focus,.gl135-option:active{border-color:var(--account-accent,#ff2738)!important}
+.gl135-custom{margin:12px 0 4px!important}
+.gl135-swap-card .small{line-height:1.55}
+body.theme-female .gl135-option{border-color:rgba(255,177,210,.16)!important}
+</style>
 </head>
 
 <body>
@@ -7408,7 +7436,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.73.1";
+VERSION = "BETA 0.73.5";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -8492,8 +8520,8 @@ function luxMuscleLoadsV502(log){
 
   var out={
     chest:0, shoulders:0, rearDelts:0, back:0, biceps:0, triceps:0,
-    abs:0, quads:0,
-    gluteMaxUpper:0, gluteMaxMid:0, gluteMaxLower:0, gluteMedius:0,
+    abs:0, quads:0, adductors:0,
+    gluteMaximus:0, gluteMedius:0, gluteMinimus:0,
     hamstrings:0, calves:0, erectors:0
   };
 
@@ -8510,11 +8538,10 @@ function luxMuscleLoadsV502(log){
     else if(k.indexOf("brzuch")>=0) out.abs+=n;
     else if(k.indexOf("czwork")>=0||k.indexOf("czwor")>=0) out.quads+=n;
     else if(k.indexOf("posladkowy sredni")>=0) out.gluteMedius+=n;
-    else if(k.indexOf("posladkowy wielki")>=0&&k.indexOf("gorn")>=0) out.gluteMaxUpper+=n;
-    else if(k.indexOf("posladkowy wielki")>=0&&k.indexOf("srodk")>=0) out.gluteMaxMid+=n;
-    else if(k.indexOf("posladkowy wielki")>=0&&k.indexOf("doln")>=0) out.gluteMaxLower+=n;
-    else if(k.indexOf("poslad")>=0) out.gluteMaxMid+=n;
-    else if(k.indexOf("tyl uda")>=0||k.indexOf("dwuglow")>=0) out.hamstrings+=n;
+    else if(k.indexOf("posladkowy maly")>=0) out.gluteMinimus+=n;
+    else if(k.indexOf("posladkowy wielki")>=0||k.indexOf("posladek")>=0) out.gluteMaximus+=n;
+    else if(k.indexOf("tyl uda")>=0||k.indexOf("dwuglow")>=0||k.indexOf("dwojk")>=0) out.hamstrings+=n;
+    else if(k.indexOf("przywodz")>=0) out.adductors+=n;
     else if(k.indexOf("lydk")>=0) out.calves+=n;
     else if(k.indexOf("prostown")>=0) out.erectors+=n;
   });
@@ -8546,9 +8573,8 @@ function luxMuscleDisplayNameV502(key){
   return {
     chest:"Klatka",shoulders:"Barki",rearDelts:"Tył barku",back:"Plecy",
     biceps:"Biceps",triceps:"Triceps",abs:"Brzuch",quads:"Czwórki",
-    gluteMaxUpper:"Pośladkowy wielki — część górna",gluteMaxMid:"Pośladkowy wielki — część środkowa",
-    gluteMaxLower:"Pośladkowy wielki — część dolna",gluteMedius:"Pośladkowy średni",
-    hamstrings:"Tył uda",calves:"Łydki",erectors:"Prostowniki"
+    gluteMaximus:"Pośladkowy wielki",gluteMedius:"Pośladkowy średni",gluteMinimus:"Pośladkowy mały",
+    hamstrings:"Tył uda",adductors:"Przywodziciele",calves:"Łydki",erectors:"Prostowniki"
   }[key]||key;
 }
 
@@ -8631,6 +8657,10 @@ function luxMuscleSvgV502(log){
       <path class="${c("quads")}" d="M159 423 L171 423 L170 552 C166 580 158 593 150 600 C145 565 147 525 150 483 Z"/>
       <path class="${c("quads")}" d="M191 423 L179 423 L180 552 C184 580 192 593 200 600 C205 565 203 525 200 483 Z"/>
 
+      <!-- adductors — medial thigh (schematic) -->
+      <path class="${c("adductors")}" aria-label="Przywodziciele uda" d="M164 427 C169 442 171 467 169 495 L165 527 C159 509 158 469 160 446 Z"/>
+      <path class="${c("adductors")}" aria-label="Przywodziciele uda" d="M186 427 C181 442 179 467 181 495 L185 527 C191 509 192 469 190 446 Z"/>
+
       <!-- calves -->
       <path class="${c("calves")}" d="M121 584 C111 609 111 640 116 670 C121 685 128 692 137 694 C146 676 146 648 144 621 C141 603 133 591 121 584 Z"/>
       <path class="${c("calves")}" d="M229 584 C239 609 239 640 234 670 C229 685 222 692 213 694 C204 676 204 648 206 621 C209 603 217 591 229 584 Z"/>
@@ -8678,17 +8708,13 @@ function luxMuscleSvgV502(log){
       <path class="${c("gluteMedius")}" d="M124 382 C131 371 142 365 154 365 C153 379 148 391 139 400 C132 407 124 410 118 411 C117 400 119 390 124 382 Z"/>
       <path class="${c("gluteMedius")}" d="M226 382 C219 371 208 365 196 365 C197 379 202 391 211 400 C218 407 226 410 232 411 C233 400 231 390 226 382 Z"/>
 
-      <!-- gluteus maximus — upper region -->
-      <path class="${c("gluteMaxUpper")}" d="M126 389 C140 378 155 376 170 384 L170 405 C153 411 136 410 120 416 C118 405 121 396 126 389 Z"/>
-      <path class="${c("gluteMaxUpper")}" d="M224 389 C210 378 195 376 180 384 L180 405 C197 411 214 410 230 416 C232 405 229 396 224 389 Z"/>
+      <!-- gluteus maximus — one continuous region for each side -->
+      <path class="${c("gluteMaximus")}" d="M126 389 C140 378 155 376 170 384 L170 449 C151 468 132 467 121 449 C117 440 119 429 120 416 C118 405 121 396 126 389 Z"/>
+      <path class="${c("gluteMaximus")}" d="M224 389 C210 378 195 376 180 384 L180 449 C199 468 218 467 229 449 C233 440 231 429 230 416 C232 405 229 396 224 389 Z"/>
 
-      <!-- gluteus maximus — middle region -->
-      <path class="${c("gluteMaxMid")}" d="M120 416 C136 410 153 411 170 405 L170 430 C154 439 136 442 121 435 C118 429 118 422 120 416 Z"/>
-      <path class="${c("gluteMaxMid")}" d="M230 416 C214 410 197 411 180 405 L180 430 C196 439 214 442 229 435 C232 429 232 422 230 416 Z"/>
-
-      <!-- gluteus maximus — lower region -->
-      <path class="${c("gluteMaxLower")}" d="M121 435 C136 442 154 439 170 430 L170 449 C151 468 132 467 121 449 C119 444 119 439 121 435 Z"/>
-      <path class="${c("gluteMaxLower")}" d="M229 435 C214 442 196 439 180 430 L180 449 C199 468 218 467 229 449 C231 444 231 439 229 435 Z"/>
+      <!-- deep gluteus minimus: schematic lateral insets, not a surface anatomy claim -->
+      <path class="${c("gluteMinimus")}" aria-label="Pośladkowy mały (warstwa głęboka)" d="M118 385 C123 380 128 377 134 378 C132 384 128 391 119 396 Z"/>
+      <path class="${c("gluteMinimus")}" aria-label="Pośladkowy mały (warstwa głęboka)" d="M232 385 C227 380 222 377 216 378 C218 384 222 391 231 396 Z"/>
 
       <!-- hamstrings -->
       <path class="${c("hamstrings")}" d="M124 458 C111 490 112 529 117 569 C122 593 133 605 146 610 C156 585 160 542 160 485 L160 455 Z"/>
@@ -8736,7 +8762,7 @@ window.muscleVisualHtml = function(log){
       </div>
       <div class="lux-muscle-title-text">Mapa obciążenia <b>mięśni</b></div>
     </div>
-    <div class="lux-muscle-sub">Kolor wynika z liczby wykonanych serii roboczych przypisanych do danej partii w tym treningu.</div>
+    <div class="lux-muscle-sub">Kolor wynika z liczby serii roboczych przypisanych do partii. Pośladkowy mały jest mięśniem głębokim i zaznaczono go umownie.</div>
     <div class="lux-muscle-chips">${chips}</div>
     <div class="lux-muscle-stage">${luxMuscleSvgV502(log)}</div>
     <div class="lux-muscle-legend">
@@ -10215,7 +10241,7 @@ window.gl064OpenEasyPlanEditor=gl064OpenEasyPlanEditor;
 var GL065_MUSCLE_GROUPS=[
   "Klatka","Plecy","Barki","Tył barku","Biceps","Triceps",
   "Czwórki","Tył uda",
-  "Pośladkowy wielki — część górna","Pośladkowy wielki — część środkowa","Pośladkowy wielki — część dolna","Pośladkowy średni",
+  "Pośladkowy wielki","Pośladkowy średni","Pośladkowy mały",
   "Łydki","Prostowniki","Brzuch"
 ];
 function gl065MusclePickerHtml(e,i){
@@ -13380,17 +13406,15 @@ if(typeof window.glAdminExportWorkout==="function"){
 
 
 /* ======================================================================
-   0.70.3 — regional glute taxonomy
-   Training-oriented regional split:
-   - gluteus maximus upper / middle / lower
-   - gluteus medius as a separate muscle
+   0.70.3 + 0.73.4 — ANATOMICAL GLUTE MUSCLES / LEGACY ALIASES
+   Old gluteus maximus upper/mid/lower labels represented ONE muscle.
+   Do not multiply working-set counts for those historic subdivisions.
    ====================================================================== */
 (function(){
-  var GL073_UPPER="Pośladkowy wielki — część górna";
-  var GL073_MID="Pośladkowy wielki — część środkowa";
-  var GL073_LOWER="Pośladkowy wielki — część dolna";
+  var GL073_MAX="Pośladkowy wielki";
   var GL073_MEDIUS="Pośladkowy średni";
-  var GL073_ALL=[GL073_UPPER,GL073_MID,GL073_LOWER,GL073_MEDIUS];
+  var GL073_MINIMUS="Pośladkowy mały";
+  var GL073_HAMSTRINGS="Tył uda";
 
   function gl073Norm(value){
     return String(value||"").toLowerCase()
@@ -13401,63 +13425,69 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   function gl073RegionsForExercise(name){
     var n=gl073Norm(name);
-
-    /* Hip abduction: gluteus medius is primary; upper glute max assists. */
-    if(n.indexOf("odwodzenie")>=0 || n.indexOf("hip abduction")>=0){
-      return [GL073_MEDIUS,GL073_UPPER];
+    /* Anatomical group hints are used ONLY to migrate vague legacy labels.
+       An explicit selection in the editor is never silently replaced. */
+    if(n.indexOf("odwodzenie")>=0||n.indexOf("hip abduction")>=0 || n.indexOf("abductor")>=0){
+      return [GL073_MEDIUS,GL073_MINIMUS];
     }
-
-    /* Hip thrust / bridge: shortened-position hip extension,
-       assigned to upper + middle glute max regions. */
-    if(n.indexOf("hip thrust")>=0 || n.indexOf("glute bridge")>=0 || n.indexOf("most biodrow")>=0){
-      return [GL073_UPPER,GL073_MID];
+    if(n.indexOf("hip thrust")>=0||n.indexOf("glute bridge")>=0||n.indexOf("most biodrow")>=0||
+       n.indexOf("kickback")>=0||n.indexOf("kick back")>=0||
+       n==="rdl"||n.indexOf("romanian deadlift")>=0||n.indexOf("martwy ciag rumun")>=0||
+       n.indexOf("przysiad")>=0||n.indexOf("suwnica")>=0||n.indexOf("leg press")>=0||
+       n.indexOf("lawka rzymska")>=0||n.indexOf("roman bench")>=0||
+       n.indexOf("back extension")>=0||n.indexOf("hip extension")>=0||
+       n.indexOf("bulgar")>=0||n.indexOf("split squat")>=0||
+       n.indexOf("wykrok")>=0||n.indexOf("step up")>=0){
+      return [GL073_MAX];
     }
-
-    /* Cable/machine kickback: hip extension with strongest practical
-       assignment to upper + middle glute max. */
-    if(n.indexOf("kickback")>=0 || n.indexOf("kick back")>=0){
-      return [GL073_UPPER,GL073_MID];
-    }
-
-    /* Long-length hip extension / deep hip flexion patterns. */
-    if(n==="rdl" || n.indexOf("romanian deadlift")>=0 || n.indexOf("martwy ciag rumun")>=0 ||
-       (n.indexOf("przysiad")>=0 && n.indexOf("maszyn")>=0) ||
-       n.indexOf("suwnica")>=0 || n.indexOf("leg press")>=0 ||
-       n.indexOf("lawka rzymska")>=0 || n.indexOf("roman bench")>=0 ||
-       n.indexOf("back extension")>=0 || n.indexOf("hip extension")>=0 ||
-       n.indexOf("bulgar")>=0 || n.indexOf("split squat")>=0 ||
-       n.indexOf("wykrok")>=0 || n.indexOf("step up")>=0){
-      return [GL073_MID,GL073_LOWER];
-    }
-
     return [];
   }
 
-  function gl073IsAnyGluteGroup(group){
-    var g=gl073Norm(group);
-    return g.indexOf("poslad")>=0 || GL073_ALL.indexOf(String(group||""))>=0;
-  }
-
   function gl073CorrectGroups(name,groups){
-    var original=Array.isArray(groups)?groups.slice():[];
-    var nonGlute=original.filter(function(g){return !gl073IsAnyGluteGroup(g);});
-    var regions=gl073RegionsForExercise(name);
-
-    if(regions.length){
-      return nonGlute.concat(regions);
-    }
-
-    /* If an unknown legacy exercise only says "Pośladek", keep the set
-       visible in the new taxonomy without pretending it is gluteus medius. */
-    var hadLegacy=original.some(function(g){
-      var x=gl073Norm(g);
-      return x==="posladek" || x==="posladki";
+    var original=Array.isArray(groups)?groups:[];
+    var fixed=[];
+    var legacyGeneric=false;
+    var legacyMaxRegion=false;
+    function add(value){if(value && fixed.indexOf(value)<0)fixed.push(value);}
+    original.forEach(function(group){
+      var text=String(group==null?"":group).trim();
+      var n=gl073Norm(text);
+      if(!n)return;
+      if(n==="dwojki"||n==="dwuglowy uda"||n==="miesien dwuglowy uda"||
+         n==="dwuglowe uda"||n==="hamstrings"||n==="hamstring"||
+         n==="miesnie kulszowo-goleniowe"||n==="tyl uda"){
+        add(GL073_HAMSTRINGS);return;
+      }
+      if(n==="posladek"||n==="posladki"||n==="posladkowe"){
+        legacyGeneric=true;return;
+      }
+      if(n.indexOf("posladkowy wielki")===0 || n.indexOf("posladek - gora")===0 ||
+         n.indexOf("posladek - srodek")===0 || n.indexOf("posladek - dol")===0){
+        if(n!=="posladkowy wielki")legacyMaxRegion=true;
+        add(GL073_MAX);return;
+      }
+      if(n.indexOf("posladkowy sredni")===0||n==="posladek - bok"){
+        add(GL073_MEDIUS);return;
+      }
+      if(n.indexOf("posladkowy maly")===0){
+        add(GL073_MINIMUS);return;
+      }
+      add(text);
     });
-    if(hadLegacy)return nonGlute.concat([GL073_MID]);
 
-    /* Already-detailed/custom glute groups remain untouched. */
-    var detailed=original.filter(function(g){return GL073_ALL.indexOf(g)>=0;});
-    return nonGlute.concat(detailed);
+    var recommended=gl073RegionsForExercise(name);
+    if(legacyGeneric){
+      (recommended.length?recommended:[GL073_MAX]).forEach(add);
+    }
+    /* Older versions automatically marked abduction as 'medius + upper
+       maximus'. Interpret that legacy combination as medius + minimus. */
+    if(legacyMaxRegion && recommended.length===2 &&
+       recommended.indexOf(GL073_MEDIUS)>=0 && recommended.indexOf(GL073_MINIMUS)>=0){
+      var i=fixed.indexOf(GL073_MAX);
+      if(i>=0)fixed.splice(i,1);
+      recommended.forEach(add);
+    }
+    return fixed;
   }
 
   window.gl073CorrectGroups=gl073CorrectGroups;
@@ -13554,32 +13584,19 @@ if(typeof window.glAdminExportWorkout==="function"){
 
 
 /* ======================================================================
-   0.70.4 — short glute DISPLAY labels
-   Internal/Supabase taxonomy remains anatomical.
-   Visible labels:
-   Pośladek - Góra / Środek / Dół / Bok
+   0.70.4 + 0.73.4 — CANONICAL ANATOMICAL DISPLAY NAMES
    ====================================================================== */
 (function(){
-  var GL074_LABELS={
-    "Pośladkowy wielki — część górna":"Pośladek - Góra",
-    "Pośladkowy wielki — część środkowa":"Pośladek - Środek",
-    "Pośladkowy wielki — część dolna":"Pośladek - Dół",
-    "Pośladkowy średni":"Pośladek - Bok"
-  };
-
   window.gl074MuscleLabel=function(name){
-    return GL074_LABELS[String(name||"")]||String(name||"");
+    var src=String(name==null?"":name).trim();
+    if(!src)return src;
+    var resolved=(typeof gl073CorrectGroups==="function")
+      ?gl073CorrectGroups("",[src]):[src];
+    return resolved[0]||src;
   };
 
   window.gl074MuscleTechnicalName=function(name){
-    var reverse={
-      "Pośladek - Góra":"Pośladkowy wielki — część górna",
-      "Pośladek - Środek":"Pośladkowy wielki — część środkowa",
-      "Pośladek - Dół":"Pośladkowy wielki — część dolna",
-      "Pośladek - Bok":"Pośladkowy średni"
-    };
-    var n=String(name||"").trim();
-    return reverse[n]||n;
+    return gl074MuscleLabel(name);
   };
 
   /* Editor shows short labels but checkbox values remain technical. */
@@ -14140,6 +14157,42 @@ if(typeof window.glAdminExportWorkout==="function"){
    ====================================================================== */
 (function(){
   var GL111_CLIENT_RELEASES=[
+    {
+      id:"client-0735",
+      version:"BETA 0.73.5",
+      date:"16.10.2026",
+      title:"Jednolite mięśnie i inteligentne zamienniki",
+      changes:[
+        {feature:"always",text:"Ujednolicono przypisania ćwiczeń do partii mięśniowych w planach i historycznych podsumowaniach, dodano Przywodziciele oraz propozycje zamienników na te same mięśnie z możliwością wpisania dowolnego ćwiczenia. Zamiennik nie zmienia postępów oryginału."}
+      ]
+    },
+    {
+      id:"client-0734",
+      version:"BETA 0.73.4",
+      date:"16.10.2026",
+      title:"Partie mięśniowe bez duplikatów + pasek iOS",
+      changes:[
+        {feature:"always",text:"Ujednolicono Dwójki z Tyłem uda. Pośladki mają trzy odrębne mięśnie: pośladkowy wielki, średni i mały — również w planie, mapie obciążenia, historii i podsumowaniach. Zachowano poprawki Planu na dziś oraz dolnego paska po powrocie z tła na iPhone."}
+      ]
+    },
+    {
+      id:"client-0733",
+      version:"BETA 0.73.3",
+      date:"16.10.2026",
+      title:"Stabilna dolna nawigacja na iPhonie",
+      changes:[
+        {feature:"always",text:"Dolny pasek nawigacji automatycznie koryguje pozycję po powrocie aplikacji z tła oraz po zmianie widocznej wysokości ekranu na iOS. Poprawki rozgrzewek i ostatnich ciężarów z 0.73.2 pozostają zachowane."}
+      ]
+    },
+    {
+      id:"client-0732",
+      version:"BETA 0.73.2",
+      date:"16.10.2026",
+      title:"Naprawiony Plan na dziś i ostatnie obciążenia",
+      changes:[
+        {feature:"always",text:"Plan na dziś poprawnie wyświetla rozgrzewki jako pomarańczowe wiersze, również po wklejeniu kodu z separatorami |. Ostatnie ciężary i liczba powtórzeń wracają pod odpowiednimi seriami roboczymi."}
+      ]
+    },
     {
       id:"client-0731",
       version:"BETA 0.73.1",
@@ -16266,7 +16319,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16312,7 +16365,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.73.1";
+    VERSION="BETA 0.73.5";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16452,7 +16505,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -16746,7 +16799,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -17049,7 +17102,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -17119,7 +17172,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -17364,7 +17417,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -17497,7 +17550,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -17659,7 +17712,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -18800,7 +18853,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -18943,7 +18996,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -18975,7 +19028,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -19009,7 +19062,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl130Clean(v).replace(/[–—]/g,"-").replace(/\s+/g,"");
   }
   function gl130Groups(raw){
-    return gl130Clean(raw).split(",").map(function(x){
+    var groups=gl130Clean(raw).split(",").map(function(x){
       x=x.trim();
       if(!x)return "";
       if(typeof gl074MuscleTechnicalName==="function"){
@@ -19017,6 +19070,9 @@ if(typeof window.glAdminExportWorkout==="function"){
       }
       return x;
     }).filter(Boolean);
+    return (typeof gl073CorrectGroups==="function")
+      ?gl073CorrectGroups("",groups)
+      :Array.from(new Set(groups));
   }
   function gl130SplitNote(v){
     var s=gl130Clean(v);
@@ -19382,7 +19438,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
 })();
 
 
@@ -19676,7 +19732,485 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.73.1";
+  VERSION="BETA 0.73.5";
+})();
+
+
+
+/* ======================================================================
+   0.73.2 — RESTORE PLAN-ON-TODAY WARMUP/WORK ROWS + LAST RESULTS
+
+   0.73.1 introduced the pipe-delimited update format:
+     Rozgrzewka | 60 kg | 5
+     Seria 1    | 90 kg | 6-8
+   but the older owner plan renderer relied on gl127ParsePlanText(),
+   which recognized only 'kg x reps'. Unparsed pipe lines caused a fallback
+   to plain text (and omitted per-set historical results altogether).
+
+   This adapter changes ONLY how those lines are read/displayed; it does not
+   rewrite workout history, current plans, Supabase state, or account config.
+   ====================================================================== */
+(function(){
+  function gl132Clean(v){return String(v==null?"":v).trim();}
+
+  function gl132PipeRow(line){
+    var parts=gl132Clean(line).split("|").map(gl132Clean);
+    if(parts.length<2)return null;
+    var label=parts[0].toLowerCase().replace(/\s+/g," ").trim();
+    var warm=/^(?:rozgrzewka|r|warm.?up)(?:\s+\d+)?$/.test(label);
+    var work=/^(?:seria(?:\s+robocza)?|s)(?:\s*\d+)?$/.test(label);
+    if(!warm&&!work)return null;
+
+    var weight="",reps="",note="";
+    if(parts.length===2){
+      var match=parts[1].match(/^(.*?)\s*[x×]\s*([^|]+)$/i);
+      if(match){weight=gl132Clean(match[1]);reps=gl132Clean(match[2]);}
+      else reps=parts[1];
+    }else{
+      weight=parts[1];
+      reps=parts[2];
+      note=parts.slice(3).join(" | ");
+    }
+    return {
+      type:warm?"warmup":"work",
+      weight:gl132Clean(weight),
+      reps:gl132Clean(reps).replace(/[–—]/g,"-").replace(/\s+/g,""),
+      note:gl132Clean(note)
+    };
+  }
+  window.gl132PipeRow=gl132PipeRow;
+
+  /* Correct parsing for owner Plan na dziś AND both structured editors.
+     Keep the original parser untouched for all legacy x/× plans. */
+  var gl132BaseParsePlan=window.gl127ParsePlanText;
+  window.gl127ParsePlanText=function(value,ex){
+    var lines=gl132Clean(value)
+      .replace(/\\r\\n/g,"\n").replace(/\\n/g,"\n").replace(/\r/g,"\n")
+      .split("\n");
+    var hasPipe=lines.some(function(line){return !!gl132PipeRow(line);});
+    if(!hasPipe)return gl132BaseParsePlan.apply(this,arguments);
+
+    var series=[],notes=[];
+    lines.forEach(function(line){
+      var row=gl132PipeRow(line);
+      if(row){series.push(row);return;}
+      if(!gl132Clean(line))return;
+      /* Parsing one non-pipe line must not run legacy warmup inference
+         based on ex.last; the explicitly labeled rows control the types. */
+      var exWithoutLast=ex?Object.assign({},ex,{last:""}):ex;
+      var old=gl132BaseParsePlan(line,exWithoutLast)||{};
+      if(Array.isArray(old.series)&&old.series.length){
+        old.series.forEach(function(s){series.push(s);});
+      }
+      if(gl132Clean(old.note))notes.push(gl132Clean(old.note));
+    });
+    return {series:series,note:notes.join("\n")};
+  };
+
+  /* Recover legacy managed plans that accidentally stored pipe rows as a
+     free-text goal; render the existing saved code as proper typed rows.
+     Authoritative warmupTargets/workTargets from 0.73.1 take precedence. */
+  var gl132BaseManagedExercises=window.glManagedExercises;
+  glManagedExercises=window.glManagedExercises=function(planName){
+    var list=gl132BaseManagedExercises.apply(this,arguments)||[];
+    var originals=(glManagedPlans()||{})[planName]||[];
+    list.forEach(function(ex,i){
+      var original=originals[i]||{};
+      var saved=gl132Clean(original.goal);
+      var note=gl132Clean(original.planNote);
+      var recover=[saved,note].filter(Boolean).join("\n");
+      if(!recover.split(/\r?\n/).some(function(line){return !!gl132PipeRow(line);}))return;
+
+      var parsed=window.gl127ParsePlanText(recover,original);
+      var warm=parsed.series.filter(function(s){return s.type==="warmup";});
+      var work=parsed.series.filter(function(s){return s.type!=="warmup";});
+
+      if(warm.length && !(Array.isArray(original.warmupTargets)&&original.warmupTargets.length)){
+        ex.managedWarmupTargets=warm;
+        ex.managedWarmups=warm.map(function(s){return s.reps;});
+      }
+      if(work.length && !(Array.isArray(original.workTargets)&&original.workTargets.length)){
+        ex.managedWorkTargets=work;
+        ex.managedWorkReps=work.map(function(s){return s.reps;});
+        ex.managedWorkSets=work.length;
+        ex.managedReps=work[0].reps||ex.managedReps;
+      }
+      ex.managedSets=ex.managedWarmupTargets.length+ex.managedWorkTargets.length;
+      /* Do not print the recovered pipe rows a second time as raw text. */
+      ex.managedPlanNote=gl132Clean(parsed.note);
+      ex.managedGoal="";
+    });
+    return list;
+  };
+
+  VERSION="BETA 0.73.5";
+})();
+
+
+/* ======================================================================
+   0.73.3 — IOS PWA BOTTOM BAR VIEWPORT RECOVERY
+
+   The existing nav was inside #app. On iOS, fixed descendants can retain a
+   stale frame when a standalone PWA resumes, especially after an input or
+   viewport-height change. Portal the live nav to BODY and correct drift
+   against visualViewport. No workout data, timers or screen markup changed.
+   ====================================================================== */
+(function(){
+  var gl133Raf=0;
+  var gl133Timers=[];
+  var gl133LastNav=null;
+
+  function gl133ClearTimers(){
+    gl133Timers.forEach(function(t){clearTimeout(t);});
+    gl133Timers=[];
+  }
+  function gl133CurrentNav(){
+    return document.querySelector("body > nav.lux-bottom-nav");
+  }
+  function gl133PortalNav(){
+    var app=document.getElementById("app");
+    if(!app)return null;
+    var incoming=app.querySelector("nav.lux-bottom-nav");
+    var active=gl133CurrentNav();
+    if(incoming){
+      if(active && active!==incoming)active.remove();
+      document.body.appendChild(incoming);
+      incoming.style.setProperty("--gl133-offset-y","0px");
+      incoming.dataset.gl133Offset="0";
+      gl133LastNav=incoming;
+      return incoming;
+    }
+    // When a newly rendered screen has no navigation, do not leave
+    // the previous screen's menu floating above the login/error screen.
+    if(active)active.remove();
+    gl133LastNav=null;
+    return null;
+  }
+  function gl133Reposition(){
+    var nav=gl133CurrentNav();
+    if(!nav || !nav.isConnected)return;
+    var vv=window.visualViewport;
+    var viewportBottom=vv && vv.height>0 ? vv.offsetTop+vv.height : window.innerHeight;
+    var rect=nav.getBoundingClientRect();
+    var gap=parseFloat(window.getComputedStyle(nav).bottom)||8;
+    if(!rect.height || !Number.isFinite(viewportBottom))return;
+    var desiredBottom=viewportBottom-gap;
+    var error=desiredBottom-rect.bottom;
+    if(Math.abs(error)<1.5)return;
+    var current=Number(nav.dataset.gl133Offset||0);
+    if(!Number.isFinite(current))current=0;
+    var maxShift=Math.max(200,window.innerHeight||0);
+    var next=Math.max(-maxShift,Math.min(maxShift,current+error));
+    if(Math.abs(next-current)<0.5)return;
+    nav.dataset.gl133Offset=String(next);
+    nav.style.setProperty("--gl133-offset-y",next.toFixed(2)+"px");
+  }
+  function gl133Schedule(){
+    if(gl133Raf)return;
+    gl133Raf=requestAnimationFrame(function(){
+      gl133Raf=0;
+      gl133Reposition();
+    });
+  }
+  function gl133OnResume(){
+    gl133Schedule();
+    gl133ClearTimers();
+    [80,250,600].forEach(function(delay){
+      gl133Timers.push(setTimeout(gl133Schedule,delay));
+    });
+  }
+
+  var gl133BaseRender=render;
+  render=window.render=function(html){
+    var result=gl133BaseRender.apply(this,arguments);
+    gl133PortalNav();
+    gl133OnResume();
+    return result;
+  };
+
+  // BFCACHE, app switch, soft keyboard and dynamic iOS visual viewport.
+  window.addEventListener("pageshow",gl133OnResume);
+  window.addEventListener("focus",gl133OnResume);
+  window.addEventListener("resize",gl133Schedule,{passive:true});
+  window.addEventListener("orientationchange",gl133OnResume);
+  window.addEventListener("scroll",gl133Schedule,{passive:true});
+  document.addEventListener("visibilitychange",function(){
+    if(!document.hidden)gl133OnResume();
+  });
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize",gl133Schedule,{passive:true});
+    window.visualViewport.addEventListener("scroll",gl133Schedule,{passive:true});
+  }
+
+  // Diagnostic helpers: no persistent state and no backend writes.
+  window.gl133RepositionBottomNav=gl133OnResume;
+  window.gl133PortalBottomNav=gl133PortalNav;
+  VERSION="BETA 0.73.5";
+})();
+
+
+/* ======================================================================
+   BETA 0.73.5 — CANONICAL MUSCLE MAP + SMART EXERCISE SUBSTITUTION
+   - mapped-known exercises get consistent anatomical groups across accounts
+   - history and PNG use the same pure classifier without modifying sets
+   - older aliases kept for custom exercises
+   - replacement suggestions matched by movement and muscles
+   ====================================================================== */
+(function(){
+  var GROUPS=["Klatka","Plecy","Barki","Tył barku","Biceps","Triceps","Czwórki","Tył uda","Pośladkowy wielki","Pośladkowy średni","Pośladkowy mały","Przywodziciele","Łydki","Prostowniki","Brzuch"];
+  var R=[];
+  function norm(s){return String(s==null?"":s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ł/g,"l").replace(/[–—]/g,"-").replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");}
+  function add(movement,names,groups){
+    String(names).split(";").forEach(function(name){R.push({name:name.trim(),key:norm(name),movement:movement,groups:groups.slice()});});
+  }
+  // Name-specific canonical map (including the actual names in the online plans).
+  add("bench","Bench Press;BB CHEST PRESS;Wyciskanie hantli na płaskiej;Maszyna Chest Press;HAMMER CHEST PRESS;Hammer Press;DB Chest Press 30°;Incline Smith Press;INCLINE SMITCH CHEST PRESS;Wyciskanie sztangi na skosie;Dipy z obciążeniem",["Klatka","Triceps"]);
+  add("fly","Butterfly / Pec Deck;BUTTERFLY;Rozpiętki na butterfly;Low Cable Fly;LYING CABLE FLY",["Klatka"]);
+  add("shoulderpress","Hammer Shoulder Press;HAMMER SHOULDER PRESS;OHP;Wyciskanie hantli na barki",["Barki","Triceps"]);
+  add("lateral","Cable Lateral Raise;DB Lateral Raise;SINGLE ARM CABLE LATERAL RISE;Wznosy bokiem na maszynie za plecami;Wznosy hantlami;DB FRONT RISE",["Barki"]);
+  add("verticalpull","D-Handle Lat Pulldown;D-HANDLE LAT PULLDOWN;V-GRIP PULLDOWN;Podciąganie;Podciąganie neutral;Podciąganie podchwytem z gumą;Ściąganie jednorącz do klatki;Ściąganie linek wyciągu górnego oburącz w klęku jednonóż",["Plecy","Biceps"]);
+  add("row","BB ROW;HAMMER LOW ROW;SEATED D-HANDLE CABLE ROW;SEATED HORIZONTAL HAMMER ROW;Single Arm Cable Row;T-Bar Row Chest Supported;DB Row;Wiosłowanie na T-Bar wąsko;Wiosłowanie siedząc na wyciągu poziomym - szeroki nachwyt;Wiosłowanie szeroko maszyna;Wiosłowanie wąsko na wyciągu",["Plecy","Biceps"]);
+  add("rear","FACE PULL;Face Pull;Face Pull siedząc;Reverse Cable Fly;Reverse Fly Machine;CABLE CUFFED REVERSE FLY;Odwrotne rozpiętki",["Tył barku","Plecy"]);
+  add("curl","CABLE BICEPS CURL;Hammer Biceps Curl;DB Spider Curl;SINGLE ARM PREACHER DB BICEPS CURL;Młotki siedząc;Uginanie ramion z hantlami chwytem młotkowym;Uginanie hantli z supinacją;Uginanie sztangi stojąc",["Biceps"]);
+  add("triceps","DB FRENCH PRESS;Cable Triceps Extension;CROSS CABLE TRICEPS EXTENSION;Francuskie wyciskanie hantlami;Prostowanie liny zza pleców;Prostowanie na linie;Prostowanie ramion na wyciągu górnym z liną;Triceps Pushdown prosty drążek",["Triceps"]);
+  add("squat","BB SQUAT;Przysiad na maszynie;Suwnica;SINGLE LEG PRESS",["Czwórki","Pośladkowy wielki"]);
+  add("legextension","LEGS EXTENSION;Prostowanie nóg",["Czwórki"]);
+  add("legcurl","LEG CURL;Uginanie nóg leżąc",["Tył uda"]);
+  add("hinge","RDL;Cable Pull-Through;Ławka rzymska",["Pośladkowy wielki","Tył uda","Prostowniki"]);
+  add("hipthrust","HIP THRUST;Hip Thrust na Smithie;Kickback",["Pośladkowy wielki"]);
+  add("abduction","Odwodzenie;Odwodzenie nóg",["Pośladkowy średni","Pośladkowy mały"]);
+  add("adduction","PRZYWODZENIE NA MASZYNIE",["Przywodziciele"]);
+  add("calves","Łydki",["Łydki"]);
+  add("core","Dead Bug;Heel Taps;Hollow Hold / Hollow Tuck;Reverse Crunch;Side Plank klasyczny;Cable Crunch;Plank;Ab Wheel Rollout",["Brzuch"]);
+  // Additional practical substitutes; not inserted into anyone's plan automatically.
+  add("bench","DB Bench Press;Smith Bench Press;Machine Chest Press;Incline DB Bench Press;Incline Machine Chest Press",["Klatka","Triceps"]);
+  add("fly","Cable Crossover;Dumbbell Fly;Pec Deck Machine",["Klatka"]);
+  add("shoulderpress","Seated DB Shoulder Press;Machine Shoulder Press;Smith Shoulder Press",["Barki","Triceps"]);
+  add("lateral","DB Side Lateral Raise;Machine Lateral Raise;Cable Front Raise",["Barki"]);
+  add("verticalpull","Assisted Pull-up Machine;Wide Grip Lat Pulldown;Neutral Grip Lat Pulldown;Single Arm Pulldown",["Plecy","Biceps"]);
+  add("row","Chest Supported DB Row;Seated Cable Row;One Arm DB Row;Machine Row",["Plecy","Biceps"]);
+  add("rear","Reverse Pec Deck;Cable Rear Delt Fly;Band Face Pull",["Tył barku","Plecy"]);
+  add("curl","Incline DB Curl;Cable Hammer Curl;Machine Preacher Curl",["Biceps"]);
+  add("triceps","Straight Bar Pushdown;Overhead Cable Triceps Extension;Machine Dips",["Triceps"]);
+  add("squat","Hack Squat;Bulgarian Split Squat;Goblet Squat;Smith Squat",["Czwórki","Pośladkowy wielki"]);
+  add("legextension","Single Leg Extension;Machine Leg Extension",["Czwórki"]);
+  add("legcurl","Seated Leg Curl;Standing Leg Curl;Lying Leg Curl",["Tył uda"]);
+  add("hinge","Dumbbell Romanian Deadlift;45 Degree Back Extension",["Pośladkowy wielki","Tył uda","Prostowniki"]);
+  add("hipthrust","Glute Bridge;Single Leg Glute Bridge;Smith Hip Thrust;Cable Glute Kickback",["Pośladkowy wielki"]);
+  add("abduction","Cable Hip Abduction;Standing Cable Abduction;Side Lying Hip Abduction",["Pośladkowy średni","Pośladkowy mały"]);
+  add("adduction","Seated Hip Adduction;Cable Hip Adduction",["Przywodziciele"]);
+  add("calves","Standing Calf Raise;Seated Calf Raise;Leg Press Calf Raise",["Łydki"]);
+  var ALIASES={
+    "dwojki":"Tył uda","dwuglowy uda":"Tył uda","tyl uda":"Tył uda","hamstrings":"Tył uda",
+    "czworki":"Czwórki","quadriceps":"Czwórki","posladek gora":"Pośladkowy wielki",
+    "posladek srodek":"Pośladkowy wielki","posladek dol":"Pośladkowy wielki",
+    "posladek bok":"Pośladkowy średni","posladkowy wielki czesc gorna":"Pośladkowy wielki",
+    "posladkowy wielki czesc srodkowa":"Pośladkowy wielki","posladkowy wielki czesc dolna":"Pośladkowy wielki",
+    "posladkowy sredni":"Pośladkowy średni","posladkowy maly":"Pośladkowy mały",
+    "posladkowy wielki":"Pośladkowy wielki","przywodziciele":"Przywodziciele",
+    "lydki":"Łydki","tyl barku":"Tył barku","brzuch":"Brzuch"
+  };
+  function lookup(name){
+    var k=norm(name);
+    for(var i=0;i<R.length;i++){if(R[i].key===k)return R[i];}
+    // Only high confidence patterns, never guess vague exercises.
+    if(/triceps pushdown lina/.test(k))return {movement:"triceps",groups:["Triceps"]};
+    if(/dead bug|heel taps|hollow|reverse crunch|side plank|plank|crunch|ab wheel/.test(k))return {movement:"core",groups:["Brzuch"]};
+    if(/hip thrust|glute bridge|most biodrow/.test(k))return {movement:"hipthrust",groups:["Pośladkowy wielki"]};
+    if(/kickback/.test(k))return {movement:"hipthrust",groups:["Pośladkowy wielki"]};
+    if(/odwodzen|abduct/.test(k))return {movement:"abduction",groups:["Pośladkowy średni","Pośladkowy mały"]};
+    if(/przywodzen|adduct/.test(k))return {movement:"adduction",groups:["Przywodziciele"]};
+    if(/romanian deadlift|martwy ciag rumun|^rdl$/.test(k))return {movement:"hinge",groups:["Pośladkowy wielki","Tył uda","Prostowniki"]};
+    if(/leg curl|uginanie nog/.test(k))return {movement:"legcurl",groups:["Tył uda"]};
+    if(/leg extension|prostowanie nog/.test(k))return {movement:"legextension",groups:["Czwórki"]};
+    if(/squat|przysiad|leg press|suwnica|hack squat/.test(k))return {movement:"squat",groups:["Czwórki","Pośladkowy wielki"]};
+    if(/calf|lydk/.test(k))return {movement:"calves",groups:["Łydki"]};
+    if(/reverse fly|odwrotne rozpietki|face pull/.test(k))return {movement:"rear",groups:["Tył barku","Plecy"]};
+    if(/lat pulldown|podciagan|pull up|sciaganie.*wyciagu gornego/.test(k))return {movement:"verticalpull",groups:["Plecy","Biceps"]};
+    if(/row|wioslowan/.test(k))return {movement:"row",groups:["Plecy","Biceps"]};
+    if(/lateral raise|lateral rise|wznosy bok|unoszenie bok/.test(k))return {movement:"lateral",groups:["Barki"]};
+    if(/shoulder press|^ohp$|wyciskanie.*na barki/.test(k))return {movement:"shoulderpress",groups:["Barki","Triceps"]};
+    if(/chest press|bench press|wyciskanie.*klatk|wyciskanie.*na plask|wyciskanie.*na skos|incline.*press/.test(k))return {movement:"bench",groups:["Klatka","Triceps"]};
+    if(/butterfly|pec deck|cable fly|rozpietk/.test(k))return {movement:"fly",groups:["Klatka"]};
+    if(/curl|uginanie ramion|uginanie hant|ug[in]*anie sztang|mlotki/.test(k))return {movement:"curl",groups:["Biceps"]};
+    if(/triceps|french press|francusk|prostowanie ramion|prostowanie liny|prostowanie na linie/.test(k))return {movement:"triceps",groups:["Triceps"]};
+    return null;
+  }
+  function uniq(arr){var out=[];(arr||[]).forEach(function(x){if(x&&out.indexOf(x)<0)out.push(x);});return out;}
+  function groups(name,old){
+    var known=lookup(name);
+    if(known)return known.groups.slice();
+    var prior=Array.isArray(old)?old:[];
+    var raw=prior.map(function(g){var v=String(g||"").trim();return ALIASES[norm(v)]||v;}).filter(Boolean);
+    // For unknown custom names keep the user's intentional groups, deduplicated.
+    if(typeof window.gl073CorrectGroups==="function"){
+      try{raw=window.gl073CorrectGroups(name,raw);}catch(e){}
+    }
+    return uniq(raw);
+  }
+  function fixPlans(plans){
+    var changes=0;
+    Object.keys(plans||{}).forEach(function(day){
+      (Array.isArray(plans[day])?plans[day]:[]).forEach(function(ex){
+        if(!ex)return;
+        var correct=groups(ex.name,ex.groups);
+        if(JSON.stringify(ex.groups||[])!==JSON.stringify(correct)){ex.groups=correct;changes++;}
+      });
+    });
+    return changes;
+  }
+  window.gl135ClassifyExercise=lookup;
+  window.gl135GroupsForExercise=groups;
+  window.gl135NormalizePlans=fixPlans;
+  window.gl135ExerciseCatalog=R;
+  if(typeof GL065_MUSCLE_GROUPS!=="undefined"){
+    GL065_MUSCLE_GROUPS=GROUPS.slice();
+  }
+  // Classify all native admin plans; no loss of weights, gym overrides or working sets.
+  try{fixPlans(PLANS);}catch(e){}
+  try{if(data&&data.ownerPlansV1)fixPlans(data.ownerPlansV1);}catch(e){}
+  // Must run after gl113ApplyOwnerPlans: it copies ownerPlansV1 into PLANS.
+  if(typeof window.gl113ApplyOwnerPlans==="function"){
+    var applyOwnerBase=window.gl113ApplyOwnerPlans;
+    window.gl113ApplyOwnerPlans=function(){var x=applyOwnerBase.apply(this,arguments);try{fixPlans(PLANS);}catch(e){}return x;};
+  }
+  // Keep current cloud profile pristine on ordinary reads, but render correct group assignments.
+  if(typeof window.glManagedExercises==="function"){
+    var managedBase=window.glManagedExercises;
+    window.glManagedExercises=glManagedExercises=function(){
+      var list=managedBase.apply(this,arguments)||[];
+      list.forEach(function(ex){if(ex)ex.groups=groups(ex.name,ex.groups);});
+      return list;
+    };
+  }
+  // Save-time migration is restricted to plan config; never silently save whole workout state.
+  if(typeof window.gl127RenderManagedEditor==="function"){
+    var managedRenderBase=window.gl127RenderManagedEditor;
+    window.gl127RenderManagedEditor=function(){
+      try{if(window.GL064_PLAN_CTX)fixPlans(window.GL064_PLAN_CTX.plans);}catch(e){}
+      return managedRenderBase.apply(this,arguments);
+    };
+  }
+  if(typeof window.gl127OwnerRender==="function"){
+    var ownerRenderBase=window.gl127OwnerRender;
+    window.gl127OwnerRender=function(){
+      try{if(window.GL127_OWNER_CTX)fixPlans(window.GL127_OWNER_CTX.plans);}catch(e){}
+      return ownerRenderBase.apply(this,arguments);
+    };
+  }
+  if(typeof window.glPlanTextToConfig==="function"){
+    var importBase=window.glPlanTextToConfig;
+    window.glPlanTextToConfig=function(){var next=importBase.apply(this,arguments);fixPlans(next);return next;};
+    glPlanTextToConfig=window.glPlanTextToConfig;
+  }
+  if(typeof glNormalizeState==="function"){
+    var normalizeBase=glNormalizeState;
+    glNormalizeState=function(payload){
+      var value=normalizeBase.apply(this,arguments);
+      try{if(value&&value.ownerPlansV1)fixPlans(value.ownerPlansV1);}catch(e){}
+      try{if(value&&value.draft&&Array.isArray(value.draft.exercises))value.draft.exercises.forEach(function(ex){if(ex&&!ex.isSubstitute)ex.groups=groups(ex.name,ex.groups);});}catch(e){}
+      return value;
+    };
+  }
+  // One source for all historic muscle calculations: cards, text summaries, heatmap, and PNG.
+  function historyGroups(log,ex){
+    var source=Array.isArray(ex&&ex.groups)?ex.groups:[];
+    if(lookup(ex&&ex.name))return groups(ex.name,source);
+    if(!source.length){
+      var selected=window.GL_ADMIN_SELECTED;
+      var isSelected=selected&&selected.state&&Array.isArray(selected.state.logs)&&selected.state.logs.indexOf(log)>=0;
+      var profile=isSelected?selected.profile:window.GL_PROFILE;
+      var plans=profile&&profile.profile_config&&profile.profile_config.managed_plans;
+      var list=plans&&plans[log&&log.training];
+      var match=Array.isArray(list)&&list.find(function(row){return norm(row.name)===norm(ex&&ex.name);});
+      if(match)source=match.groups||[];
+    }
+    return groups(ex&&ex.name,source);
+  }
+  volumeSummary=function(log){
+    var result={};
+    if(!log||!Array.isArray(log.exercises))return result;
+    log.exercises.forEach(function(ex){
+      if(!ex)return;
+      var count=(ex.sets||[]).filter(function(s){return isWorkingSet(s);}).length;
+      if(!count)return;
+      var chosen=historyGroups(log,ex);
+      if(!chosen.length)chosen=["Inne"];
+      chosen.forEach(function(g){result[g]=(result[g]||0)+count;});
+    });
+    return result;
+  };
+  window.volumeSummary=volumeSummary;
+
+  // Movement-specific suggestions: prefer same muscle group AND same movement.
+  function proposals(ex){
+    var source=ex&&ex.substituteOriginal||ex||{};
+    var original=lookup(source.name);
+    var target=groups(source.name,source.groups),movement=original&&original.movement||"";
+    var ranked=R.map(function(item){
+      if(item.key===norm(source.name))return null;
+      var common=item.groups.filter(function(g){return target.indexOf(g)>=0;}).length;
+      if(!common)return null;
+      var first=target[0]&&item.groups[0]===target[0];
+      var score=common*12+(first?16:0)+(movement&&item.movement===movement?90:0);
+      score-=Math.max(0,item.groups.length-common)*4;
+      return {entry:item,score:score};
+    }).filter(Boolean).sort(function(a,b){return b.score-a.score||a.entry.name.localeCompare(b.entry.name,"pl");});
+    var seen={};return ranked.filter(function(x){
+      // Avoid repeating the same name with different capitalization.
+      if(seen[x.entry.key])return false;seen[x.entry.key]=true;return true;
+    }).slice(0,7).map(function(x){return x.entry;});
+  }
+  var choices=[];
+  window.gl135PickReplacement=function(i){
+    var v=choices[Number(i)];if(!v)return;
+    var name=document.getElementById("subName"),g=document.getElementById("subGroups"),t=document.getElementById("subType");
+    if(name)name.value=v.name;if(g)g.value=v.groups.join(", ");
+    if(t)t.value=/podciagan|pull up|dipy|pompki/.test(norm(v.name))?"bodyweight":"kg";
+    var hint=document.getElementById("gl135-replace-hint");if(hint)hint.textContent="Wybrano proponowane ćwiczenie. Nazwę i partie możesz jeszcze dowolnie zmienić.";
+  };
+  window.gl135CustomReplacement=function(){
+    var name=document.getElementById("subName");if(name){name.value="";name.focus();}
+    var hint=document.getElementById("gl135-replace-hint");if(hint)hint.textContent="Wpisz dowolne ćwiczenie i odpowiednie partie mięśniowe.";
+  };
+  window.gl135SuggestManualGroups=function(){
+    var name=document.getElementById("subName"),g=document.getElementById("subGroups");
+    var known=name&&lookup(name.value);if(g&&known)g.value=known.groups.join(", ");
+  };
+  window.substituteExerciseView=function(){
+    if(!current||!current.exercises||!current.exercises[idx]){home();return;}
+    var ex=current.exercises[idx];
+    var original=ex.substituteOriginal||ex;
+    var isSub=!!(window.isSubstituteExercise&&window.isSubstituteExercise(ex));
+    choices=proposals(original);
+    var opts=choices.map(function(p,i){
+      return "<button class='secondary gl135-option' onclick='gl135PickReplacement("+i+")'><span>"+esc(p.name)+"</span><small>"+esc(p.groups.join(" · "))+"</small></button>";
+    }).join("");
+    render("<h1>Zamiana ćwiczenia</h1><div class='card gl135-swap-card'>"+
+      "<div class='lux-kicker'>ĆWICZENIE Z PLANU</div><h2>"+esc(original.name)+"</h2>"+
+      "<div class='small'>Rekomendacje dobierane według głównych partii mięśniowych i wzorca ruchu. Możesz wybrać inną propozycję lub wpisać własną.</div>"+
+      "<div class='gl135-suggestions'>"+(opts||"<div class='small'>Brak pewnego zamiennika w katalogu — możesz wpisać własny.</div>")+"</div>"+
+      "<button class='secondary gl135-custom' onclick='gl135CustomReplacement()'>+ WPISZ DOWOLNE ĆWICZENIE</button>"+
+      "<label>Nazwa ćwiczenia</label><input id='subName' value='"+esc(isSub?ex.name:"")+"' placeholder='np. DB Chest Press' oninput='gl135SuggestManualGroups()'>"+
+      "<label>Partie do podsumowania (można zmienić)</label><input id='subGroups' value='"+esc(groups(isSub?ex.name:original.name,ex.groups).join(", "))+"' placeholder='np. Klatka, Triceps'>"+
+      "<label>Rodzaj obciążenia</label><select id='subType'><option value='kg'"+selected(isBodyweightExercise(ex)?"bodyweight":"kg","kg")+">Ciężar (kg)</option><option value='bodyweight'"+selected(isBodyweightExercise(ex)?"bodyweight":"kg","bodyweight")+">Masa ciała / asysta</option></select>"+
+      (ex.sets&&ex.sets.length?"<label>Dotychczas zapisane serie</label><select id='subClearSets'><option value='NIE'>Zachowaj serie</option><option value='TAK'>Wyczyść serie</option></select>":"<input type='hidden' id='subClearSets' value='NIE'>")+
+      "<div id='gl135-replace-hint' class='small'>Zamiennik jest zapisywany w tym treningu, nie zmienia Twojego planu ani progresji oryginału.</div>"+
+      "<button onclick='applyExerciseSubstitution()'>ZAPISZ ZAMIANĘ</button>"+
+      (isSub?"<button class='secondary' onclick='undoExerciseSubstitution()'>COFNIJ ZAMIANĘ</button>":"")+
+      "<button class='secondary' onclick='exercise()'>ANULUJ</button></div>"+luxBottomNav("workout"));
+  };
+  // Existing save/undo paths are retained, including protection for original progression.
+  var saveSubBase=window.applyExerciseSubstitution;
+  window.applyExerciseSubstitution=function(){
+    var name=document.getElementById("subName"),input=document.getElementById("subGroups");
+    if(name&&input){
+      var incoming=String(input.value||"").split(/[,;]+/).map(function(x){return x.trim();}).filter(Boolean);
+      input.value=groups(name.value,incoming).join(", ");
+    }
+    return saveSubBase.apply(this,arguments);
+  };
+  VERSION="BETA 0.73.5";
 })();
 
 

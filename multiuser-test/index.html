@@ -7436,7 +7436,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION = "BETA 0.73.5";
+VERSION="BETA 0.73.6";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -13895,12 +13895,36 @@ if(typeof window.glAdminExportWorkout==="function"){
   }
   function gl110PlannedSetCount(e){
     if(!e)return null;
-    if(window.isSubstituteExercise&&window.isSubstituteExercise(e))return null;
-    if(glIsManagedUser()&&Number(e.managedSets)>0)return Number(e.managedSets);
-    var text=String(e.plan||"").replace(/\\r\\n/g,"\n").replace(/\\n/g,"\n").replace(/\r/g,"\n");
+    /* 0.73.6: all planned slots (warmups + work sets) count toward
+       reaching the NEXT exercise. Warmups are still NOT working sets. */
+    var substituted=!!(window.isSubstituteExercise&&window.isSubstituteExercise(e));
+    var source=(substituted&&e.substituteOriginal)?e.substituteOriginal:e;
+    var warm=Array.isArray(e.managedWarmupTargets)?e.managedWarmupTargets:
+             (Array.isArray(e.managedWarmups)?e.managedWarmups:[]);
+    var work=Array.isArray(e.managedWorkTargets)?e.managedWorkTargets:[];
+    if(warm.length&&work.length)return warm.length+work.length;
+    if(glIsManagedUser()&&Number(e.managedSets)>0)return Math.max(1,Math.floor(Number(e.managedSets)));
+    if(!substituted&&glIsManagedUser()&&Number(e.managedWorkSets)>0)
+      return warm.length+Math.max(1,Math.floor(Number(e.managedWorkSets)));
+    if(source!==e&&Number(source.managedSets)>0)
+      return Math.max(1,Math.floor(Number(source.managedSets)));
+    if(Array.isArray(source.workTargets)&&source.workTargets.length){
+      return (Array.isArray(source.warmupTargets)?source.warmupTargets.length:0)+source.workTargets.length;
+    }
+    /* Owner plans can be encoded with x/× OR typed pipe rows:
+       'Rozgrzewka | 60 kg | 3' / 'Seria 1 | 95 kg | 6-8'. */
+    var text=String(source.plan||"").replace(/\\r\\n/g,"\n").replace(/\\n/g,"\n").replace(/\r/g,"\n");
+    if(typeof window.gl127ParsePlanText==="function"){
+      try{
+        var parsed=window.gl127ParsePlanText(text,source);
+        if(parsed&&Array.isArray(parsed.series)&&parsed.series.length)
+          return parsed.series.length;
+      }catch(_e){}
+    }
     var lines=text.split(/\n+/).map(function(x){return x.trim();}).filter(Boolean);
     var count=lines.filter(function(line){
       if(/^pom[ińn]/i.test(line)||/^pomiń/i.test(line))return false;
+      if(/^(?:rozgrzewka|seria\s*\d+|seria robocza\s*\d+)\s*\|/i.test(line))return true;
       return /(?:\bkg\b|masa ciała|pusta sztanga|aktywacja).*?[x×]\s*\d+/i.test(line)||/^[^|]{0,35}[x×]\s*\d+/i.test(line);
     }).length;
     return count>0?count:null;
@@ -13916,9 +13940,13 @@ if(typeof window.glAdminExportWorkout==="function"){
     var after=gl110PerformedSetCount(e);
     var saved=after>before;
     if(saved&&target&&before<target&&after>=target&&beforeIdx===idx&&idx<current.exercises.length-1){
-      idx++;
-      window.exercise();
-      startRest(restSec);
+      /* The normal save already started the rest countdown. Keep its deadline,
+         foreground interval and cloud notification during the screen change. */
+      if(typeof window.gl136CarryRest==="function"){
+        window.gl136CarryRest(function(){idx++;window.exercise();});
+      }else{
+        idx++;window.exercise();startRest(restSec);
+      }
     }
     return result;
   };
@@ -14157,6 +14185,15 @@ if(typeof window.glAdminExportWorkout==="function"){
    ====================================================================== */
 (function(){
   var GL111_CLIENT_RELEASES=[
+    {
+      id:"client-0736",
+      version:"BETA 0.73.6",
+      date:"16.10.2026",
+      title:"Automatyczna zmiana ćwiczenia i ciągły timer",
+      changes:[
+        {feature:"always",text:"Po zapisaniu ostatniej zaplanowanej serii ćwiczenie automatycznie przechodzi do następnego. Timer odpoczynku zachowuje pozostały czas po przejściu, również przy użyciu przycisków Następne/Poprzednie. Poprawiono liczenie serii rozgrzewkowych oraz celów strukturalnych."}
+      ]
+    },
     {
       id:"client-0735",
       version:"BETA 0.73.5",
@@ -16319,7 +16356,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16365,7 +16402,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.73.5";
+    VERSION="BETA 0.73.6";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16505,7 +16542,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -16799,7 +16836,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -17102,7 +17139,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -17172,7 +17209,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -17417,7 +17454,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -17550,7 +17587,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -17712,7 +17749,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -18853,7 +18890,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -18996,7 +19033,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -19028,7 +19065,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -19438,7 +19475,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -19732,7 +19769,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -19843,7 +19880,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -19945,7 +19982,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
 })();
 
 
@@ -20210,7 +20247,97 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.73.5";
+  VERSION="BETA 0.73.6";
+})();
+
+
+/* ======================================================================
+   0.73.6 — FINAL SET AUTO-ADVANCE + REST TIMER CONTINUITY
+   * Last planned warmup/working set moves to the following exercise.
+   * Preserve the same countdown, end deadline and push notification.
+   * Manual next/previous also carry the in-progress rest interval.
+   * No changes to sets, plan storage, history or substitution progression.
+   ====================================================================== */
+(function(){
+  var gl136CarryDepth=0;
+  var gl136RestEnd=0;
+
+  function gl136PaintRest(){
+    if(!gl136RestEnd||!current)return;
+    var node=document.getElementById("timer");
+    if(!node)return;
+    var left=Math.ceil((gl136RestEnd-Date.now())/1000);
+    if(left>0){
+      node.innerText=fmt(left);
+      node.className="timer running";
+    }else{
+      node.innerText="GOTOWE";
+      node.className="timer ready";
+    }
+  }
+
+  var gl136BaseStopTimer=stopTimer;
+  stopTimer=function(){
+    /* Navigating between exercise screens is NOT a user timer stop. */
+    if(gl136CarryDepth>0 && current)return;
+    gl136RestEnd=0;
+    return gl136BaseStopTimer.apply(this,arguments);
+  };
+  window.stopTimer=stopTimer;
+
+  var gl136BaseStartRest=startRest;
+  startRest=function(sec){
+    var seconds=Math.max(1,Number(sec||0));
+    var value=gl136BaseStartRest.apply(this,arguments);
+    gl136RestEnd=Date.now()+seconds*1000;
+    gl136PaintRest();
+    return value;
+  };
+  window.startRest=startRest;
+
+  window.gl136CarryRest=function(callback){
+    gl136CarryDepth++;
+    try{return callback();}
+    finally{
+      gl136CarryDepth--;
+      gl136PaintRest();
+      if(typeof requestAnimationFrame==="function")requestAnimationFrame(gl136PaintRest);
+    }
+  };
+
+  /* Some screens rebuild the countdown node; always paint its real deadline
+     after the last layer has finished rendering the exercise. */
+  var gl136BaseExercise=window.exercise;
+  window.exercise=exercise=function(){
+    var value=gl136BaseExercise.apply(this,arguments);
+    gl136PaintRest();
+    if(gl136RestEnd&&typeof requestAnimationFrame==="function")requestAnimationFrame(gl136PaintRest);
+    return value;
+  };
+
+  var gl136BaseNext=window.nextExercise;
+  window.nextExercise=function(){
+    if(current&&current.exercises&&idx<current.exercises.length-1){
+      return window.gl136CarryRest(function(){return gl136BaseNext.apply(null,[]);});
+    }
+    return gl136BaseNext.apply(this,arguments);
+  };
+  var gl136BasePrevious=window.prevExercise;
+  window.prevExercise=function(){
+    if(current&&idx>0){
+      return window.gl136CarryRest(function(){return gl136BasePrevious.apply(null,[]);});
+    }
+    return gl136BasePrevious.apply(this,arguments);
+  };
+
+  /* If iOS suspends the interval, the absolute deadline paints the correct
+     remainder as soon as the app returns to the foreground. */
+  document.addEventListener("visibilitychange",function(){
+    if(!document.hidden)gl136PaintRest();
+  });
+  window.addEventListener("pageshow",gl136PaintRest);
+
+  VERSION="BETA 0.73.6";
 })();
 
 

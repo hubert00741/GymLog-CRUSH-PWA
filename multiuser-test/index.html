@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta charset="utf-8">
 <meta name="theme-color" content="#070707">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4852,6 +4852,16 @@ body > nav.lux-bottom-nav{
 .gl135-swap-card .small{line-height:1.55}
 body.theme-female .gl135-option{border-color:rgba(255,177,210,.16)!important}
 </style>
+
+<style id="gl74-quality-styles">
+.gl74-options{display:grid;gap:8px;margin:14px 0}.gl74-alt{display:flex!important;flex-direction:column;text-align:left!important;align-items:flex-start;gap:5px;padding:13px!important;margin:0!important}.gl74-alt small{font-size:11px;color:#ababaf;font-weight:500}
+.gl74-table-scroll{width:100%;overflow-x:auto}.gl74-table{width:100%;border-collapse:collapse;font-size:12px}.gl74-table th,.gl74-table td{padding:9px 7px;border-bottom:1px solid rgba(255,255,255,.09)}.gl74-table th{text-align:left;font-size:10px;color:#aaa}.gl74-chart{width:100%;height:auto;display:block;background:#0a0a0b;border:1px solid rgba(255,255,255,.08);border-radius:12px}
+.gl74-metric-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.gl74-conflict{border:1px solid #c67f34;background:#211609;border-radius:13px;padding:12px;color:#ffdbab;margin:10px 0}
+.gl74-conflict button{font-size:13px!important}
+:focus-visible{outline:2px solid #f75868!important;outline-offset:2px} .gl74-stats .small{font-size:12px!important;line-height:1.5}
+@media(max-width:430px){.gl74-table th,.gl74-table td{font-size:10px;padding:7px 4px}}
+</style>
 </head>
 
 <body>
@@ -4860,6 +4870,7 @@ body.theme-female .gl135-option{border-color:rgba(255,177,210,.16)!important}
   <div class="badge">Ładowanie...</div>
 </div>
 
+<script src="./gl-quality.js?v=0740"></script>
 <script>
 window.onerror = function(msg, url, line, col, err){
   document.getElementById("app").innerHTML =
@@ -5466,7 +5477,7 @@ window.finishWorkout = function(){
   if(!current) return;
 
   current.exercises.forEach(function(e){e.reportLast = data.lastByExercise[e.name] || e.last || "brak";});
-  current.finishedAt = new Date().toISOString();
+  current.finishedAt = (current.autoFinishedByInactivity && current.finishedAt ? current.finishedAt : new Date().toISOString());
 
   var txt = makeReport(current);
 
@@ -6340,7 +6351,7 @@ window.finishWorkout = function(){
     e.reportLast = data.lastByExercise[e.name] || e.last || "brak";
   });
 
-  current.finishedAt = new Date().toISOString();
+  current.finishedAt = (current.autoFinishedByInactivity && current.finishedAt ? current.finishedAt : new Date().toISOString());
 
   var txt = makeReport(current);
   var summary = volumeSummaryText(current);
@@ -6878,7 +6889,7 @@ window.finishWorkout = function(){
     else e.reportLast = data.lastByExercise[e.name] || e.last || "brak";
   });
 
-  current.finishedAt = new Date().toISOString();
+  current.finishedAt = (current.autoFinishedByInactivity && current.finishedAt ? current.finishedAt : new Date().toISOString());
   var txt = makeReport(current);
   var summary = volumeSummaryText(current);
 
@@ -7306,7 +7317,7 @@ window.finishWorkout = function(){
     else e.reportLast = getLastTextForGymExerciseV31(current.gym, e.name) || e.last || "brak";
   });
 
-  current.finishedAt = new Date().toISOString();
+  current.finishedAt = (current.autoFinishedByInactivity && current.finishedAt ? current.finishedAt : new Date().toISOString());
   var txt = makeReport(current);
   var summary = volumeSummaryText(current);
 
@@ -7436,7 +7447,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.73.6";
+VERSION="BETA 0.74.0";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -8971,20 +8982,113 @@ function glSanitizeState(){
   var clone;try{clone=JSON.parse(JSON.stringify(data));}catch(e){clone=glEmptyState();}
   clone=glNormalizeState(clone);clone.appUpdates=[];return clone;
 }
+var GL74_SYNCING=false;
+var GL74_LOCAL_MUTATION=0;
+var GL74_SYNC_CONFLICT=null;
+function gl74ConflictBackupKey(uid){return "GYMLOG_CRUSH_SYNC_CONFLICT_"+uid;}
+function gl74MakeConflict(uid,reason,remote){
+  GL74_SYNC_CONFLICT={uid:uid,reason:reason,remote:remote||null,detectedAt:new Date().toISOString()};
+  try{localStorage.setItem(gl74ConflictBackupKey(uid),JSON.stringify({detectedAt:GL74_SYNC_CONFLICT.detectedAt,state:glSanitizeState(),remoteRevision:remote&&remote.sync_revision}));}catch(e){}
+  try{localStorage.setItem(glDirtyKey(uid),"1");}catch(e){}
+  glSetSync("bad","Konflikt zmian — wymagane rozstrzygnięcie");
+}
 async function glPushCloudState(){
-  if(!GL_AUTH_READY||GL_CLOUD_APPLYING||!navigator.onLine)return false;
+  if(!GL_AUTH_READY||GL_CLOUD_APPLYING||!navigator.onLine||GL74_SYNCING)return false;
   var s=await glEnsureSession();if(!s||!s.user||!s.user.id)return false;
   var uid=s.user.id;
-  glSetSync("pending","Synchronizacja…");
-  try{
-    var rows=await glApi("/rest/v1/user_app_state?on_conflict=user_id",{method:"POST",headers:{"Content-Type":"application/json","Prefer":"resolution=merge-duplicates,return=representation"},body:JSON.stringify({user_id:uid,state:glSanitizeState(),schema_version:1,client_updated_at:new Date().toISOString()})});
-    var row=Array.isArray(rows)?rows[0]:null;
-    try{localStorage.setItem(glDirtyKey(uid),"0");if(row&&row.sync_revision!=null)localStorage.setItem(glRevisionKey(uid),String(row.sync_revision));}catch(e){}
-    glSetSync("ok","Zsynchronizowano");return true;
-  }catch(e){
-    try{localStorage.setItem(glDirtyKey(uid),"1");}catch(_){} glSetSync("bad","Błąd synchronizacji");console.log("Supabase sync:",e);return false;
+  if(GL74_SYNC_CONFLICT&&GL74_SYNC_CONFLICT.uid===uid){
+    glSetSync("bad","Konflikt — otwórz rozstrzygnięcie");return false;
   }
+  GL74_SYNCING=true;
+  var epoch=GL74_LOCAL_MUTATION;
+  var state=glSanitizeState();
+  var rev=Number(localStorage.getItem(glRevisionKey(uid))||0);
+  var json=JSON.stringify({state:state,schema_version:1,client_updated_at:new Date().toISOString()});
+  glSetSync("pending","Bezpieczna synchronizacja…");
+  try{
+    var rows;
+    if(rev>0){
+      // Atomic compare-and-swap. A different client bumping the revision
+      // makes this PATCH affect 0 rows, which is treated as a conflict.
+      rows=await glApi("/rest/v1/user_app_state?user_id=eq."+encodeURIComponent(uid)+"&sync_revision=eq."+rev,
+        {method:"PATCH",headers:{"Content-Type":"application/json","Prefer":"return=representation"},body:json});
+    }else{
+      // No local revision: only insert a genuinely absent row. Do NOT upsert.
+      var existing=await glFetchRemoteState(uid);
+      if(Number(existing.sync_revision||0)>0 || glMeaningful(existing.state)){
+        gl74MakeConflict(uid,"Nieznana wersja danych lokalnych",existing);return false;
+      }
+      rows=await glApi("/rest/v1/user_app_state",{method:"POST",headers:{"Content-Type":"application/json","Prefer":"return=representation"},
+        body:JSON.stringify({user_id:uid,state:state,schema_version:1,client_updated_at:new Date().toISOString()})});
+    }
+    if(!Array.isArray(rows)||rows.length!==1){
+      var latest=await glFetchRemoteState(uid).catch(function(){return null;});
+      gl74MakeConflict(uid,"Inne urządzenie zapisało nowsze dane",latest);
+      return false;
+    }
+    var row=rows[0];
+    try{
+      if(row&&row.sync_revision!=null)localStorage.setItem(glRevisionKey(uid),String(row.sync_revision));
+      var stillDirty=GL74_LOCAL_MUTATION!==epoch;
+      localStorage.setItem(glDirtyKey(uid),stillDirty?"1":"0");
+      if(stillDirty)setTimeout(function(){glPushCloudState();},1000);
+    }catch(e){}
+    glSetSync("ok",GL74_LOCAL_MUTATION===epoch?"Zsynchronizowano":"Kolejne zmiany w kolejce");
+    return true;
+  }catch(e){
+    try{localStorage.setItem(glDirtyKey(uid),"1");}catch(_){}
+    if(rev===0&&Number(e.status||0)===409){
+      var existing=await glFetchRemoteState(uid).catch(function(){return null;});
+      gl74MakeConflict(uid,"Konflikt podczas pierwszego zapisu",existing);
+    }else{
+      glSetSync("bad","Błąd połączenia — dane lokalne zachowane");
+    }
+    console.log("Supabase sync:",e);return false;
+  }finally{GL74_SYNCING=false;}
 }
+window.gl74ConflictView=async function(){
+  var s=glSession(),uid=s&&s.user&&s.user.id;if(!uid)return;
+  var remote=await glFetchRemoteState(uid).catch(function(){return null;});
+  if(remote){if(!GL74_SYNC_CONFLICT)GL74_SYNC_CONFLICT={uid:uid,reason:"Ręczny przegląd",remote:remote};else GL74_SYNC_CONFLICT.remote=remote;}
+  render("<h1>Konflikt synchronizacji</h1><div class='card gl74-conflict'><b>Wstrzymano nadpisywanie nowszych danych.</b><p>"+esc(GL74_SYNC_CONFLICT&&GL74_SYNC_CONFLICT.reason||"Wymagana decyzja")+"</p><p class='small'>Przed wyborem wykonaj eksport kopii danych. Zachowano kopię awaryjną na tym urządzeniu.</p></div>"+
+    "<div class='card'><button onclick='gl74ExportState()'>EKSPORTUJ LOKALNY JSON</button><button class='secondary' onclick='gl74ExportRemoteState()'>EKSPORTUJ CHMUROWY JSON</button><button class='secondary' onclick='gl74ResolveConflict(\"cloud\")'>UŻYJ WERSJI Z CHMURY</button>"+
+    "<button class='danger' onclick='gl74ResolveConflict(\"local\")'>NADPISZ CHMURĘ DANYMI LOKALNYMI</button><button class='secondary' onclick='luxMoreView()'>ANULUJ</button></div>"+luxBottomNav("more"));
+};
+window.gl74ExportRemoteState=async function(){
+  var s=glSession(),uid=s&&s.user&&s.user.id||"konto";
+  var remote=await glFetchRemoteState(uid);
+  var a=document.createElement("a"),blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),sync_revision:remote.sync_revision,state:remote.state},null,2)],{type:"application/json"});
+  a.href=URL.createObjectURL(blob);a.download="GymLog_CRUSH_CLOUD_"+uid.slice(0,8)+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+};
+window.gl74ExportState=function(){
+  var s=glSession(),uid=s&&s.user&&s.user.id||"konto";
+  var a=document.createElement("a"),blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),state:glSanitizeState()},null,2)],{type:"application/json"});
+  a.href=URL.createObjectURL(blob);a.download="GymLog_CRUSH_BACKUP_"+uid.slice(0,8)+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},1500);
+};
+window.gl74ResolveConflict=async function(choice){
+  var s=await glEnsureSession(),uid=s&&s.user&&s.user.id;if(!uid||!navigator.onLine)return;
+  var remote=await glFetchRemoteState(uid);
+  if(choice==="cloud"){
+    if(!confirm("Zastąpić dane lokalne najnowszymi danymi chmury? Najpierw wyeksportuj lokalną kopię."))return;
+    try{localStorage.setItem(gl74ConflictBackupKey(uid),JSON.stringify({state:glSanitizeState(),detectedAt:new Date().toISOString()}));}catch(e){}
+    GL_CLOUD_APPLYING=true;
+    data=glNormalizeState(remote.state||glEmptyState());
+    try{localStorage.setItem(STORE,JSON.stringify(data));localStorage.setItem(glRevisionKey(uid),String(remote.sync_revision||0));localStorage.setItem(glDirtyKey(uid),"0");}finally{GL_CLOUD_APPLYING=false;}
+    GL74_SYNC_CONFLICT=null;glSetSync("ok","Przywrócono z chmury");home();return;
+  }
+  if(choice==="local"){
+    if(!confirm("Nadpisać CAŁĄ wersję chmurową lokalnymi danymi? Dane na innych urządzeniach mogą zniknąć. Upewnij się, że masz eksport."))return;
+    try{
+      var rows=await glApi("/rest/v1/user_app_state?user_id=eq."+encodeURIComponent(uid)+"&sync_revision=eq."+Number(remote.sync_revision||0),
+        {method:"PATCH",headers:{"Content-Type":"application/json","Prefer":"return=representation"},
+         body:JSON.stringify({state:glSanitizeState(),schema_version:1,client_updated_at:new Date().toISOString()})});
+      if(!rows||rows.length!==1){alert("Wersja chmurowa zmieniła się ponownie. Otwórz konflikt jeszcze raz.");return;}
+      localStorage.setItem(glRevisionKey(uid),String(rows[0].sync_revision||0));localStorage.setItem(glDirtyKey(uid),"0");
+      GL74_SYNC_CONFLICT=null;glSetSync("ok","Zapisano decyzję");home();
+    }catch(e){alert("Nie udało się zapisać: "+String(e.message||e));}
+  }
+};
+
 window.glScheduleCloudSave=function(){
   if(!GL_AUTH_READY||GL_CLOUD_APPLYING)return;
   var s=glSession();if(!s||!s.user)return;
@@ -8994,7 +9098,9 @@ window.glScheduleCloudSave=function(){
   GL_CLOUD_TIMER=setTimeout(function(){glPushCloudState();},900);
 };
 window.glForceCloudSync=async function(){
-  var ok=await glPushCloudState();alert(ok?"Dane GymLog zostały zapisane w Supabase.":"Nie udało się zsynchronizować. Sprawdź internet i spróbuj ponownie.");if(window.luxMoreView)luxMoreView();
+  var ok=await glPushCloudState();
+  if(GL74_SYNC_CONFLICT){return window.gl74ConflictView();}
+  alert(ok?"Dane GymLog zostały zapisane w Supabase.":"Nie udało się zsynchronizować. Dane lokalne pozostały zapisane.");if(window.luxMoreView)luxMoreView();
 };
 
 function glRenderLogin(message,bad){
@@ -9421,7 +9527,7 @@ exercise=window.exercise;
 var glAdminFinish0610=window.finishWorkout;
 window.finishWorkout=function(){
   if(!glIsManagedUser())return glAdminFinish0610.apply(this,arguments);
-  if(!current)return;current.gym="CityFit";current.finishedAt=new Date().toISOString();
+  if(!current)return;current.gym="CityFit";current.finishedAt=(current.autoFinishedByInactivity && current.finishedAt ? current.finishedAt : new Date().toISOString());
   var done=current,summary=volumeSummaryText(done),details="";
   (done.exercises||[]).forEach(function(e){details+="<div class='mu-summary-ex'><b>"+esc(e.name)+"</b>"+((e.sets||[]).length?(e.sets||[]).map(function(s,i){return "<div class='mu-summary-set'>Seria "+(i+1)+": "+esc(getSetLine(s))+"</div>";}).join(""):"<div class='mu-summary-set'>Brak wpisanych serii</div>")+"</div>";});
   data.logs.unshift(done);data.draft=null;recomputeLastByExercise();safeSave();current=null;
@@ -12644,15 +12750,7 @@ window.gl089HeaderLogoSrc=function(profile){
 
 
 /* 0.69.6 — prevent pinch zoom in the app UI. */
-(function gl096LockInterfaceZoom(){
-  function preventGesture(e){e.preventDefault();}
-  document.addEventListener("gesturestart",preventGesture,{passive:false});
-  document.addEventListener("gesturechange",preventGesture,{passive:false});
-  document.addEventListener("gestureend",preventGesture,{passive:false});
-  document.addEventListener("touchmove",function(e){
-    if(e.touches&&e.touches.length>1)e.preventDefault();
-  },{passive:false});
-})();
+/* 0.74.0: standard pinch-to-zoom restored for accessibility. */
 
 
 
@@ -14185,6 +14283,11 @@ if(typeof window.glAdminExportWorkout==="function"){
    ====================================================================== */
 (function(){
   var GL111_CLIENT_RELEASES=[
+    {id:"client-0740",version:"BETA 0.74.0",date:"17.10.2026",title:"Niezawodność i zamienniki 1:1",changes:[
+      {feature:"always",text:"Zamienniki są proponowane z osobnego katalogu dla tego samego ruchu i nie pochodzą z Twojego planu. Nadal możesz wpisać dowolny zamiennik."},
+      {feature:"always",text:"Synchronizacja sprawdza rewizję serwera przed zapisem, chroniąc przed nieświadomym nadpisaniem nowszych danych."},
+      {feature:"always",text:"Dodano odtwarzanie przerwy, lokalną kopię treningu i statystyki progresu. Po 30 minutach bezczynności trening kończy się z czasem ostatniej aktywności."}
+    ]},
     {
       id:"client-0736",
       version:"BETA 0.73.6",
@@ -16356,7 +16459,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16402,7 +16505,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.73.6";
+    VERSION="BETA 0.74.0";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16542,7 +16645,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -16836,7 +16939,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -17139,7 +17242,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -17209,7 +17312,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -17454,7 +17557,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -17587,7 +17690,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -17749,7 +17852,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -18890,7 +18993,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -19033,7 +19136,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -19065,7 +19168,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -19475,7 +19578,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -19769,7 +19872,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -19880,7 +19983,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -19982,7 +20085,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -20151,6 +20254,10 @@ if(typeof window.glAdminExportWorkout==="function"){
   }
   // One source for all historic muscle calculations: cards, text summaries, heatmap, and PNG.
   function historyGroups(log,ex){
+    if(ex&&Array.isArray(ex.muscleGroupsSnapshot)&&ex.muscleGroupsSnapshot.length)
+      return Array.from(new Set(ex.muscleGroupsSnapshot));
+    if(ex&&ex.isSubstitute&&ex.manualGroupsOverride&&Array.isArray(ex.groups)&&ex.groups.length)
+      return Array.from(new Set(ex.groups));
     var source=Array.isArray(ex&&ex.groups)?ex.groups:[];
     if(lookup(ex&&ex.name))return groups(ex.name,source);
     if(!source.length){
@@ -20243,11 +20350,12 @@ if(typeof window.glAdminExportWorkout==="function"){
     var name=document.getElementById("subName"),input=document.getElementById("subGroups");
     if(name&&input){
       var incoming=String(input.value||"").split(/[,;]+/).map(function(x){return x.trim();}).filter(Boolean);
-      input.value=groups(name.value,incoming).join(", ");
+      // The user may intentionally override catalog groups for a one-time substitute.
+      input.value=incoming.join(", ");
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
 
@@ -20261,8 +20369,18 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var gl136CarryDepth=0;
   var gl136RestEnd=0;
-
+  function gl136RestKey(){
+    var s=glSession();return "GYMLOG_CRUSH_REST_DEADLINE_"+((s&&s.user&&s.user.id)||"offline");
+  }
+  function gl136ReadRest(){
+    try{var t=Number(localStorage.getItem(gl136RestKey())||0);
+      if(t>Date.now()-600000 && t<Date.now()+86400000)gl136RestEnd=t;
+      else if(t)localStorage.removeItem(gl136RestKey());
+    }catch(e){}
+  }
+  function gl136WriteRest(){try{if(gl136RestEnd)localStorage.setItem(gl136RestKey(),String(gl136RestEnd));else localStorage.removeItem(gl136RestKey());}catch(e){}}
   function gl136PaintRest(){
+    if(!gl136RestEnd)gl136ReadRest();
     if(!gl136RestEnd||!current)return;
     var node=document.getElementById("timer");
     if(!node)return;
@@ -20281,6 +20399,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     /* Navigating between exercise screens is NOT a user timer stop. */
     if(gl136CarryDepth>0 && current)return;
     gl136RestEnd=0;
+    gl136WriteRest();
     return gl136BaseStopTimer.apply(this,arguments);
   };
   window.stopTimer=stopTimer;
@@ -20290,6 +20409,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     var seconds=Math.max(1,Number(sec||0));
     var value=gl136BaseStartRest.apply(this,arguments);
     gl136RestEnd=Date.now()+seconds*1000;
+    gl136WriteRest();
     gl136PaintRest();
     return value;
   };
@@ -20336,10 +20456,201 @@ if(typeof window.glAdminExportWorkout==="function"){
     if(!document.hidden)gl136PaintRest();
   });
   window.addEventListener("pageshow",gl136PaintRest);
+  // The interval in the old process does not survive WebKit eviction.
+  // Repaint from the persisted absolute deadline when resumed.
+  setInterval(function(){if(!document.hidden&&current&&gl136RestEnd)gl136PaintRest();},1000);
 
-  VERSION="BETA 0.73.6";
+  VERSION="BETA 0.74.0";
 })();
 
+
+/* ===== 0.74.0 quality layer and durable local workout recovery ===== */
+(function(){
+  var gl74BaseSafeSave=safeSave;
+  safeSave=function(){
+    GL74_LOCAL_MUTATION++;
+    // A small, bounded local snapshot makes accidental plan edits reversible.
+    try{
+      if(!GL_CLOUD_APPLYING){
+        var s=glSession(),uid=s&&s.user&&s.user.id||"offline";
+        var prev=localStorage.getItem(STORE);
+        var old=Number(localStorage.getItem("GYMLOG_CRUSH_LAST_SNAPSHOT_AT_"+uid)||0);
+        if(prev&&prev.length<1000000&&Date.now()-old>60000){
+          localStorage.setItem("GYMLOG_CRUSH_STATE_SNAPSHOT_"+uid,prev);
+          localStorage.setItem("GYMLOG_CRUSH_LAST_SNAPSHOT_AT_"+uid,String(Date.now()));
+        }
+      }
+    }catch(e){}
+    var result=gl74BaseSafeSave.apply(this,arguments);
+    try{
+      var s=glSession(),uid=s&&s.user&&s.user.id||"offline";
+      if(data&&data.draft&&Array.isArray(data.draft.exercises)){
+        localStorage.setItem("GYMLOG_CRUSH_RECOVERY_"+uid,JSON.stringify({savedAt:new Date().toISOString(),draft:data.draft}));
+      }else if(data&&!data.draft){
+        // A completed or manually discarded workout must not be restorable as
+        // a second unfinished workout. Finished sessions have their own journal.
+        localStorage.removeItem("GYMLOG_CRUSH_RECOVERY_"+uid);
+      }
+    }catch(e){}
+    return result;
+  };
+  window.gl74CloudConflict=function(){return GL74_SYNC_CONFLICT;};
+  if(window.GymLogQuality){
+    window.GymLogQuality.install({
+      getCurrent:function(){return current;},getIndex:function(){return idx;},
+      getData:function(){return data;},getPlans:function(){return PLANS;},
+      save:function(){safeSave();},
+      replaceData:function(payload){data=glNormalizeState(payload);safeSave();},
+      render:function(markup){render(markup);},
+      bottomNav:function(view){return luxBottomNav(view||"workout");},
+      isAdmin:function(){return glIsAdmin();},
+      userId:function(){var s=glSession();return s&&s.user&&s.user.id||"offline";}
+    });
+  }
+  var gl74BaseMore=window.luxMoreView;
+  window.luxMoreView=function(){
+    var r=gl74BaseMore.apply(this,arguments);
+    if(GL74_SYNC_CONFLICT){
+      var app=document.getElementById("app");if(app){
+        var box=document.createElement("div");box.className="gl74-conflict";
+        box.innerHTML="<b>Konflikt danych w chmurze</b><p>Twoje dane lokalne są zachowane. Synchronizacja czeka na wybór wersji.</p><button onclick='gl74ConflictView()'>ROZSTRZYGNIJ KONFLIKT</button>";
+        app.insertBefore(box,app.firstChild);
+      }
+    }
+    return r;
+  };
+})();
+/* 0.74.0 — preserve exact group classification for completed sessions. */
+(function(){
+  var oldFinish=window.finishWorkout;
+  window.finishWorkout=function(){
+    if(current&&Array.isArray(current.exercises)){
+      current.exercises.forEach(function(ex){
+        if(!ex||Array.isArray(ex.muscleGroupsSnapshot))return;
+        var gs=null;
+        if(ex.isSubstitute&&ex.manualGroupsOverride&&Array.isArray(ex.groups))gs=ex.groups.slice();
+        else if(typeof window.gl135ClassifyExercise==='function'){
+          var c=window.gl135ClassifyExercise(ex.name);
+          if(c&&Array.isArray(c.groups))gs=c.groups.slice();
+        }
+        if(!gs)gs=Array.isArray(ex.groups)?ex.groups.slice():[];
+        ex.muscleGroupsSnapshot=Array.from(new Set(gs));
+      });
+    }
+    return oldFinish.apply(this,arguments);
+  };
+  finishWorkout=window.finishWorkout;
+})();
+
+/* ======================================================================
+   0.74.0 — INACTIVITY AUTO-FINISH, 30 MINUTES
+   Time of the LAST workout interaction is the official finish time.
+   WebKit can suspend background tabs: evaluation is retried on resume.
+   This hook never counts paint, timer ticks, sync, or passive touches.
+   ====================================================================== */
+(function(){
+  var THRESHOLD=30*60*1000;
+  var BUSY=false;
+  var NEXT_PERSIST=0;
+  var CURRENT_ACCOUNT='';
+  function uid(){var s=glSession();return s&&s.user&&s.user.id||'offline';}
+  function clockKey(){return 'GYMLOG_CRUSH_LAST_ACTIVITY_'+uid();}
+  function draft(){return (current&&current.exercises?current:null)||(data&&data.draft&&data.draft.exercises?data.draft:null);}
+  function timestamp(x){var n=Date.parse(String(x||''));return isFinite(n)?n:0;}
+  function setClock(w,when,persist){
+    if(!w)return;
+    var at=new Date(when).toISOString();
+    w.lastActivityAt=at;
+    if(data&&data.draft&&data.draft!==w&&data.draft.workoutId===w.workoutId)data.draft.lastActivityAt=at;
+    try{localStorage.setItem(clockKey(),JSON.stringify({workoutId:String(w.workoutId||w.createdAt||''),at:at}));}catch(e){}
+    if(persist)try{safeSave();}catch(e){}
+  }
+  function ensureClock(w){
+    if(!w)return 0;
+    var key=String(w.workoutId||w.createdAt||'');
+    var old=null;try{old=JSON.parse(localStorage.getItem(clockKey())||'null');}catch(e){}
+    var recorded=timestamp(w.lastActivityAt);
+    var separately=(old&&old.workoutId===key)?timestamp(old.at):0;
+    if(separately>recorded){w.lastActivityAt=new Date(separately).toISOString();recorded=separately;}
+    if(!recorded){
+      var started=timestamp(w.createdAt);
+      // Legacy drafts from 0.73.x had no activity timestamp. Allow a fresh
+      // 30-minute window on first upgrade rather than silently ending a week-old draft.
+      recorded=(started&&Date.now()-started>=0&&Date.now()-started<120000)?started:Date.now();
+      setClock(w,recorded,true);
+    }
+    return recorded;
+  }
+  function pauseRest(){
+    try{if(window.stopTimer)stopTimer();}catch(e){}
+    try{localStorage.removeItem('GYMLOG_CRUSH_REST_DEADLINE_'+uid());}catch(e){}
+  }
+  function autoFinish(){
+    if(BUSY||!GL_AUTH_READY)return false;
+    var w=draft();if(!w)return false;
+    var at=ensureClock(w);
+    if(!at||Date.now()-at<THRESHOLD)return false;
+    BUSY=true;
+    try{
+      // Must not extend activity while completing; freeze the official end.
+      if(!current){current=w;idx=Math.max(0,Math.min(Number(w.index||0),Math.max(0,w.exercises.length-1)));}
+      current.autoFinishedByInactivity=true;
+      current.autoFinishReason='30 minut bez aktywności';
+      current.finishedAt=new Date(at).toISOString();
+      current.durationSeconds=Math.max(0,Math.round((at-timestamp(current.createdAt))/1000));
+      // Never lose the draft if an unexpected runtime error occurs.
+      try{data.draft=current;safeSave();}catch(e){}
+      pauseRest();
+      window.finishWorkout();
+      try{localStorage.removeItem(clockKey());}catch(e){}
+      if(data&&data.draft){throw new Error('Zakończenie nie usunęło szkicu');}
+      var app=document.getElementById('app');
+      if(app){var banner=document.createElement('div');banner.className='card gl74-idle-banner';
+        banner.textContent='Trening zakończony automatycznie po 30 minutach bezczynności. Czas zakończenia: '+new Date(at).toLocaleString('pl-PL')+'.';
+        app.insertBefore(banner,app.firstChild);}
+      return true;
+    }catch(e){console.warn('GymLog auto finish:',e);return false;}
+    finally{BUSY=false;}
+  }
+  function noteActivity(){
+    if(BUSY||!GL_AUTH_READY)return;
+    var w=draft();if(!w)return;
+    var last=ensureClock(w),now=Date.now();
+    if(now-last>=THRESHOLD){autoFinish();return;}
+    var shouldPersist=now>=NEXT_PERSIST;
+    setClock(w,now,shouldPersist);
+    if(shouldPersist)NEXT_PERSIST=now+10000;
+  }
+  function relevantTarget(el){
+    if(!el||!el.closest||!draft())return false;
+    var app=document.getElementById('app');if(!app||!app.contains(el))return false;
+    if(el.closest('.lux-bottom-nav'))return false;
+    if(el.closest('.lux-set-entry,.lux-current-card,.lux-rest-card,.lux-nav-row,.gl74-options,.gl135-swap-card'))return true;
+    if(el.closest('button')&&/saveSet\(|nextExercise\(|prevExercise\(|deleteLastSet\(|substituteExerciseView\(|applyExerciseSubstitution\(|undoExerciseSubstitution\(|startRest\(/.test(el.closest('button').getAttribute('onclick')||''))return true;
+    return false;
+  }
+  function userEvent(e){
+    if(!GL_AUTH_READY||!draft()||!e.isTrusted)return;
+    if(!relevantTarget(e.target))return;
+    // Stop an expired workout BEFORE the late tap triggers Save Set.
+    if(autoFinish()){e.preventDefault();e.stopImmediatePropagation();return;}
+    noteActivity();
+  }
+  document.addEventListener('pointerdown',userEvent,true);
+  document.addEventListener('input',userEvent,true);
+  document.addEventListener('change',userEvent,true);
+  document.addEventListener('keydown',userEvent,true);
+  function resumeCheck(){if(!document.hidden)setTimeout(autoFinish,30);}
+  document.addEventListener('visibilitychange',resumeCheck);
+  window.addEventListener('pageshow',resumeCheck);
+  window.addEventListener('focus',resumeCheck);
+  window.addEventListener('online',resumeCheck);
+  setInterval(function(){if(GL_AUTH_READY&&draft())autoFinish();},15000);
+  // For callers such as a custom workout action: do not count background timers.
+  window.gl74MarkWorkoutActivity=noteActivity;
+  window.gl74CheckWorkoutInactivity=autoFinish;
+  window.gl74IdleMs=THRESHOLD;
+})();
 
 runInstalledAppUpdates();
 window.glAuthBootstrap();

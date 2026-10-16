@@ -1,29 +1,47 @@
-const CACHE='gymlog-crush-multiuser-test-v0736';
-const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png','./header-logo-female.png'];
+/* GymLog CRUSH Service Worker 0.74.0.
+   Installing a new release requires the application shell and its JS module.
+   Failure to fetch optional images must NOT break an otherwise valid update. */
+const CACHE='gymlog-crush-multiuser-test-v0740';
+const SHELL=['./index.html','./gl-quality.js'];
+const OPTIONAL=['./','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png','./header-logo-female.png'];
 
-self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
-  self.skipWaiting();
+self.addEventListener('install', event=>{
+  event.waitUntil((async()=>{
+    const cache=await caches.open(CACHE);
+    await cache.addAll(SHELL);
+    await Promise.allSettled(OPTIONAL.map(asset=>cache.add(asset)));
+    await self.skipWaiting();
+  })());
 });
 
-self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(
-    keys.filter(k=>k.startsWith('gymlog-crush-multiuser-test-')&&k!==CACHE).map(k=>caches.delete(k))
-  )));
-  self.clients.claim();
+self.addEventListener('activate', event=>{
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(key=>key.startsWith('gymlog-crush-multiuser-test-')&&key!==CACHE).map(key=>caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
-  const u=new URL(e.request.url);
-  if(u.origin!==self.location.origin)return;
-  e.respondWith(
-    fetch(e.request).then(r=>{
-      const copy=r.clone();
-      caches.open(CACHE).then(c=>c.put(e.request,copy));
-      return r;
-    }).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html')))
-  );
+self.addEventListener('fetch', event=>{
+  const request=event.request;
+  if(request.method!=='GET')return;
+  const url=new URL(request.url);
+  if(url.origin!==self.location.origin)return;
+  const network=()=>fetch(request).then(async response=>{
+    if(response.ok){
+      try{const cache=await caches.open(CACHE);await cache.put(request,response.clone());}catch(_e){}
+    }
+    return response;
+  });
+  if(request.mode==='navigate'){
+    event.respondWith(network().catch(async()=>{
+      const cached=await caches.match(request);
+      return cached||caches.match('./index.html')||Response.error();
+    }));
+    return;
+  }
+  // Avoid returning index.html for a missing JS/CSS/image (wrong MIME).
+  event.respondWith(network().catch(async()=>await caches.match(request)||Response.error()));
 });
 
 self.addEventListener('push',event=>{

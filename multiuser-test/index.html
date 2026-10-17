@@ -4963,7 +4963,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
     <div class="gl751-redline"></div>
     <div class="gl751-tagline">READY TO TRAIN</div>
   </div>
-  <span class="gl751-version">BETA 0.75.3</span>
+  <span class="gl751-version">BETA 0.75.4</span>
   <span class="gl751-progress"><i></i></span>
   <span class="gl753-powered">Powered by Stephan.os</span>
 </div>
@@ -4974,7 +4974,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 <script id="gl751-splash-manager">
 (function(){
   'use strict';
-  var VERSION='0.75.3';
+  var VERSION='0.75.4';
   var KEY='GYMLOG_CRUSH_LAST_SPLASH_VERSION';
   var splash=document.getElementById('gl751Splash');
   var app=document.getElementById('app');
@@ -5052,10 +5052,10 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 })();
 </script>
 
-<script src="./gl-quality.js?v=0753"></script>
-<script src="./gl-ui.js?v=0753"></script>
-<script src="./gl-motion.js?v=0753"></script>
-<script src="./gl-fullplan.js?v=0753"></script>
+<script src="./gl-quality.js?v=0754"></script>
+<script src="./gl-ui.js?v=0754"></script>
+<script src="./gl-motion.js?v=0754"></script>
+<script src="./gl-fullplan.js?v=0754"></script>
 <script>
 window.onerror = function(msg, url, line, col, err){
   document.getElementById("app").innerHTML =
@@ -7632,7 +7632,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.75.3";
+VERSION="BETA 0.75.4";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -14472,6 +14472,13 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0754", version:"BETA 0.75.4", date:"17.10.2026",
+      title:"Poprawiony zapis serii po imporcie planu",
+      changes:[
+        {feature:"always",text:"Usunięto błąd zapisu serii w planach importowanych osobno dla siłowni. Naprawiono także wznawianie treningów rozpoczętych przed tą poprawką, bez usuwania wcześniejszych wyników."}
+      ]
+    },
+    {
       id:"client-0753", version:"BETA 0.75.3", date:"17.10.2026",
       title:"Importer całych planów i animacje kont",
       changes:[
@@ -16676,7 +16683,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16722,7 +16729,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.75.3";
+    VERSION="BETA 0.75.4";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16862,7 +16869,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -17156,7 +17163,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -17459,7 +17466,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -17529,7 +17536,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -17774,7 +17781,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -17907,7 +17914,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -18069,7 +18076,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -19210,7 +19217,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -19353,7 +19360,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -19385,7 +19392,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -19795,7 +19802,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -20089,7 +20096,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -20200,7 +20207,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -20302,7 +20309,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -20572,7 +20579,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -20677,7 +20684,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Repaint from the persisted absolute deadline when resumed.
   setInterval(function(){if(!document.hidden&&current&&gl136RestEnd)gl136PaintRest();},1000);
 
-  VERSION="BETA 0.75.3";
+  VERSION="BETA 0.75.4";
 })();
 
 
@@ -20922,6 +20929,57 @@ if(typeof window.gl753SetSplashGender==='function'){
   glApplyProfileTheme=function(){var r=gl753PreviousApplyProfileTheme.apply(this,arguments);
     try{window.gl753SetSplashGender(glGender());}catch(e){}return r;};
 }
+/* 0.75.4 — protect active workout results from numeric template `sets`.
+   Existing imported gym variants contain a planned count `sets: 3`.
+   Never write that value into the workout's recorded-set array.
+   This guard also repairs an already-saved draft on Resume/Save without
+   rewriting logs, changing training plan templates or removing valid sets. */
+(function(){
+  function gl754RepairActive(w){
+    if(!w||!Array.isArray(w.exercises))return false;
+    var changed=false;
+    w.exercises.forEach(function(e){
+      if(!e||typeof e!=="object"||Array.isArray(e.sets))return;
+      var legacy=e.sets,recorded=[];
+      if(typeof legacy==="number"&&Number.isFinite(legacy)){
+        if(!(Number(e.ownerSets)>0))e.ownerSets=Math.max(1,Math.floor(legacy));
+      }else if(legacy&&typeof legacy==="object"&&Array.isArray(legacy.items)){
+        recorded=legacy.items.slice();
+      }else if(typeof legacy==="string"&&legacy.trim().charAt(0)==="["){
+        try{var decoded=JSON.parse(legacy);if(Array.isArray(decoded))recorded=decoded;}catch(_e){}
+      }
+      // Preserve any unrecognized data inside this workout instead of deleting it.
+      if(legacy!==null&&legacy!==undefined&&legacy!==""&&
+         !(typeof legacy==="number"&&Number.isFinite(legacy))&&
+         !Array.isArray(legacy)&&recorded.length===0){
+        e._gl754PreviousSets=legacy;
+      }
+      e.sets=recorded;
+      changed=true;
+    });
+    return changed;
+  }
+  function gl754RepairCurrentAndDraft(){
+    var changed=false;
+    if(data&&data.draft)changed=gl754RepairActive(data.draft)||changed;
+    if(current)changed=gl754RepairActive(current)||changed;
+    if(changed){try{safeSave();}catch(_e){}}
+    return changed;
+  }
+  var gl754SaveBase=window.saveSet;
+  window.saveSet=saveSet=function(){
+    gl754RepairCurrentAndDraft();
+    return gl754SaveBase.apply(this,arguments);
+  };
+  var gl754ResumeBase=window.resumeDraft;
+  window.resumeDraft=function(){
+    if(data&&data.draft&&gl754RepairActive(data.draft)){
+      try{safeSave();}catch(_e){}
+    }
+    return gl754ResumeBase.apply(this,arguments);
+  };
+  window.gl754RepairActiveWorkout=gl754RepairActive;
+})();
 runInstalledAppUpdates();
 window.glAuthBootstrap();
 })();

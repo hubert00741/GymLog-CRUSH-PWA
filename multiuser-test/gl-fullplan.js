@@ -260,7 +260,14 @@ function cloneForGym(plan,gym,baseClone){
   var latest=(state().planOverridesByGym&&state().planOverridesByGym[gym]&&state().planOverridesByGym[gym][plan])||{};
   return copy(variant).map(function(e){
     var before=prior[e.name]||{};
-    e.last=before.last||e.last||''; // keep e.sets as the planned working-set count
+    e.last=before.last||e.last||'';
+    // IMPORTANT: imported template `sets` is a NUMBER of scheduled working sets,
+    // whereas an ACTIVE workout `sets` must ALWAYS be an ARRAY of completed sets.
+    // Keep the planned count under a separate key. Never modify saved plan variants.
+    var planned=Array.isArray(e.workTargets)&&e.workTargets.length
+      ?e.workTargets.length:(Number(e.sets)>0?Number(e.sets):Number(e.ownerSets)||1);
+    e.ownerSets=Math.max(1,Math.floor(planned));
+    e.sets=[];
     // Updates entered later through the existing 'Aktualizuj cele' path remain effective.
     if(Object.prototype.hasOwnProperty.call(latest,e.name))e.plan=String(latest[e.name]);
     return e;

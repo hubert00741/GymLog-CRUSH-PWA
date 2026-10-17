@@ -1,13 +1,10 @@
-/* GymLog CRUSH Service Worker 0.75.6.
-   Installing a new release requires the application shell and its JS module.
-   Failure to fetch optional images must NOT break an otherwise valid update. */
-const CACHE='gymlog-crush-multiuser-test-v0756';
-// Cache the same versioned URLs that index.html actually requests, so the
-// first offline launch after upgrading has both modules available.
-const SHELL=['./index.html','./gl-quality.js?v=0756','./gl-ui.js?v=0756','./gl-motion.js?v=0756','./gl-fullplan.js?v=0756'];
-const OPTIONAL=['./','./gl-quality.js','./gl-ui.js','./gl-motion.js','./gl-fullplan.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png','./header-logo-female.png'];
-
-self.addEventListener('install', event=>{
+/* GymLog CRUSH 0.75.7 — self-contained startup shell.
+   The full JS needed to boot is in index.html, preventing a single delayed
+   external module from blocking the app. Optional assets never block install. */
+const CACHE='gymlog-crush-multiuser-test-v0757';
+const SHELL=['./index.html'];
+const OPTIONAL=['./','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png','./header-logo-female.png'];
+self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
     const cache=await caches.open(CACHE);
     await cache.addAll(SHELL);
@@ -15,44 +12,36 @@ self.addEventListener('install', event=>{
     await self.skipWaiting();
   })());
 });
-
-self.addEventListener('activate', event=>{
+self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
     const keys=await caches.keys();
     await Promise.all(keys.filter(key=>key.startsWith('gymlog-crush-multiuser-test-')&&key!==CACHE).map(key=>caches.delete(key)));
     await self.clients.claim();
   })());
 });
-
-self.addEventListener('fetch', event=>{
+self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET')return;
   const url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
   const network=async()=>{
     const controller=new AbortController();
-    // 0.75.6: allow cached app shell/modules to take over when iOS holds
-    // a network request pending without resolving or rejecting it.
-    const timeout=setTimeout(()=>controller.abort(),5500);
+    const timeout=setTimeout(()=>controller.abort(),3500);
     try{
       const response=await fetch(request,{signal:controller.signal});
       if(response.ok){
-        try{const cache=await caches.open(CACHE);await cache.put(request,response.clone());}catch(_e){}
+        try{const c=await caches.open(CACHE);await c.put(request,response.clone());}catch(_e){}
       }
       return response;
     }finally{clearTimeout(timeout);}
   };
   if(request.mode==='navigate'){
-    event.respondWith(network().catch(async()=>{
-      const cached=await caches.match(request);
-      return cached||caches.match('./index.html')||Response.error();
-    }));
-    return;
+    event.respondWith(network().catch(async()=>
+      (await caches.match(request))||(await caches.match('./index.html'))||Response.error()
+    ));return;
   }
-  // Avoid returning index.html for a missing JS/CSS/image (wrong MIME).
-  event.respondWith(network().catch(async()=>await caches.match(request)||Response.error()));
+  event.respondWith(network().catch(async()=> (await caches.match(request))||Response.error()));
 });
-
 self.addEventListener('push',event=>{
   let data={};
   try{data=event.data?event.data.json():{};}catch(e){

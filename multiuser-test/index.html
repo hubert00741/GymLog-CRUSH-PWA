@@ -4963,7 +4963,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
     <div class="gl751-redline"></div>
     <div class="gl751-tagline">READY TO TRAIN</div>
   </div>
-  <span class="gl751-version">BETA 0.75.4</span>
+  <span class="gl751-version">BETA 0.75.5</span>
   <span class="gl751-progress"><i></i></span>
   <span class="gl753-powered">Powered by Stephan.os</span>
 </div>
@@ -4974,7 +4974,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 <script id="gl751-splash-manager">
 (function(){
   'use strict';
-  var VERSION='0.75.4';
+  var VERSION='0.75.5';
   var KEY='GYMLOG_CRUSH_LAST_SPLASH_VERSION';
   var splash=document.getElementById('gl751Splash');
   var app=document.getElementById('app');
@@ -5052,10 +5052,10 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 })();
 </script>
 
-<script src="./gl-quality.js?v=0754"></script>
-<script src="./gl-ui.js?v=0754"></script>
-<script src="./gl-motion.js?v=0754"></script>
-<script src="./gl-fullplan.js?v=0754"></script>
+<script src="./gl-quality.js?v=0755"></script>
+<script src="./gl-ui.js?v=0755"></script>
+<script src="./gl-motion.js?v=0755"></script>
+<script src="./gl-fullplan.js?v=0755"></script>
 <script>
 window.onerror = function(msg, url, line, col, err){
   document.getElementById("app").innerHTML =
@@ -7632,7 +7632,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.75.4";
+VERSION="BETA 0.75.5";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -9359,6 +9359,19 @@ function glScheduleAuthRetry(delay){
 async function glAfterAuthenticated(s,fromLogin){
   if(!s||!s.user||!s.user.id){glRenderLogin();return;}
   var uid=s.user.id;
+  // 0.75.5: A background retry is NOT a new login. Once this account's
+  // local state is ready, never replace it or call home() again on a delayed
+  // retry response. Otherwise iOS network hiccups throw users out of workouts
+  // and can overwrite an unsynced active draft with an older cloud snapshot.
+  if(!fromLogin && GL_AUTH_READY && STORE===glUserStore(uid)){
+    if(navigator.onLine){
+      try{
+        if(localStorage.getItem(glDirtyKey(uid))==='1' && !GL_CLOUD_APPLYING)
+          await glPushCloudState();
+      }catch(_e){}
+    }
+    return;
+  }
   var p=glSavedProfile();
   var networkReady=!!navigator.onLine && !GL_AUTH_TRANSIENT_ERROR;
 
@@ -9418,6 +9431,7 @@ async function glAfterAuthenticated(s,fromLogin){
     }
 
     GL_AUTH_READY=true;
+    var gl755BootMutation=GL74_LOCAL_MUTATION;
 
     if(!networkReady){
       glSetSync("bad","Tryb lokalny — ponawiam połączenie");
@@ -9441,16 +9455,27 @@ async function glAfterAuthenticated(s,fromLogin){
       return;
     }
 
+    // The workout or any profile data may have changed while the remote
+    // request was in flight. Keep the user's current screen AND local data;
+    // CAS synchronisation will detect a genuine cross-device conflict.
+    if(GL74_LOCAL_MUTATION!==gl755BootMutation || current){
+      if(localStorage.getItem(glDirtyKey(uid))==='1')glPushCloudState();
+      return;
+    }
     var dirty=localStorage.getItem(glDirtyKey(uid))==="1";
     if(dirty&&glMeaningful(data)){
       var pushed=await glPushCloudState();
       try{if(data.logs&&data.logs.length)recomputeLastByExercise();}catch(e){}
-      home();
+      if(GL74_LOCAL_MUTATION===gl755BootMutation && !current && !document.getElementById("tr"))home();
       if(!pushed)glScheduleAuthRetry(4000);
       return;
     }
 
     if(glMeaningful(remote.state)){
+      if(GL74_LOCAL_MUTATION!==gl755BootMutation || current){
+        if(localStorage.getItem(glDirtyKey(uid))==='1')glPushCloudState();
+        return;
+      }
       GL_CLOUD_APPLYING=true;
       data=glNormalizeState(remote.state);
       try{
@@ -9530,7 +9555,7 @@ window.addEventListener("visibilitychange",function(){
       var oldCfg=JSON.stringify((window.GL_PROFILE&&window.GL_PROFILE.profile_config)||{});
       await glFetchProfile(s.user.id);
       var newCfg=JSON.stringify((window.GL_PROFILE&&window.GL_PROFILE.profile_config)||{});
-      if(oldCfg!==newCfg && !current){ home(); }
+      if(oldCfg!==newCfg && !current && !document.getElementById("tr")){ home(); }
     }catch(e){}
   })();
 });
@@ -14472,6 +14497,11 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0755",version:"BETA 0.75.5",date:"17.10.2026",
+      title:"Naprawiony start treningu i wznowienie aplikacji",
+      changes:[{feature:"always",text:"Opóźniona odpowiedź Supabase nie przerywa już rozpoczętego treningu ani nie cofa formularza na ekran startowy. Zabezpieczono również edycję nowego treningu przed starym licznikiem bezczynności."}]
+    },
+    {
       id:"client-0754", version:"BETA 0.75.4", date:"17.10.2026",
       title:"Poprawiony zapis serii po imporcie planu",
       changes:[
@@ -16683,7 +16713,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16729,7 +16759,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.75.4";
+    VERSION="BETA 0.75.5";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16869,7 +16899,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -17163,7 +17193,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -17466,7 +17496,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -17536,7 +17566,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -17781,7 +17811,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -17914,7 +17944,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -18076,7 +18106,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -19217,7 +19247,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -19360,7 +19390,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -19392,7 +19422,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -19802,7 +19832,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -20096,7 +20126,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -20207,7 +20237,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -20309,7 +20339,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -20579,7 +20609,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -20684,7 +20714,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Repaint from the persisted absolute deadline when resumed.
   setInterval(function(){if(!document.hidden&&current&&gl136RestEnd)gl136PaintRest();},1000);
 
-  VERSION="BETA 0.75.4";
+  VERSION="BETA 0.75.5";
 })();
 
 
@@ -20811,6 +20841,11 @@ if(typeof window.glAdminExportWorkout==="function"){
   }
   function autoFinish(){
     if(BUSY||!GL_AUTH_READY)return false;
+    // A stale abandoned draft can coexist with an open NEW-workout form.
+    // Never tear down that form while the user types. The 30-minute rule
+    // remains enforced when an active workout is resumed or displayed.
+    var form=document.getElementById('tr');
+    if(!current && form && document.getElementById('date'))return false;
     var w=draft();if(!w)return false;
     var at=ensureClock(w);
     if(!at||Date.now()-at<THRESHOLD)return false;

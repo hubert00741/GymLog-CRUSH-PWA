@@ -4963,7 +4963,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
     <div class="gl751-redline"></div>
     <div class="gl751-tagline">READY TO TRAIN</div>
   </div>
-  <span class="gl751-version">BETA 0.75.5</span>
+  <span class="gl751-version">BETA 0.75.6</span>
   <span class="gl751-progress"><i></i></span>
   <span class="gl753-powered">Powered by Stephan.os</span>
 </div>
@@ -4974,7 +4974,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 <script id="gl751-splash-manager">
 (function(){
   'use strict';
-  var VERSION='0.75.5';
+  var VERSION='0.75.6';
   var KEY='GYMLOG_CRUSH_LAST_SPLASH_VERSION';
   var splash=document.getElementById('gl751Splash');
   var app=document.getElementById('app');
@@ -5052,10 +5052,28 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 })();
 </script>
 
-<script src="./gl-quality.js?v=0755"></script>
-<script src="./gl-ui.js?v=0755"></script>
-<script src="./gl-motion.js?v=0755"></script>
-<script src="./gl-fullplan.js?v=0755"></script>
+<script id="gl756-startup-guard">
+(function(){
+  var started=Date.now();
+  var guard=setTimeout(function(){
+    var node=document.getElementById("app");
+    if(!node)return;
+    var stillLoading=node.textContent && node.textContent.indexOf("Ładowanie...")>=0;
+    if(!stillLoading)return;
+    // No auth or workout state is modified by the guard.
+    node.innerHTML='<div class="card" style="margin-top:20px">'+
+      '<h2>Uruchomienie trwa zbyt długo</h2>'+
+      '<p class="small">Aplikacja nie otrzymała na czas wszystkich plików lub odpowiedzi serwera. Twoje treningi i dane na urządzeniu nie zostały usunięte.</p>'+
+      '<button onclick="window.location.reload()">SPRÓBUJ PONOWNIE</button>'+
+      '<p class="small">Jeśli problem się powtarza, sprawdź połączenie z internetem. Nie usuwaj aplikacji ani jej danych.</p></div>';
+  },11500);
+  window.gl756StartupGuard=function(){clearTimeout(guard);};
+})();
+</script>
+<script src="./gl-quality.js?v=0756"></script>
+<script src="./gl-ui.js?v=0756"></script>
+<script src="./gl-motion.js?v=0756"></script>
+<script src="./gl-fullplan.js?v=0756"></script>
 <script>
 window.onerror = function(msg, url, line, col, err){
   document.getElementById("app").innerHTML =
@@ -7632,7 +7650,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.75.5";
+VERSION="BETA 0.75.6";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -9099,17 +9117,42 @@ async function glApi(path,opts,sessionOverride){
   var s=sessionOverride||glSession();
   var headers=Object.assign({"apikey":GL_SUPABASE_KEY},opts.headers||{});
   if(s&&s.access_token)headers.Authorization="Bearer "+s.access_token;
-  var res=await fetch(GL_SUPABASE_URL+path,Object.assign({},opts,{headers:headers}));
-  var txt=await res.text();var body=null;try{body=txt?JSON.parse(txt):null;}catch(e){body=txt;}
-  if(!res.ok){
-    var msg=(body&&body.msg)||(body&&body.message)||(body&&body.error_description)||(body&&body.error)||("HTTP "+res.status);
-    var err=new Error(msg);
-    err.status=res.status;
-    err.body=body;
-    err.path=path;
-    throw err;
-  }
-  return body;
+  // 0.75.6: iOS standalone PWAs can leave fetch pending indefinitely after
+  // background/foreground network changes. A pending profile/state request used
+  // to leave #app on the initial "Ładowanie..." screen forever.
+  // Bound BOTH the network operation and response body read. A timeout is
+  // transient: never clear a valid session, workout draft, or local history.
+  var method=String(opts.method||"GET").toUpperCase();
+  var timeoutMs=(method==="GET" || path.indexOf("/auth/v1/token?grant_type=refresh_token")===0)?6500:12000;
+  var controller=typeof AbortController!=="undefined"?new AbortController():null;
+  var pendingTimer=null;
+  var request=Object.assign({},opts,{headers:headers});
+  if(controller)request.signal=controller.signal;
+  var operation=(async function(){
+    var res=await fetch(GL_SUPABASE_URL+path,request);
+    var txt=await res.text();var body=null;
+    try{body=txt?JSON.parse(txt):null;}catch(e){body=txt;}
+    if(!res.ok){
+      var msg=(body&&body.msg)||(body&&body.message)||(body&&body.error_description)||(body&&body.error)||("HTTP "+res.status);
+      var err=new Error(msg);
+      err.status=res.status;
+      err.body=body;
+      err.path=path;
+      throw err;
+    }
+    return body;
+  })();
+  var timedOut=new Promise(function(_resolve,reject){
+    pendingTimer=setTimeout(function(){
+      var err=new Error("Brak odpowiedzi serwera w wymaganym czasie.");
+      err.transient=true;
+      err.path=path;
+      reject(err);
+      try{if(controller)controller.abort();}catch(_e){}
+    },timeoutMs);
+  });
+  try{return await Promise.race([operation,timedOut]);}
+  finally{if(pendingTimer!==null)clearTimeout(pendingTimer);}
 }
 
 async function glRefreshSession(){
@@ -9373,6 +9416,8 @@ async function glAfterAuthenticated(s,fromLogin){
     return;
   }
   var p=glSavedProfile();
+  // A shared iPhone may have a cached profile belonging to another account.
+  if(p&&String(p.id||"")!==String(uid))p=null;
   var networkReady=!!navigator.onLine && !GL_AUTH_TRANSIENT_ERROR;
 
   try{
@@ -9403,11 +9448,13 @@ async function glAfterAuthenticated(s,fromLogin){
             GL_AUTH_TRANSIENT_ERROR=refreshErr;
             networkReady=false;
             p=glSavedProfile();
+            if(p&&String(p.id||"")!==String(uid))p=null;
           }
         }else{
           GL_AUTH_TRANSIENT_ERROR=profileErr;
           networkReady=false;
           p=glSavedProfile();
+          if(p&&String(p.id||"")!==String(uid))p=null;
         }
       }
     }
@@ -9529,6 +9576,7 @@ async function glAfterAuthenticated(s,fromLogin){
     // Any other startup failure is treated as temporary. Never erase tokens.
     GL_AUTH_TRANSIENT_ERROR=e;
     var cached=glSavedProfile();
+    if(cached&&String(cached.id||"")!==String(uid))cached=null;
     if(cached){
       window.GL_PROFILE=cached;
       glApplyProfileTheme();
@@ -9560,9 +9608,28 @@ window.addEventListener("visibilitychange",function(){
   })();
 });
 window.glAuthBootstrap=async function(){
-  var s=await glEnsureSession();
-  if(!s){glRenderLogin();return;}
-  await glAfterAuthenticated(s,false);
+  try{
+    var s=await glEnsureSession();
+    if(!s){glRenderLogin();return;}
+    await glAfterAuthenticated(s,false);
+  }catch(error){
+    console.error("Bootstrap failed (0.75.6):",error);
+    var saved=glSession();
+    var localProfile=glSavedProfile();
+    if(saved&&saved.user&&localProfile&&String(localProfile.id||"")===String(saved.user.id)){
+      window.GL_PROFILE=localProfile;
+      STORE=glUserStore(saved.user.id);
+      data=glNormalizeState(safeLoad());
+      GL_AUTH_READY=true;
+      glApplyProfileTheme();
+      glSetSync("bad","Tryb lokalny — ponawiam połączenie");
+      home();
+      glScheduleAuthRetry(4500);
+    }else if(saved){
+      glRenderSessionRecovery("Serwer chwilowo nie odpowiada. Sesja i dane pozostają zachowane.");
+      glScheduleAuthRetry(4500);
+    }else glRenderLogin();
+  }
 };
 window.addEventListener("online",function(){
   GL_AUTH_TRANSIENT_ERROR=null;
@@ -14497,6 +14564,11 @@ if(typeof window.glAdminExportWorkout==="function"){
 (function(){
   var GL111_CLIENT_RELEASES=[
     {
+      id:"client-0756",version:"BETA 0.75.6",date:"17.10.2026",
+      title:"Bezpieczne uruchamianie i odzyskiwanie sesji",
+      changes:[{feature:"always",text:"Aplikacja nie pozostaje bez końca na ekranie ładowania przy zawieszonym żądaniu sieciowym. Uruchamia lokalnie zapisany profil i szkic, zachowuje sesję oraz ponawia synchronizację w tle. Usprawniono cache na iPhonie."}]
+    },
+    {
       id:"client-0755",version:"BETA 0.75.5",date:"17.10.2026",
       title:"Naprawiony start treningu i wznowienie aplikacji",
       changes:[{feature:"always",text:"Opóźniona odpowiedź Supabase nie przerywa już rozpoczętego treningu ani nie cofa formularza na ekran startowy. Zabezpieczono również edycję nowego treningu przed starym licznikiem bezczynności."}]
@@ -16713,7 +16785,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -16759,7 +16831,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.75.5";
+    VERSION="BETA 0.75.6";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -16899,7 +16971,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -17193,7 +17265,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -17496,7 +17568,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -17566,7 +17638,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -17811,7 +17883,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -17944,7 +18016,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -18106,7 +18178,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -19247,7 +19319,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -19390,7 +19462,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -19422,7 +19494,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -19832,7 +19904,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -20126,7 +20198,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -20237,7 +20309,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -20339,7 +20411,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -20609,7 +20681,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 
@@ -20714,7 +20786,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Repaint from the persisted absolute deadline when resumed.
   setInterval(function(){if(!document.hidden&&current&&gl136RestEnd)gl136PaintRest();},1000);
 
-  VERSION="BETA 0.75.5";
+  VERSION="BETA 0.75.6";
 })();
 
 

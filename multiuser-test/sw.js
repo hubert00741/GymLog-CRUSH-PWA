@@ -1,10 +1,10 @@
-/* GymLog CRUSH Service Worker 0.75.5.
+/* GymLog CRUSH Service Worker 0.75.6.
    Installing a new release requires the application shell and its JS module.
    Failure to fetch optional images must NOT break an otherwise valid update. */
-const CACHE='gymlog-crush-multiuser-test-v0755';
+const CACHE='gymlog-crush-multiuser-test-v0756';
 // Cache the same versioned URLs that index.html actually requests, so the
 // first offline launch after upgrading has both modules available.
-const SHELL=['./index.html','./gl-quality.js?v=0755','./gl-ui.js?v=0755','./gl-motion.js?v=0755','./gl-fullplan.js?v=0755'];
+const SHELL=['./index.html','./gl-quality.js?v=0756','./gl-ui.js?v=0756','./gl-motion.js?v=0756','./gl-fullplan.js?v=0756'];
 const OPTIONAL=['./','./gl-quality.js','./gl-ui.js','./gl-motion.js','./gl-fullplan.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png','./header-logo-female.png'];
 
 self.addEventListener('install', event=>{
@@ -29,12 +29,19 @@ self.addEventListener('fetch', event=>{
   if(request.method!=='GET')return;
   const url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
-  const network=()=>fetch(request).then(async response=>{
-    if(response.ok){
-      try{const cache=await caches.open(CACHE);await cache.put(request,response.clone());}catch(_e){}
-    }
-    return response;
-  });
+  const network=async()=>{
+    const controller=new AbortController();
+    // 0.75.6: allow cached app shell/modules to take over when iOS holds
+    // a network request pending without resolving or rejecting it.
+    const timeout=setTimeout(()=>controller.abort(),5500);
+    try{
+      const response=await fetch(request,{signal:controller.signal});
+      if(response.ok){
+        try{const cache=await caches.open(CACHE);await cache.put(request,response.clone());}catch(_e){}
+      }
+      return response;
+    }finally{clearTimeout(timeout);}
+  };
   if(request.mode==='navigate'){
     event.respondWith(network().catch(async()=>{
       const cached=await caches.match(request);

@@ -4951,6 +4951,31 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 @media(max-width:370px){.gl753-gymgrid{grid-template-columns:1fr}}
 </style>
 
+<style id="glcoach-07511-css">
+/* GymLog CRUSH 0.75.11 — coach inbox */
+.glcoach-launch{margin:24px 0 10px}
+.glcoach-launch button{display:flex!important;align-items:center;text-align:left!important;gap:12px;background:#15161b!important;border:1px solid rgba(255,255,255,.12)!important;padding:15px!important;border-radius:17px!important;margin:0!important;width:100%}
+.glcoach-launch-icon{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border-radius:12px;background:rgba(181,35,67,.17);color:var(--account-accent,#e44e69);font-size:20px}
+.glcoach-launch button>span:nth-child(2){flex:1;min-width:0}
+.glcoach-launch b{font-size:14px;display:block}.glcoach-launch small{display:block;color:#a4a3ad;font-size:11px;margin-top:5px;font-weight:500}
+.glcoach-arrow{font-size:23px;color:#8f919a}
+.glcoach-page{padding-bottom:20px}.glcoach-kicker{font-size:11px;letter-spacing:.12em;color:var(--account-accent,#ec4e67);margin-top:23px;font-weight:900}
+.glcoach-page>h1{margin-top:8px;margin-bottom:12px}
+.glcoach-msg{font-size:12px;color:#b7e7cc;margin:14px 0;line-height:1.5}.glcoach-bad{color:#ff8b9a}
+.glcoach-card{background:#101116!important;border:1px solid rgba(255,255,255,.12)!important}
+.glcoach-meta{font-size:11px;font-weight:800;letter-spacing:.035em;color:var(--account-accent,#f26579);margin:9px 0}
+.glcoach-card h2{margin:12px 0 7px;font-size:19px}
+.glcoach-ex{margin:15px 0;padding:13px;background:#1c1d23;border-radius:14px;border:1px solid rgba(255,255,255,.09)}
+.glcoach-ex h3{font-size:15px;margin:1px 0 13px}
+.glcoach-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
+.glcoach-compare>div{min-width:0;background:#111216;border-radius:10px;padding:9px}
+.glcoach-compare span{font-size:10px;letter-spacing:.02em;color:#a8aab4}
+.glcoach-compare pre{font-size:11px;font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere;color:#fff;line-height:1.55;margin:9px 0}
+.glcoach-compare>div:nth-child(2) pre{color:#f599a8}
+.glcoach-warning{border-left:3px solid #c77e46;background:#38271f;color:#ffcf9e;padding:10px;font-size:12px;line-height:1.5;border-radius:6px}
+@media(max-width:355px){.glcoach-compare{grid-template-columns:1fr}}
+
+</style>
 </head>
 
 <body>
@@ -4964,7 +4989,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
     <div class="gl751-redline"></div>
     <div class="gl751-tagline">READY TO TRAIN</div>
   </div>
-  <span class="gl751-version">BETA 0.75.8</span>
+  <span class="gl751-version">BETA 0.75.11</span>
   <span class="gl751-progress"><i></i></span>
   <span class="gl753-powered">Powered by Stephan.os</span>
 </div>
@@ -8902,7 +8927,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.75.10";
+VERSION="BETA 0.75.11";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -18081,7 +18106,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -18127,7 +18152,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.75.10";
+    VERSION="BETA 0.75.11";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -18267,7 +18292,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -18561,7 +18586,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -18864,7 +18889,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -18934,7 +18959,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -19179,7 +19204,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -19312,7 +19337,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -19474,7 +19499,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -20615,7 +20640,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -20758,7 +20783,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -20790,7 +20815,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -21200,7 +21225,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -21494,7 +21519,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -21605,7 +21630,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -21707,7 +21732,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -21977,7 +22002,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -22082,7 +22107,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Repaint from the persisted absolute deadline when resumed.
   setInterval(function(){if(!document.hidden&&current&&gl136RestEnd)gl136PaintRest();},1000);
 
-  VERSION="BETA 0.75.10";
+  VERSION="BETA 0.75.11";
 })();
 
 
@@ -22407,6 +22432,188 @@ if(window.GymLogLeague){
     wrapHistory:function(make){historyView=make(historyView);window.historyView=historyView;}
   });
 }
+/* GymLog CRUSH 0.75.11 — propozycje celów od trenera/ChatGPT.
+   NEVER change a weight without an explicit authenticated user approval. */
+(function(){
+'use strict';
+var rows=[],opened=false,busy=false;
+var TABLE='/rest/v1/crush_goal_proposals';
+function h(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function copy(x){return JSON.parse(JSON.stringify(x));}
+function clean(t){return String(t==null?'':t).replace(/\r\n?/g,'\n').replace(/\u00a0/g,' ').trim();}
+function me(){var p=window.GL_PROFILE||{};return p.role==='admin'&&!!glSession()&&String(glSession().user&&glSession().user.id||'')===String(p.id||'');}
+function uid(){var s=glSession();return s&&s.user&&s.user.id||'';}
+function notify(msg,bad){var el=document.getElementById('glCoachInfo');if(el){el.textContent=msg||'';el.className=bad?'glcoach-msg glcoach-bad':'glcoach-msg';}}
+function schemaError(e){var t=String(e&&e.message||e||'');return /crush_goal_proposals|PGRST205|relation.*does not exist|404/.test(t)?'Brak tabeli propozycji w Supabase. Uruchom dołączony SQL z wersji 0.75.11.':t;}
+function getGymExercise(gym,plan,index,name){
+  if(!data||!data.ownerPlansByGymV1||!data.ownerPlansByGymV1[gym]||!Array.isArray(data.ownerPlansByGymV1[gym][plan]))throw Error('Nie znaleziono wariantu '+plan+' dla '+gym+'. Nie zmieniono planu.');
+  var arr=data.ownerPlansByGymV1[gym][plan],at=Number(index);
+  var ex=arr[at];
+  if(!ex||clean(ex.name)!==clean(name)){
+    var matches=arr.map(function(x,i){return {x:x,i:i};}).filter(function(x){return clean(x.x.name)===clean(name);});
+    if(matches.length!==1)throw Error('Ćwiczenie „'+name+'” nie ma jednoznacznego dopasowania w '+gym+' / '+plan+'. Zmiany anulowane.');
+    at=matches[0].i;ex=matches[0].x;
+  }
+  var bucket=data.planOverridesByGym&&data.planOverridesByGym[gym]&&data.planOverridesByGym[gym][plan];
+  var goal=bucket&&Object.prototype.hasOwnProperty.call(bucket,ex.name)?String(bucket[ex.name]):String(ex.plan||'');
+  return {exercise:ex,index:at,goal:goal};
+}
+function parseTargets(goal){
+  var warm=[],work=[],notes=[];
+  clean(goal).split('\n').forEach(function(line){
+    var parts=line.split('|').map(function(x){return clean(x);});
+    if(/^rozgrzewka\b/i.test(parts[0])&&parts.length>=3){warm.push({weight:parts[1],reps:parts[2],note:parts[3]||''});}
+    else if(/^seria\s+\d+\b/i.test(parts[0])&&parts.length>=3){work.push({weight:parts[1],reps:parts[2],note:parts[3]||''});}
+    else if(line.trim())notes.push(line.trim());
+  });
+  if(!work.length||work.length>12||warm.length>12)throw Error('Nieprawidłowy zestaw serii roboczych (1–12).');
+  function validReps(v){return /^\d{1,2}(\s*[-–]\s*\d{1,2})?$/.test(clean(v));}
+  warm.concat(work).forEach(function(t){
+    if(!validReps(t.reps))throw Error('Nieprawidłowy zakres powtórzeń: '+t.reps);
+    var n=parseInt(t.reps,10);if(n<1||n>50)throw Error('Powtórzenia poza dozwolonym zakresem.');
+    var a=clean(t.weight);
+    if(a&&/[0-9]/.test(a)){
+      var value=parseFloat((a.match(/[0-9]+(?:[,.][0-9]+)?/)||[])[0].replace(',','.'));
+      if(!isFinite(value)||value>800)throw Error('Podejrzany ciężar: '+a);
+    }
+  });
+  if(clean(goal).length>2500)throw Error('Zbyt długi opis celu.');
+  return {warm:warm,work:work,notes:notes};
+}
+function highestWorkWeight(goal){try{var w=parseTargets(goal).work.map(function(x){var m=clean(x.weight).match(/\d+(?:[,.]\d+)?/);return m?Number(m[0].replace(',','.')):0;});return Math.max.apply(null,w);}catch(e){return 0;}}
+function proposalItem(proposal,item){
+  if(!item||typeof item!=='object'||!item.exercise_name||!Object.prototype.hasOwnProperty.call(item,'exercise_index')||!item.proposed_goal||!Object.prototype.hasOwnProperty.call(item,'expected_goal'))throw Error('Niepełna propozycja od trenera. Nic nie zapisano.');
+  var match=getGymExercise(proposal.gym,proposal.plan_name,item.exercise_index,item.exercise_name);
+  if(clean(match.goal)!==clean(item.expected_goal))throw Error('Cel „'+item.exercise_name+'” zmienił się od czasu analizy. Poproś o nową propozycję.');
+  var parsed=parseTargets(item.proposed_goal),before=highestWorkWeight(match.goal),after=highestWorkWeight(item.proposed_goal);
+  return {index:match.index,exercise:match.exercise,goal:match.goal,newGoal:clean(item.proposed_goal),parsed:parsed,reason:clean(item.reason||''),tooBig:before>0&&after>before*1.15,oldWeight:before,newWeight:after};
+}
+function proposalById(id){return rows.find(function(x){return String(x.id)===String(id);});}
+function localApplied(id){return !!(data&&data.glCoachAppliedProposalIds&&data.glCoachAppliedProposalIds[id]);}
+function formatDate(ts){try{return new Intl.DateTimeFormat('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(ts));}catch(e){return '';}}
+function view(){
+  opened=true;
+  if(!me()){render('<h1>Propozycje celów</h1><div class="err">Ta funkcja jest dostępna na Twoim koncie administratora.</div><button onclick="home()">Wróć</button>');return;}
+  render('<main class="glcoach-page"><button class="secondary" onclick="home()">← Start</button><div class="glcoach-kicker">GYMLOG CRUSH · TRENER</div><h1>Propozycje celów</h1><p class="small">Po analizie treningu w ChatGPT pojawi się tutaj propozycja dla konkretnej siłowni. Nic nie zmieni się bez Twojego zatwierdzenia.</p><div id="glCoachInfo" class="glcoach-msg">Pobieram propozycje…</div><div id="glCoachContent"></div></main>'+luxBottomNav('start'));
+  load();
+}
+function paint(){
+  if(!opened)return;
+  var box=document.getElementById('glCoachContent');if(!box)return;
+  if(!rows.length){box.innerHTML='<div class="card"><b>Brak propozycji do zatwierdzenia</b><p class="small">Dokończ trening, wyślij mi podsumowanie tutaj i poproś o przygotowanie celów. Będę mógł przekazać je do tej skrzynki po włączeniu połączenia z bazą.</p></div>';return;}
+  box.innerHTML=rows.map(function(p){
+    var applied=localApplied(p.id), items=Array.isArray(p.items)?p.items:[],entries='';
+    items.forEach(function(x){
+      var err='',warning=false;
+      try{var ready=proposalItem(p,x);warning=ready.tooBig;}catch(e){err=String(e.message||e);}
+      entries+='<section class="glcoach-ex"><h3>'+h(x.exercise_name||'Ćwiczenie')+'</h3>'+
+        (err?'<p class="glcoach-warning">'+h(err)+'</p>':'')+
+        '<div class="glcoach-compare"><div><span>Obecny cel</span><pre>'+h(x.expected_goal||'')+'</pre></div><div><span>Proponowany cel</span><pre>'+h(x.proposed_goal||'')+'</pre></div></div>'+
+        (warning?'<p class="glcoach-warning">Uwaga: pierwsza robocza seria ma ponad 15% większy ciężar niż obecnie. Sprawdź tę zmianę.</p>':'')+
+        (x.reason?'<p class="small">'+h(x.reason)+'</p>':'')+'</section>';
+    });
+    return '<article class="card glcoach-card"><div class="glcoach-meta">'+h(p.gym)+' · '+h(p.plan_name)+' · '+h(formatDate(p.created_at))+'</div><h2>Nowe cele od trenera</h2>'+
+      (p.coach_note?'<p>'+h(p.coach_note)+'</p>':'')+entries+
+      (applied?'<p class="glcoach-warning">Cele zapisano na tym urządzeniu. Dokończ synchronizację, zanim ponownie rozpoczniesz trening.</p><button onclick="glCoachSync(\''+h(p.id)+'\')">DOKOŃCZ SYNCHRONIZACJĘ</button>':
+       '<button onclick="glCoachApprove(\''+h(p.id)+'\')">ZATWIERDŹ CAŁY ZESTAW</button><button class="secondary" onclick="glCoachReject(\''+h(p.id)+'\')">Odrzuć propozycję</button>')+
+      '</article>';
+  }).join('');
+}
+async function load(){
+  if(!navigator.onLine){notify('Brak internetu — nie można pobrać propozycji. Plany lokalne pozostają dostępne.',true);return;}
+  try{
+    await glEnsureSession();
+    var list=await glApi(TABLE+'?select=*&user_id=eq.'+encodeURIComponent(uid())+'&status=eq.pending&order=created_at.desc&limit=20',{headers:{Accept:'application/json'}});
+    rows=Array.isArray(list)?list:[];
+    notify('Propozycje przypisane do Twojego konta: '+rows.length);
+    paint();
+  }catch(e){notify(schemaError(e),true);}
+}
+function validate(p){
+  if(!me())throw Error('Nieprawidłowe konto.');
+  if(!p||p.user_id!==uid()||p.status!=='pending')throw Error('Propozycja nie jest już aktywna.');
+  if(data&&data.draft)throw Error('Zakończ lub anuluj rozpoczęty trening przed zatwierdzeniem.');
+  if(typeof current!=='undefined'&&current)throw Error('Nie zmieniaj planu podczas aktywnego treningu.');
+  if(typeof GL74_SYNC_CONFLICT!=='undefined'&&GL74_SYNC_CONFLICT)throw Error('Najpierw rozwiąż konflikt synchronizacji.');
+  if(!navigator.onLine)throw Error('Brak połączenia z Supabase.');
+  var items=Array.isArray(p.items)?p.items:[];
+  if(!items.length||items.length>25)throw Error('Nieprawidłowa liczba ćwiczeń.');
+  var prepared=items.map(function(x){return proposalItem(p,x);});
+  var keys=new Set(prepared.map(function(x){return x.index;}));
+  if(keys.size!==prepared.length)throw Error('Powtórzona pozycja ćwiczenia — nie zastosowano zmian.');
+  return prepared;
+}
+function backup(){
+  var key='GYMLOG_CRUSH_COACH_BACKUPS_'+uid();
+  var list=[];try{list=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(list))list=[];}catch(e){}
+  list.unshift({createdAt:new Date().toISOString(),state:{ownerPlansByGymV1:copy(data.ownerPlansByGymV1||{}),planOverridesByGym:copy(data.planOverridesByGym||{})}});
+  localStorage.setItem(key,JSON.stringify(list.slice(0,3)));
+}
+function applyLocal(p,prepared){
+  backup();
+  var arr=data.ownerPlansByGymV1[p.gym][p.plan_name],buckets=data.planOverridesByGym||(data.planOverridesByGym={});
+  var gym=buckets[p.gym]||(buckets[p.gym]={}),goals=gym[p.plan_name]||(gym[p.plan_name]={});
+  prepared.forEach(function(x){
+    var e=arr[x.index],parsed=x.parsed;
+    e.plan=x.newGoal;
+    e.goal=parsed.work.map(function(s,i){return 'Seria '+(i+1)+' | '+s.weight+' | '+s.reps;}).join('\n');
+    e.workTargets=copy(parsed.work);e.warmupTargets=copy(parsed.warm);
+    e.workReps=parsed.work.map(function(s){return s.reps;});
+    e.warmups=parsed.warm.map(function(s){return (s.weight?s.weight+' x ':'')+s.reps;});
+    e.ownerSets=parsed.work.length;e.sets=parsed.work.length;
+    goals[e.name]=x.newGoal;
+  });
+  if(!data.glCoachAppliedProposalIds)data.glCoachAppliedProposalIds={};
+  data.glCoachAppliedProposalIds[p.id]=new Date().toISOString();
+  if(typeof gl113ApplyOwnerPlans==='function')gl113ApplyOwnerPlans();
+  safeSave();
+}
+async function mark(p,status){
+  var result=await glApi(TABLE+'?id=eq.'+encodeURIComponent(p.id)+'&user_id=eq.'+encodeURIComponent(uid())+'&status=eq.pending',{
+    method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=representation'},
+    body:JSON.stringify({status:status,applied_at:status==='applied'?new Date().toISOString():null})
+  });
+  if(!Array.isArray(result)||result.length!==1)throw Error('Propozycja została już zmieniona na serwerze. Odśwież listę.');
+}
+async function syncApplied(p){
+  if(typeof GL74_SYNC_CONFLICT!=='undefined'&&GL74_SYNC_CONFLICT)throw Error('Wystąpił konflikt synchronizacji. Plany zapisano lokalnie — nie potwierdzono w chmurze.');
+  var synced=await glPushCloudState();
+  if(!synced)throw Error('Plan zapisano na urządzeniu, ale synchronizacja Supabase nie jest potwierdzona. Spróbuj ponownie po przywróceniu połączenia.');
+  await mark(p,'applied');
+  rows=rows.filter(function(row){return row.id!==p.id;});
+  notify('Propozycja zatwierdzona i zsynchronizowana. Przed kolejnym treningiem sprawdź wyświetlone cele.');paint();
+}
+window.glCoachApprove=async function(id){
+  if(busy)return;busy=true;
+  try{
+    var p=proposalById(id);if(!p)throw Error('Propozycja nie istnieje.');
+    await glEnsureSession();
+    var fresh=await glApi(TABLE+'?id=eq.'+encodeURIComponent(id)+'&user_id=eq.'+encodeURIComponent(uid())+'&select=*',{headers:{Accept:'application/json'}});
+    if(!Array.isArray(fresh)||fresh.length!==1)throw Error('Propozycja nie istnieje na serwerze.');
+    p=fresh[0];if(localApplied(p.id)){await syncApplied(p);return;}
+    var prepared=validate(p),unusual=prepared.filter(function(x){return x.tooBig;});
+    if(!confirm('Zatwierdzić '+prepared.length+' ćwiczeń dla '+p.gym+' / '+p.plan_name+'?\n\nZmiana dotyczy tylko tej siłowni i nie usuwa historii.'))return;
+    if(unusual.length&&!confirm('Uwaga: '+unusual.length+' ćwiczenie(a) ma(ją) wzrost ciężaru ponad 15%. Czy na pewno akceptujesz te wartości?'))return;
+    applyLocal(p,prepared);await syncApplied(p);
+  }catch(e){notify(String(e&&e.message||e),true);paint();}
+  finally{busy=false;}
+};
+window.glCoachSync=async function(id){if(busy)return;busy=true;try{var p=proposalById(id);if(!p)throw Error('Brak propozycji.');await glEnsureSession();await syncApplied(p);}catch(e){notify(String(e&&e.message||e),true);}finally{busy=false;}};
+window.glCoachReject=async function(id){if(busy)return;var p=proposalById(id);if(!p||localApplied(id))return;if(!confirm('Odrzucić propozycję? Plan pozostanie bez zmian.'))return;busy=true;try{await glEnsureSession();await mark(p,'rejected');rows=rows.filter(function(x){return x.id!==id;});notify('Odrzucono. Plan bez zmian.');paint();}catch(e){notify(schemaError(e),true);}finally{busy=false;}};
+window.glCoachView=view;
+var originalHome=window.home;
+window.home=home=function(){opened=false;var result=originalHome.apply(this,arguments);if(!me())return result;
+  var dashboard=document.querySelector('#app .gl085-dashboard');
+  if(dashboard&&!document.getElementById('glCoachLaunch')){
+    var footer=dashboard.querySelector('.gl760-settings-footer');
+    var card=document.createElement('section');card.id='glCoachLaunch';card.className='glcoach-launch';
+    card.innerHTML='<button onclick="glCoachView()"><span class="glcoach-launch-icon">↗</span><span><b>Propozycje celów</b><small>Zmiany od ChatGPT do zatwierdzenia</small></span><span class="glcoach-arrow">›</span></button>';
+    if(footer)footer.insertAdjacentElement('beforebegin',card);else dashboard.appendChild(card);
+  }
+  return result;
+};
+})();
+
 /* 0.75.7: instant local boot. A network request must not hold the splash or
    replace a cached, resumable workout. No client data is cleared here. */
 (function gl757ImmediateLocalBoot(){

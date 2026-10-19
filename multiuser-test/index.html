@@ -6193,7 +6193,7 @@ async function profile(uid){var person=rows.find(function(r){return String(r.use
 function goHome(){stopRefresh();api.goHome();}
 function cardioOpen(){stopRefresh();if(api.activeWorkout()){alert('Najpierw zakończ lub zapisz rozpoczęty trening siłowy.');return;}
  var date=dateNow();
- api.render('<div class="gl758-league"><button class="secondary" onclick="GymLogLeague.activityMenu()">← Aktywności</button><div class="card"><div class="gl758-kicker">OSOBNA SESJA</div><h1>Nowe cardio</h1><label>Rodzaj</label><select id="gl758type">'+Object.keys({'treadmill':1,'bike':1,'stairs':1,'elliptical':1,'rowing':1,'outdoor':1,'other':1}).map(function(v){return '<option value="'+v+'">'+activityName(v)+'</option>';}).join('')+'</select><label>Data</label><input type="date" id="gl758date" value="'+date+'"><label>Czas (minuty)</label><input type="number" id="gl758minutes" min="1" max="600" inputmode="numeric" placeholder="np. 30"><label>Dystans (km, opcjonalnie)</label><input type="number" id="gl758distance" step="0.01" min="0" max="500" inputmode="decimal" placeholder="np. 4,5"><label>Średnie tętno (opcjonalnie)</label><input type="number" id="gl758heart" min="40" max="240" inputmode="numeric" placeholder="np. 145"><label>Uwagi (opcjonalnie)</label><textarea id="gl758note" maxlength="300" placeholder="Jak przebiegła sesja?"></textarea><button onclick="GymLogLeague.saveCardio()">ZAPISZ CARDIO</button><p class="small">Cardio trwa minimum 15 minut, aby liczyło się do rankingu. Sesje krótsze też pozostają w historii.</p><div id="gl758message" aria-live="polite"></div></div>'+api.nav('start')+'</div>');
+ api.render('<div class="gl758-league"><button class="secondary" onclick="GymLogLeague.activityMenu()">← Aktywności</button><div class="card"><div class="gl758-kicker">OSOBNA SESJA</div><h1>Nowe cardio</h1><label>Rodzaj</label><select id="gl758type">'+Object.keys({'treadmill':1,'bike':1,'stairs':1,'elliptical':1,'rowing':1,'outdoor':1,'other':1}).map(function(v){return '<option value="'+v+'">'+activityName(v)+'</option>';}).join('')+'</select><label for="gl758date">Data</label><div class="gl760-date-container"><input type="date" id="gl758date" value="'+date+'" aria-label="Data sesji cardio"></div><label>Czas (minuty)</label><input type="number" id="gl758minutes" min="1" max="600" inputmode="numeric" placeholder="np. 30"><label>Dystans (km, opcjonalnie)</label><input type="number" id="gl758distance" step="0.01" min="0" max="500" inputmode="decimal" placeholder="np. 4,5"><label>Średnie tętno (opcjonalnie)</label><input type="number" id="gl758heart" min="40" max="240" inputmode="numeric" placeholder="np. 145"><label>Uwagi (opcjonalnie)</label><textarea id="gl758note" maxlength="300" placeholder="Jak przebiegła sesja?"></textarea><button onclick="GymLogLeague.saveCardio()">ZAPISZ CARDIO</button><p class="small">Cardio trwa minimum 15 minut, aby liczyło się do rankingu. Sesje krótsze też pozostają w historii.</p><div id="gl758message" aria-live="polite"></div></div>'+api.nav('start')+'</div>');
 }
 function saveCardio(){var $=function(id){return document.getElementById(id);},d=$('gl758date').value,minutes=Number($('gl758minutes').value),distance=$('gl758distance').value,heart=$('gl758heart').value;
  if(!fitDate(d)||!Number.isInteger(minutes)||minutes<1||minutes>600){notify('Wpisz poprawną datę i czas od 1 do 600 minut.',true);return;}
@@ -6275,9 +6275,15 @@ function install(host){api=host;
     var dashboard=app.querySelector('.gl085-dashboard');
     if(dashboard&&!document.getElementById('gl759OpenSettings')){
       var btn=document.createElement('button');btn.type='button';btn.id='gl759OpenSettings';
-      btn.className='gl759-settings-trigger';btn.innerHTML='<span class="gl759-gear">'+settingsIcon()+'</span> Ustawienia';
+      btn.className='gl759-settings-trigger gl760-settings-footer-button';
+      btn.innerHTML='<span class="gl759-gear">'+settingsIcon()+'</span><span>Ustawienia</span><span class="gl760-settings-chevron" aria-hidden="true">›</span>';
       btn.onclick=settingsPage;
-      var top=dashboard.querySelector('.gl085-top');if(top)top.appendChild(btn);else dashboard.prepend(btn);
+      var footer=document.createElement('section');
+      footer.className='gl760-settings-footer';footer.setAttribute('aria-label','Ustawienia aplikacji');
+      footer.appendChild(btn);
+      var version=dashboard.querySelector('#pwa-version');
+      if(version)version.insertAdjacentElement('beforebegin',footer);
+      else dashboard.appendChild(footer);
     }
     return res;
   };});
@@ -6297,6 +6303,22 @@ function install(host){api=host;
   '.gl758-league{padding-bottom:15px}.gl758-kicker{font-size:10px;letter-spacing:2px;color:var(--account-accent,#e14c62);font-weight:900}.gl758-head{padding:19px;border-radius:20px;background:linear-gradient(120deg,#201018,#14151b);border:1px solid rgba(231,82,110,.26);display:flex;align-items:center;justify-content:space-between;margin:14px 0}.gl758-head b{font-size:19px;display:block}.gl758-head span{display:block;color:#aeb0b9;font-size:11px;margin-top:6px}.gl758-head-emoji{font-size:36px!important}.gl758-help,.gl758-legend{color:#8d8e98;font-size:11px;line-height:1.6;margin:13px 0}.gl758-person{display:flex;align-items:center;gap:10px;text-align:left!important;background:#121316!important;border:1px solid rgba(255,255,255,.09)!important;padding:13px!important;margin:8px 0!important;box-shadow:none!important}.gl758-person.me{border-color:var(--account-accent,#c8344b)!important}.gl758-place{font-size:21px;min-width:38px;text-align:center}.gl758-person-name{flex:1;font-size:14px;font-weight:850}.gl758-person-name small{font-size:9px;color:var(--account-accent,#d74b65)}.gl758-person-name em{display:block;color:#888990;font-style:normal;font-size:10px;margin-top:4px;font-weight:500}.gl758-score{font-size:19px;font-weight:900}.gl758-score small{font-size:9px;color:#888;display:block;text-align:right}.gl758-arrow{color:#92929c}.gl758-error{color:#ffc0c8}.gl758-avatar{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:var(--account-accent,#bc273e);font-size:28px;font-weight:950}.gl758-person-card{padding:18px;border-radius:20px;background:#121317;margin-top:15px}.gl758-statrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:13px 0}.gl758-statrow div{background:#1e1f25;padding:14px;border-radius:13px}.gl758-statrow small{display:block;color:#9798a3;font-size:10px}.gl758-statrow b{display:block;font-size:20px;margin-top:5px}.gl758-award{padding:11px;margin:9px 0;background:#1c1d23;border-radius:12px}.gl758-home-cardio{margin:10px 0 5px!important}.gl758-history-btn{margin:8px 0 16px!important}.gl758-cardio-entry{padding:14px;margin:10px 0;background:#131419;border:1px solid rgba(255,255,255,.1);border-radius:15px}.gl758-cardio-entry small{display:block;color:#9a9ba3}.gl758-cardio-entry strong{display:block;margin-top:7px;font-size:16px}.gl758-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gl758-row button{font-size:12px!important}'+
  '@media(max-width:380px){body .lux-bottom-nav button{font-size:8px!important}body .lux-bottom-nav button .ico{font-size:16px!important}}';document.head.appendChild(css);
  var style759=document.createElement('style');style759.id='gl759-css';style759.textContent="\n/* 0.75.9 tidy screens, monochrome navigation */\n.gl759-league-nav-icon svg{width:23px;height:23px;display:block;margin:auto}\n.gl759-league-mark{display:grid!important;place-items:center;color:var(--account-accent,#e44d62)!important}\n.gl759-league-mark svg{width:37px;height:37px}\n.gl758-place{font-size:13px!important;font-weight:900!important;border:1px solid rgba(255,255,255,.13);border-radius:10px;min-width:35px;min-height:35px;display:grid;place-items:center;color:var(--account-accent,#ef5266)}\n.gl759-medal-number{display:inline-grid;place-items:center;width:29px;height:29px;border-radius:10px;border:1px solid var(--account-accent,#c83e57);font-weight:900;color:var(--account-accent,#c83e57);margin-right:8px}\n.gl759-profile-avatar{width:84px!important;height:84px!important;position:relative;overflow:hidden;border-radius:50%!important}\n.gl759-profile-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}\n.gl759-avatar-fallback{display:grid;place-items:center;width:100%;height:100%;font-size:31px;font-weight:900}\n.gl759-settings-trigger{flex:0 0 auto!important;display:flex!important;align-items:center;justify-content:center;gap:6px;width:auto!important;min-height:38px!important;margin-left:auto!important;margin-top:0!important;padding:7px 10px!important;background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.13)!important;border-radius:12px!important;font-size:11px!important;color:inherit!important}\n.gl759-gear svg{width:18px;height:18px;display:block}\n.gl085-top{flex-wrap:wrap;column-gap:7px}\n.gl759-settings-page,.gl759-activity-page{max-width:760px;margin:0 auto;padding:8px 0 22px}\n.gl759-back{width:auto!important;padding:11px 16px!important;background:#18191e!important;border:1px solid rgba(255,255,255,.12)!important;margin-bottom:20px!important}\n.gl759-settings-heading{margin:6px 0 24px}.gl759-settings-heading h1{margin:5px 0;font-size:32px}.gl759-settings-heading p{margin:6px 0;color:#9798a3;font-size:13px}\n.gl759-account-link{display:flex!important;align-items:center;text-align:left!important;gap:12px;margin:0 0 22px!important;padding:14px!important;background:#15161b!important;border:1px solid rgba(255,255,255,.1)!important;border-radius:18px!important}\n.gl759-account-link>span:nth-child(2){flex:1;min-width:0}.gl759-account-link small{display:block;color:#93939d;font-size:11px;margin-top:5px}\n.gl759-settings-avatar{position:relative;display:grid;place-items:center;overflow:hidden;width:46px;height:46px;flex:0 0 46px;background:var(--account-accent,#bb344c);border-radius:50%;font-weight:900}\n.gl759-settings-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}\n.gl759-settings-group{margin:22px 0}.gl759-group-label{display:flex;gap:9px;align-items:center;padding:0 7px;margin-bottom:9px}.gl759-group-label h2{margin:0;font-size:13px;color:#b4b4be;font-weight:800;letter-spacing:.02em}.gl759-group-icon{display:grid;place-items:center;color:var(--account-accent,#eb455f);width:21px}\n.gl759-settings-list{background:#15161b;border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden}\n.gl759-settings-list button{display:flex!important;align-items:center;justify-content:space-between;text-align:left!important;gap:14px;padding:15px!important;min-height:54px!important;margin:0!important;background:transparent!important;border:0!important;border-radius:0!important;font-size:14px!important;font-weight:650!important;box-shadow:none!important}\n.gl759-settings-list button+button{border-top:1px solid rgba(255,255,255,.075)!important}.gl759-chevron{font-size:20px;color:#757780}\n.gl759-logout{background:#251418!important;color:#ef9cac!important;border:1px solid rgba(255,100,120,.2)!important;margin:18px 0!important}\n.gl759-activity-page h1{font-size:30px}.gl759-activity-option{display:flex!important;align-items:center;text-align:left!important;gap:14px;padding:21px 15px!important;background:#15161b!important;border:1px solid rgba(255,255,255,.11)!important;border-radius:18px!important;margin:13px 0!important;box-shadow:none!important}\n.gl759-activity-option span:nth-child(2){flex:1}.gl759-activity-option b{display:block;font-size:16px}.gl759-activity-option small{display:block;color:#9899a1;font-weight:500;font-size:11px;margin-top:5px}\n.gl759-option-glyph{display:grid;place-items:center;width:47px;height:47px;border-radius:13px;color:var(--account-accent,#e64e65);background:rgba(255,255,255,.06)}\n.gl759-option-glyph svg{width:25px;height:25px}\n.gl759-history-subhead{display:flex;justify-content:space-between;align-items:center;margin:24px 4px 11px}.gl759-history-subhead h2{font-size:16px;margin:0}.gl759-history-subhead span{font-size:11px;color:#92939d}\n.gl759-inline-entry{display:flex;align-items:center;gap:12px;background:#15161b;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:13px;margin:9px 0}\n.gl759-cardio-mini{display:grid;place-items:center;color:var(--account-accent,#ea536d);width:28px;height:28px}.gl759-cardio-mini svg{width:22px;height:22px}\n.gl759-inline-entry>span:nth-child(2){flex:1}.gl759-inline-entry b{font-size:13px}.gl759-inline-entry small{display:block;margin-top:4px;color:#92939d;font-size:10px}.gl759-inline-entry strong{font-size:14px;white-space:nowrap}\n.gl759-inline-delete{width:30px!important;min-height:32px!important;padding:0!important;background:transparent!important;color:#be8792!important;border:0!important;font-size:22px!important}\n@media(max-width:430px){.gl759-settings-trigger{font-size:10px!important;padding:6px 9px!important}.gl085-top .gl085-account{margin-left:auto}}\n";document.head.appendChild(style759);
+ var style760=document.createElement('style');style760.id='gl760-layout-css';
+ style760.textContent=`
+ /* 0.75.10 — cardio date fits iOS Safari's native date field */
+ #app .gl758-league,#app .gl758-league>.card{min-width:0;max-width:100%;box-sizing:border-box}
+ #app .gl760-date-container{display:grid;grid-template-columns:minmax(0,1fr);min-width:0;max-width:100%;width:100%;overflow:hidden;box-sizing:border-box}
+ #app #gl758date{display:block;box-sizing:border-box!important;min-width:0!important;max-width:100%!important;width:100%!important;inline-size:100%!important;min-inline-size:0!important;max-inline-size:100%!important;flex-shrink:1;padding:13px 14px!important;margin:0!important;font-size:16px!important;color-scheme:dark}
+ #app #gl758date::-webkit-date-and-time-value{min-width:0;text-align:left}
+ #app #gl758date::-webkit-datetime-edit{min-width:0;max-width:100%;text-align:left}
+ /* 0.75.10 — one settings entry at the end of Start, below recent workouts */
+ #app .gl760-settings-footer{display:block;width:100%;box-sizing:border-box;min-width:0;border-top:1px solid rgba(255,255,255,.09);margin:26px 0 12px;padding:17px 0 0}
+ #app .gl760-settings-footer-button{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;width:100%!important;min-height:53px!important;margin:0!important;padding:13px 15px!important;text-align:left!important;font-size:14px!important;font-weight:700!important;background:#15161b!important;border:1px solid rgba(255,255,255,.11)!important;border-radius:14px!important;color:#dedee2!important;box-shadow:none!important}
+ #app .gl760-settings-footer-button .gl759-gear{display:flex;align-items:center;color:var(--account-accent,#ed4e67)}
+ #app .gl760-settings-footer-button .gl760-settings-chevron{margin-left:auto;color:#878891;font-size:22px;font-weight:400;line-height:1}
+ #app .gl085-top #gl759OpenSettings{display:none!important}
+ @media(max-width:430px){#app .gl760-settings-footer-button{font-size:14px!important;padding:13px 15px!important}}
+ `;document.head.appendChild(style760);
  // Keep old screens' “Więcej” back links working, now landing at the Start settings section.
  window.luxMoreView=scrollSettings;
 }
@@ -8880,7 +8902,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.75.9";
+VERSION="BETA 0.75.10";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -15833,6 +15855,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    ====================================================================== */
 (function(){
   var GL111_CLIENT_RELEASES=[
+    {id:"client-07510",version:"BETA 0.75.10",date:"19.10.2026",title:"Układ formularza cardio i pozycja Ustawień",changes:[{feature:"always",text:"Poprawiono szerokość pola daty cardio na iPhonie i przeniesiono przycisk Ustawienia na dół ekranu Start."}]},
     {id:"client-0759",version:"BETA 0.75.9",date:"19.10.2026",title:"Ustawienia, cardio i wygląd CRUSH League",changes:[{feature:"always",text:"Nowe Ustawienia, dodawanie cardio z plusa, porządek w historii, zdjęcia w profilach ligi i spójne ikony."}]},
     {id:"client-0758",version:"BETA 0.75.8",date:"19.10.2026",title:"CRUSH League i cardio",
      changes:[{feature:"always",text:"Ranking LIVE od października 2026, archiwum miesięcy, medale TOP 3 w profilach oraz osobne sesje cardio."}]},
@@ -18058,7 +18081,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -18104,7 +18127,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.75.9";
+    VERSION="BETA 0.75.10";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -18244,7 +18267,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -18538,7 +18561,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -18841,7 +18864,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -18911,7 +18934,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -19156,7 +19179,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -19289,7 +19312,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -19451,7 +19474,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -20592,7 +20615,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -20735,7 +20758,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -20767,7 +20790,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -21177,7 +21200,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -21471,7 +21494,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -21582,7 +21605,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -21684,7 +21707,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -21954,7 +21977,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 
@@ -22059,7 +22082,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Repaint from the persisted absolute deadline when resumed.
   setInterval(function(){if(!document.hidden&&current&&gl136RestEnd)gl136PaintRest();},1000);
 
-  VERSION="BETA 0.75.9";
+  VERSION="BETA 0.75.10";
 })();
 
 

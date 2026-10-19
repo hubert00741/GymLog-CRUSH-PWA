@@ -1,7 +1,7 @@
-/* GymLog CRUSH 0.75.7 — self-contained startup shell.
+/* GymLog CRUSH 0.75.8 — self-contained startup shell.
    The full JS needed to boot is in index.html, preventing a single delayed
    external module from blocking the app. Optional assets never block install. */
-const CACHE='gymlog-crush-multiuser-test-v0757';
+const CACHE='gymlog-crush-multiuser-test-v0758';
 const SHELL=['./index.html'];
 const OPTIONAL=['./','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png','./header-logo-female.png'];
 self.addEventListener('install',event=>{

@@ -1,4 +1,4 @@
-/* GymLog CRUSH 0.75.8 — ONE league from 2026-10, live & archive, plus cardio */
+/* GymLog CRUSH 0.75.14 — ONE league from 2026-10, live & archive, plus cardio */
 (function(root){
 'use strict';
 var api=null,month=null,rows=[],lastLoad=0,leagueOpen=false,timer=null;
@@ -48,7 +48,7 @@ function page(loading,error){var choices=months();if(!month||!choices.includes(m
     '<label for="gl758Month">Miesiąc</label><select id="gl758Month" onchange="GymLogLeague.month(this.value)">'+select+'</select>'+
     '<div class="gl758-help">Pierwszy sezon: 1 października 2026. Wszyscy właściciele kont biorą udział, także osoby nieaktywne.</div>'+
     (error?'<div class="card gl758-error">'+esc(error)+'</div>':(loading?'<div class="card">Wczytywanie wyników…</div>':(rows.length?cards():noResults())))+
-    '<div class="gl758-legend">60 pkt — progres siłowy · 25 pkt — regularność · 15 pkt — realizacja. Cardio może pomóc w regularności, maksymalnie 4 dni w miesiącu. Liczą się tylko ukończone sesje; treningi testowe i rozgrzewki nie naliczają punktów.</div>'+
+    '<div class="gl758-legend">Punktacja od 1.10.2026: trening siłowy +5 pkt, dodatkowo +2 pkt za każde ćwiczenie z nowym rekordem na tej samej siłowni (maks. +6 pkt na trening). Cardio od 15 minut: 3 pkt i +1 pkt za każde kolejne pełne 5 minut (30 min = 6 pkt, 60 min = 12 pkt). Brak miesięcznego limitu cardio. Regres nie odejmuje punktów, a synchronizacja nie nalicza sesji drugi raz.</div>'+
     '<button type="button" class="secondary" onclick="GymLogLeague.refresh()">↻ Odśwież ranking</button>'+nav()+'</div>');
 }
 function fetchRows(target){var path='/rest/v1/crush_league_monthly?select=month_start,user_id,display_name,score,progress_points,regularity_points,completion_points,strength_sessions,cardio_sessions,all_time_sessions,weight_kg,finalized,final_rank&month_start=eq.'+target+'-01&order=score.desc,display_name.asc';return api.request(path,{method:'GET'});}
@@ -65,8 +65,25 @@ async function profile(uid){var person=rows.find(function(r){return String(r.use
   try{var rec=await api.request('/rest/v1/crush_league_monthly?select=month_start,final_rank&user_id=eq.'+encodeURIComponent(uid)+'&finalized=eq.true&final_rank=lte.3&order=month_start.desc',{method:'GET'});awards=Array.isArray(rec)?rec:[];}catch(e){}
   var medals=awards.map(function(x){var icon='<span class="gl759-medal-number">'+esc(String(x.final_rank).padStart(2,'0'))+'</span>';return '<div class="gl758-award">'+icon+' <strong>TOP '+esc(x.final_rank)+'</strong> '+esc(titleMonth(String(x.month_start).slice(0,7)))+'</div>';}).join('')||'<p class="small">Pierwsze medale zostaną przyznane po zakończeniu października.</p>';
   var w=person.weight_kg!=null?String(person.weight_kg).replace('.',',')+' kg':(String(uid)===String(api.userId())?localWeight():'')||'Nie podano';
-  api.render('<div class="gl758-league"><button class="secondary" onclick="GymLogLeague.view()">← Liga</button><div class="gl758-person-card"><div class="gl758-avatar gl759-profile-avatar">'+avatarMarkup(uid,person.display_name)+'</div><h1>'+esc(person.display_name)+'</h1><div class="gl758-statrow"><div><small>Waga</small><b>'+esc(w)+'</b></div><div><small>Wszystkie sesje</small><b>'+Number(person.all_time_sessions||0)+'</b></div></div><h2>Osiągnięcia</h2>'+medals+'</div>'+nav()+'</div>');
+  api.render('<div class="gl758-league"><button class="secondary" onclick="GymLogLeague.view()">← Liga</button><div class="gl758-person-card"><div class="gl758-avatar gl759-profile-avatar">'+avatarMarkup(uid,person.display_name)+'</div><h1>'+esc(person.display_name)+'</h1><div class="gl758-statrow"><div><small>Waga</small><b>'+esc(w)+'</b></div><div><small>Wszystkie sesje</small><b>'+Number(person.all_time_sessions||0)+'</b></div></div><h2>Osiągnięcia</h2>'+medals+ '<button type="button" class="secondary gl14-points-button" onclick=\'GymLogLeague.togglePoints('+JSON.stringify(String(uid))+')\'>Historia punktów <span id="gl14PointsArrow">⌄</span></button><div id="gl14PointsPanel" class="gl14-points-panel" hidden></div></div>'+nav()+'</div>');
 }
+async function togglePoints(uid){
+ var panel=document.getElementById('gl14PointsPanel'),arrow=document.getElementById('gl14PointsArrow');
+ if(!panel)return;
+ if(!panel.hidden){panel.hidden=true;if(arrow)arrow.textContent='⌄';return;}
+ panel.hidden=false;if(arrow)arrow.textContent='⌃';
+ if(panel.dataset.loaded==='1')return;
+ panel.textContent='Ładowanie historii punktów…';
+ try{
+  var ym=month||nowMonth(),path='/rest/v1/crush_league_point_history?select=event_date,activity_name,base_points,bonus_points,total_points,duration_minutes&user_id=eq.'+encodeURIComponent(uid)+'&month_start=eq.'+encodeURIComponent(ym+'-01')+'&order=event_date.desc&limit=100';
+  var list=await api.request(path,{method:'GET'});
+  if(!panel.isConnected)return;
+  if(!Array.isArray(list)||!list.length){panel.innerHTML='<p class="small">Brak przyznanych punktów w wybranym miesiącu.</p>';panel.dataset.loaded='1';return;}
+  panel.innerHTML=list.map(function(h){var base=num(h.base_points),bonus=num(h.bonus_points);var kind=h.duration_minutes!=null?'Cardio · '+Number(h.duration_minutes)+' min':'Trening siłowy';return '<article class="gl14-points-entry"><div><small>'+esc(h.event_date)+' · '+esc(kind)+'</small><b>'+esc(h.activity_name)+'</b><small>Ukończenie: +'+base.toFixed(0)+' pkt'+(bonus>0?' · Progres: +'+bonus.toFixed(0)+' pkt':'')+'</small></div><strong>+'+num(h.total_points).toFixed(0)+' pkt</strong></article>';}).join('');
+  panel.dataset.loaded='1';
+ }catch(e){panel.innerHTML='<p class="small">Nie udało się pobrać historii punktów. Spróbuj ponownie.</p>';}
+}
+
 function goHome(){stopRefresh();api.goHome();}
 function cardioOpen(){stopRefresh();if(api.activeWorkout()){alert('Najpierw zakończ lub zapisz rozpoczęty trening siłowy.');return;}
  var date=dateNow();
@@ -199,5 +216,5 @@ function install(host){api=host;
  // Keep old screens' “Więcej” back links working, now landing at the Start settings section.
  window.luxMoreView=scrollSettings;
 }
-root.GymLogLeague={install:install,settings:settingsPage,activityMenu:activityMenu,view:view,month:function(v){view(v);},refresh:refresh,profile:profile,cardioOpen:cardioOpen,saveCardio:saveCardio,cardioHistory:cardioHistory,deleteCardio:deleteCardio,goHome:goHome};
+root.GymLogLeague={install:install,settings:settingsPage,activityMenu:activityMenu,view:view,month:function(v){view(v);},refresh:refresh,profile:profile,togglePoints:togglePoints,cardioOpen:cardioOpen,saveCardio:saveCardio,cardioHistory:cardioHistory,deleteCardio:deleteCardio,goHome:goHome};
 })(window);

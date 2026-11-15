@@ -8945,7 +8945,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.75.15";
+VERSION="BETA 0.75.17-dev";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -10503,10 +10503,12 @@ async function glFetchRemoteState(uid){
   return rows&&rows[0]?rows[0]:{state:glEmptyState(),sync_revision:0,updated_at:null};
 }
 function glSanitizeState(){
-  var clone;try{clone=JSON.parse(JSON.stringify(data));}catch(e){clone=glEmptyState();}
+  // A serialization failure must never turn a populated account into an empty upload.
+  var clone=JSON.parse(JSON.stringify(data));
   clone=glNormalizeState(clone);clone.appUpdates=[];return clone;
 }
 var GL74_SYNCING=false;
+var GL74_SYNC_PROMISE=null;
 var GL74_LOCAL_MUTATION=0;
 var GL74_SYNC_CONFLICT=null;
 function gl74ConflictBackupKey(uid){return "GYMLOG_CRUSH_SYNC_CONFLICT_"+uid;}
@@ -10517,19 +10519,38 @@ function gl74MakeConflict(uid,reason,remote){
   glSetSync("bad","Konflikt zmian — wymagane rozstrzygnięcie");
 }
 async function glPushCloudState(){
-  if(!GL_AUTH_READY||GL_CLOUD_APPLYING||!navigator.onLine||GL74_SYNCING)return false;
-  var s=await glEnsureSession();if(!s||!s.user||!s.user.id)return false;
-  var uid=s.user.id;
-  if(GL74_SYNC_CONFLICT&&GL74_SYNC_CONFLICT.uid===uid){
-    glSetSync("bad","Konflikt — otwórz rozstrzygnięcie");return false;
+  var session=glSession(),uid=session&&session.user&&session.user.id;
+  if(!uid)return false;
+  // Callers share an in-flight save. If data changed during that save, flush
+  // one fresh snapshot before reporting success; continuous edits stay queued.
+  for(var pass=0;pass<2;pass++){
+    if(!GL_AUTH_READY||GL_CLOUD_APPLYING||!navigator.onLine||!gl74SameSyncUser(uid))return false;
+    if(!GL74_SYNC_PROMISE)GL74_SYNC_PROMISE=gl74PushCloudStateOnce(uid);
+    var pending=GL74_SYNC_PROMISE,ok;
+    try{ok=await pending;}finally{if(GL74_SYNC_PROMISE===pending)GL74_SYNC_PROMISE=null;}
+    if(!ok||!gl74SameSyncUser(uid))return false;
+    try{if(localStorage.getItem(glDirtyKey(uid))!=="1")return true;}catch(e){return false;}
   }
+  return false;
+}
+function gl74SameSyncUser(uid){
+  var s=glSession();
+  return !!(s&&s.user&&s.user.id===uid&&STORE===glUserStore(uid));
+}
+async function gl74PushCloudStateOnce(uid){
   GL74_SYNCING=true;
-  var epoch=GL74_LOCAL_MUTATION;
-  var state=glSanitizeState();
-  var rev=Number(localStorage.getItem(glRevisionKey(uid))||0);
-  var json=JSON.stringify({state:state,schema_version:1,client_updated_at:new Date().toISOString()});
-  glSetSync("pending","Bezpieczna synchronizacja…");
+  var rev=0;
   try{
+    var s=await glEnsureSession();
+    if(!s||!s.user||s.user.id!==uid||!gl74SameSyncUser(uid)||GL_CLOUD_APPLYING||!navigator.onLine)return false;
+    if(GL74_SYNC_CONFLICT&&GL74_SYNC_CONFLICT.uid===uid){
+      glSetSync("bad","Konflikt — otwórz rozstrzygnięcie");return false;
+    }
+    var epoch=GL74_LOCAL_MUTATION,state=glSanitizeState();
+    rev=Number(localStorage.getItem(glRevisionKey(uid))||0);
+    if(!Number.isSafeInteger(rev)||rev<0)throw Error('Nieprawidłowa rewizja lokalna. Dane zachowano.');
+    var json=JSON.stringify({state:state,schema_version:1,client_updated_at:new Date().toISOString()});
+    glSetSync("pending","Bezpieczna synchronizacja…");
     var rows;
     if(rev>0){
       // Atomic compare-and-swap. A different client bumping the revision
@@ -10539,30 +10560,35 @@ async function glPushCloudState(){
     }else{
       // No local revision: only insert a genuinely absent row. Do NOT upsert.
       var existing=await glFetchRemoteState(uid);
+      if(!gl74SameSyncUser(uid))return false;
       if(Number(existing.sync_revision||0)>0 || glMeaningful(existing.state)){
         gl74MakeConflict(uid,"Nieznana wersja danych lokalnych",existing);return false;
       }
       rows=await glApi("/rest/v1/user_app_state",{method:"POST",headers:{"Content-Type":"application/json","Prefer":"return=representation"},
         body:JSON.stringify({user_id:uid,state:state,schema_version:1,client_updated_at:new Date().toISOString()})});
     }
+    if(!gl74SameSyncUser(uid))return false;
     if(!Array.isArray(rows)||rows.length!==1){
       var latest=await glFetchRemoteState(uid).catch(function(){return null;});
+      if(!gl74SameSyncUser(uid))return false;
       gl74MakeConflict(uid,"Inne urządzenie zapisało nowsze dane",latest);
       return false;
     }
     var row=rows[0];
-    try{
-      if(row&&row.sync_revision!=null)localStorage.setItem(glRevisionKey(uid),String(row.sync_revision));
-      var stillDirty=GL74_LOCAL_MUTATION!==epoch;
-      localStorage.setItem(glDirtyKey(uid),stillDirty?"1":"0");
-      if(stillDirty)setTimeout(function(){glPushCloudState();},1000);
-    }catch(e){}
+    var nextRevision=Number(row&&row.sync_revision);
+    if(!Number.isSafeInteger(nextRevision)||nextRevision<=rev)throw Error('Serwer nie potwierdził nowej rewizji.');
+    localStorage.setItem(glRevisionKey(uid),String(nextRevision));
+    var stillDirty=GL74_LOCAL_MUTATION!==epoch;
+    localStorage.setItem(glDirtyKey(uid),stillDirty?"1":"0");
+    if(stillDirty)setTimeout(function(){glPushCloudState();},1000);
     glSetSync("ok",GL74_LOCAL_MUTATION===epoch?"Zsynchronizowano":"Kolejne zmiany w kolejce");
     return true;
   }catch(e){
     try{localStorage.setItem(glDirtyKey(uid),"1");}catch(_){}
+    if(!gl74SameSyncUser(uid))return false;
     if(rev===0&&Number(e.status||0)===409){
       var existing=await glFetchRemoteState(uid).catch(function(){return null;});
+      if(!gl74SameSyncUser(uid))return false;
       gl74MakeConflict(uid,"Konflikt podczas pierwszego zapisu",existing);
     }else{
       glSetSync("bad","Błąd połączenia — dane lokalne zachowane");
@@ -18124,7 +18150,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -18170,7 +18196,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.75.15";
+    VERSION="BETA 0.75.17-dev";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -18310,7 +18336,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -18604,7 +18630,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -18907,7 +18933,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -18977,7 +19003,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -19222,7 +19248,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -19355,7 +19381,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -19517,7 +19543,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -20149,7 +20175,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   function gl127OwnerEffectiveText(c,plan,ex){
     if(window.GymLogSharedOwner &&
-       window.GymLogSharedOwner.shared(plan,ex.name,c.modeDrafts)){
+       window.GymLogSharedOwner.shared(plan,ex.name,c.modeDrafts,c.gym)){
       return window.GymLogSharedOwner.effective(plan,ex.name,c.sharedDrafts,c.gymDrafts,c.plans);
     }
     if(c.gym!=="GLOBAL"){
@@ -20223,7 +20249,7 @@ if(typeof window.glAdminExportWorkout==="function"){
         else bucket[ex.name]=textValue;
       }
       if(window.GymLogSharedOwner &&
-         window.GymLogSharedOwner.shared(c.planName,ex.name,c.modeDrafts)){
+         window.GymLogSharedOwner.shared(c.planName,ex.name,c.modeDrafts,c.gym)){
         window.GymLogSharedOwner.setDraft(c,c.planName,ex.name,textValue);
       }
     });
@@ -20284,8 +20310,8 @@ if(typeof window.glAdminExportWorkout==="function"){
           "<div class='gl127-ex-title'>"+
             "<div><b>"+(i+1)+". "+esc(ex.name||"Ćwiczenie")+"</b>"+
               (!globalMode?"<div class='gl127-mode-pill gym'>"+
-               ((window.GymLogSharedOwner&&window.GymLogSharedOwner.shared(c.planName,ex.name,c.modeDrafts))
-                ? "Cel wspólny · wszystkie siłownie" : (specific?"Własny wariant — ":"Dziedziczy plan ogólny — ")+esc(c.gym))+"</div>":"")+
+               ((window.GymLogSharedOwner&&window.GymLogSharedOwner.shared(c.planName,ex.name,c.modeDrafts,c.gym))
+                ? "Cel wspólny · regularne siłownie" : (specific?"Własny wariant — ":"Dziedziczy plan ogólny — ")+esc(c.gym))+"</div>":"")+
             "</div>"+
             (globalMode?"<div class='gl127-ex-actions'>"+
               "<button class='secondary' onclick='gl127OwnerMoveExercise("+i+",-1)'>↑</button>"+
@@ -20301,13 +20327,13 @@ if(typeof window.glAdminExportWorkout==="function"){
             "</div>"
           :
             "<div class='gl127-context'>Edytujesz <b>realny plan na "+esc(c.gym)+"</b>. Jeżeli nic tu nie zmienisz, ćwiczenie korzysta z planu ogólnego.</div>")+
-          (window.GymLogSharedOwner ?
+          (window.GymLogSharedOwner&&c.gym!=='Wyjazd' ?
             "<div class='gl1515-share-line'><label>Ciężary i zakresy powtórzeń</label>"+
               "<select onchange='glSharedOwnerMode("+i+",this.value)' aria-label='Synchronizacja celu'>"+
-                "<option value='shared'"+(window.GymLogSharedOwner.shared(c.planName,ex.name,c.modeDrafts)?" selected":"")+">Wspólne na wszystkich siłowniach</option>"+
-                "<option value='gym'"+(!window.GymLogSharedOwner.shared(c.planName,ex.name,c.modeDrafts)?" selected":"")+">Osobne na każdej siłowni</option>"+
-              "</select><small>Wspólne: ten sam cel w CityFit i Zdrofit. Maszyny, Smith i wyciągi pozostają osobne. Zawsze możesz zmienić to ustawienie.</small></div>"
-             : "")+
+                "<option value='shared'"+(window.GymLogSharedOwner.shared(c.planName,ex.name,c.modeDrafts,c.gym)?" selected":"")+">Wspólne na regularnych siłowniach</option>"+
+                "<option value='gym'"+(!window.GymLogSharedOwner.shared(c.planName,ex.name,c.modeDrafts,c.gym)?" selected":"")+">Osobne na każdej siłowni</option>"+
+              "</select><small>Wspólne: ten sam cel na regularnych siłowniach. Wyjazd pozostaje osobny. Maszyny, Smith i wyciągi domyślnie mają osobne cele.</small></div>"
+             : (c.gym==='Wyjazd'?"<div class='gl127-context'>Cele wyjazdowe są osobne i nie zmieniają regularnych siłowni.</div>":""))+
           "<div class='gl127-series-head'>"+
             "<div class='title'>Serie w aktualnym planie</div>"+
             "<div class='gl127-series-actions'>"+
@@ -20319,7 +20345,7 @@ if(typeof window.glAdminExportWorkout==="function"){
           gl14LastHtml(gl14Last,"gl127o",i)+
           "<div class='gl127-general-note'><label>Ogólna notatka do ćwiczenia — opcjonalnie</label>"+
             "<textarea id='gl127o_general_"+i+"' placeholder='np. najpierw wrócić do górnego zakresu'>"+esc(parsed.note||"")+"</textarea></div>"+
-          (!globalMode&&specific&&!(window.GymLogSharedOwner&&window.GymLogSharedOwner.shared(c.planName,ex.name,c.modeDrafts))?"<button class='secondary' style='margin-top:9px' onclick='gl127OwnerUseGlobal("+i+")'>PRZYWRÓĆ PLAN OGÓLNY</button>":"")+
+          (!globalMode&&specific&&!(window.GymLogSharedOwner&&window.GymLogSharedOwner.shared(c.planName,ex.name,c.modeDrafts,c.gym))?"<button class='secondary' style='margin-top:9px' onclick='gl127OwnerUseGlobal("+i+")'>PRZYWRÓĆ PLAN OGÓLNY</button>":"")+
         "</div>";
     });
 
@@ -20339,7 +20365,7 @@ if(typeof window.glAdminExportWorkout==="function"){
           "<div class='gl127-context'>"+
             (globalMode
               ?"<b>Plan ogólny</b> jest bazą. Warianty siłowni mogą mieć własne ciężary i liczbę serii."
-              :"<b>"+esc(c.gym)+"</b> — ćwiczenia na wolnych ciężarach możesz współdzielić z innymi siłowniami. Maszyny mogą mieć osobne cele.")+
+              :c.gym==='Wyjazd'?"<b>Wyjazd</b> — cele pozostają osobne. Zmiany nie aktualizują regularnych siłowni.":"<b>"+esc(c.gym)+"</b> — ćwiczenia na wolnych ciężarach możesz współdzielić z innymi regularnymi siłowniami. Maszyny mogą mieć osobne cele.")+
           "</div>"+
           "<div class='gl127-code-toolbar'>"+
             (globalMode?"<button onclick='gl127OwnerAddDay()'>+ DZIEŃ</button><button class='secondary' onclick='gl127OwnerAddExercise()'>+ ĆWICZENIE</button><button class='danger' onclick='gl127OwnerDeleteDay()'>USUŃ DZIEŃ</button>":"")+
@@ -20783,7 +20809,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -20926,7 +20952,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -20958,7 +20984,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -21368,7 +21394,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -21662,7 +21688,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -21773,7 +21799,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -21875,7 +21901,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -22145,7 +22171,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -22250,7 +22276,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Repaint from the persisted absolute deadline when resumed.
   setInterval(function(){if(!document.hidden&&current&&gl136RestEnd)gl136PaintRest();},1000);
 
-  VERSION="BETA 0.75.15";
+  VERSION="BETA 0.75.17-dev";
 })();
 
 
@@ -22588,17 +22614,37 @@ function me(){var p=window.GL_PROFILE||{};return p.role==='admin'&&!!glSession()
 function uid(){var s=glSession();return s&&s.user&&s.user.id||'';}
 function notify(msg,bad){var el=document.getElementById('glCoachInfo');if(el){el.textContent=msg||'';el.className=bad?'glcoach-msg glcoach-bad':'glcoach-msg';}}
 function schemaError(e){var t=String(e&&e.message||e||'');return /crush_goal_proposals|PGRST205|relation.*does not exist|404/.test(t)?'Brak tabeli propozycji w Supabase. Uruchom dołączony SQL z wersji 0.75.11.':t;}
+function owns(object,key){return !!object&&Object.prototype.hasOwnProperty.call(object,key);}
+function gymPlanSource(gym,plan){
+  if(!data||typeof gym!=='string'||typeof plan!=='string'||
+     ['__proto__','constructor','prototype'].indexOf(gym)>=0||['__proto__','constructor','prototype'].indexOf(plan)>=0)
+    throw Error('Nieprawidłowa siłownia lub plan.');
+  var variants=data.ownerPlansByGymV1;
+  if(GYMS_V31.indexOf(gym)<0&&!owns(variants,gym))throw Error('Nieznana siłownia.');
+  var byGym=owns(variants,gym)?variants[gym]:null;
+  if(owns(byGym,plan)){
+    if(!Array.isArray(byGym[plan])||!byGym[plan].length)throw Error('Wariant planu jest pusty lub uszkodzony. Nie zmieniono planu.');
+    return {exercises:byGym[plan],base:false};
+  }
+  // The workout screen already permits this fallback. Reading a proposal must
+  // not create or modify a variant; materialize it only after user confirmation.
+  var base=owns(data.ownerPlansV1,plan)?data.ownerPlansV1[plan]:(owns(PLANS,plan)?PLANS[plan]:null);
+  if(!Array.isArray(base)||!base.length)throw Error('Nie znaleziono planu '+plan+'. Nie zmieniono planu.');
+  return {exercises:base,base:true};
+}
 function getGymExercise(gym,plan,index,name){
-  if(!data||!data.ownerPlansByGymV1||!data.ownerPlansByGymV1[gym]||!Array.isArray(data.ownerPlansByGymV1[gym][plan]))throw Error('Nie znaleziono wariantu '+plan+' dla '+gym+'. Nie zmieniono planu.');
-  var arr=data.ownerPlansByGymV1[gym][plan],at=Number(index);
+  var source=gymPlanSource(gym,plan),arr=source.exercises,at=Number(index);
+  if(!Number.isInteger(at)||at<0)throw Error('Nieprawidłowy numer ćwiczenia.');
+  var matches=arr.map(function(x,i){return {x:x,i:i};}).filter(function(x){return x.x&&clean(x.x.name)===clean(name);});
+  if(matches.length!==1)throw Error('Ćwiczenie „'+name+'” nie ma jednoznacznego dopasowania w '+gym+' / '+plan+'. Zmiany anulowane.');
   var ex=arr[at];
   if(!ex||clean(ex.name)!==clean(name)){
-    var matches=arr.map(function(x,i){return {x:x,i:i};}).filter(function(x){return clean(x.x.name)===clean(name);});
-    if(matches.length!==1)throw Error('Ćwiczenie „'+name+'” nie ma jednoznacznego dopasowania w '+gym+' / '+plan+'. Zmiany anulowane.');
     at=matches[0].i;ex=matches[0].x;
   }
   var bucket=data.planOverridesByGym&&data.planOverridesByGym[gym]&&data.planOverridesByGym[gym][plan];
-  var goal=bucket&&Object.prototype.hasOwnProperty.call(bucket,ex.name)?String(bucket[ex.name]):String(ex.plan||'');
+  var generic=source.base&&data.planOverrides&&data.planOverrides[plan];
+  var goal=generic&&owns(generic,ex.name)&&generic[ex.name]?String(generic[ex.name]):String(ex.plan||'');
+  if(owns(bucket,ex.name)&&bucket[ex.name])goal=String(bucket[ex.name]);
   if(window.GymLogSharedOwner)goal=window.GymLogSharedOwner.runtimeGoal(gym,plan,ex.name,goal);
   return {exercise:ex,index:at,goal:goal};
 }
@@ -22614,7 +22660,8 @@ function parseTargets(goal){
   function validReps(v){return /^\d{1,2}(\s*[-–]\s*\d{1,2})?$/.test(clean(v));}
   warm.concat(work).forEach(function(t){
     if(!validReps(t.reps))throw Error('Nieprawidłowy zakres powtórzeń: '+t.reps);
-    var n=parseInt(t.reps,10);if(n<1||n>50)throw Error('Powtórzenia poza dozwolonym zakresem.');
+    var range=clean(t.reps).split(/[-–]/).map(function(x){return Number(x.trim());});
+    if(range.some(function(n){return n<1||n>50;})||(range.length===2&&range[0]>range[1]))throw Error('Powtórzenia poza dozwolonym zakresem.');
     var a=clean(t.weight);
     if(a&&/[0-9]/.test(a)){
       var value=parseFloat((a.match(/[0-9]+(?:[,.][0-9]+)?/)||[])[0].replace(',','.'));
@@ -22653,7 +22700,7 @@ function paint(){
       entries+='<section class="glcoach-ex"><h3>'+h(x.exercise_name||'Ćwiczenie')+'</h3>'+
         (err?'<p class="glcoach-warning">'+h(err)+'</p>':'')+
         '<div class="glcoach-compare"><div><span>Obecny cel</span><pre>'+h(x.expected_goal||'')+'</pre></div><div><span>Proponowany cel</span><pre>'+h(x.proposed_goal||'')+'</pre></div></div>'+
-        (warning?'<p class="glcoach-warning">Uwaga: pierwsza robocza seria ma ponad 15% większy ciężar niż obecnie. Sprawdź tę zmianę.</p>':'')+
+        (warning?'<p class="glcoach-warning">Uwaga: największy ciężar w seriach roboczych wzrasta o ponad 15%. Sprawdź tę zmianę.</p>':'')+
         (x.reason?'<p class="small">'+h(x.reason)+'</p>':'')+'</section>';
     });
     return '<article class="card glcoach-card"><div class="glcoach-meta">'+h(p.gym)+' · '+h(p.plan_name)+' · '+h(formatDate(p.created_at))+'</div><h2>Nowe cele od trenera</h2>'+
@@ -22667,6 +22714,7 @@ async function load(){
   if(!navigator.onLine){notify('Brak internetu — nie można pobrać propozycji. Plany lokalne pozostają dostępne.',true);return;}
   try{
     await glEnsureSession();
+    if(!me())throw Error('Sesja wygasła. Zaloguj się ponownie.');
     var list=await glApi(TABLE+'?select=*&user_id=eq.'+encodeURIComponent(uid())+'&status=eq.pending&order=created_at.desc&limit=20',{headers:{Accept:'application/json'}});
     rows=Array.isArray(list)?list:[];
     notify('Propozycje przypisane do Twojego konta: '+rows.length);
@@ -22690,11 +22738,27 @@ function validate(p){
 function backup(){
   var key='GYMLOG_CRUSH_COACH_BACKUPS_'+uid();
   var list=[];try{list=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(list))list=[];}catch(e){}
-  list.unshift({createdAt:new Date().toISOString(),state:{ownerPlansByGymV1:copy(data.ownerPlansByGymV1||{}),planOverridesByGym:copy(data.planOverridesByGym||{})}});
+  var state={};
+  ['ownerPlansV1','ownerPlansByGymV1','planOverrides','planOverridesByGym',
+   'glSharedOwnerTargetsV1','glSharedOwnerModesV1','glCoachAppliedProposalIds'].forEach(function(key){if(owns(data,key))state[key]=copy(data[key]);});
+  list.unshift({createdAt:new Date().toISOString(),state:state});
   localStorage.setItem(key,JSON.stringify(list.slice(0,3)));
 }
 function applyLocal(p,prepared){
   backup();
+  var before=data;
+  data=copy(data);
+  try{
+  var source=gymPlanSource(p.gym,p.plan_name);
+  if(source.base){
+    if(!data.ownerPlansByGymV1)data.ownerPlansByGymV1={};
+    if(!owns(data.ownerPlansByGymV1,p.gym))data.ownerPlansByGymV1[p.gym]={};
+    var variant=copy(source.exercises);
+    // Include effective local overrides for all movements, including ones that
+    // are not part of this proposal, before creating an independent gym plan.
+    variant.forEach(function(ex,i){ex.plan=getGymExercise(p.gym,p.plan_name,i,ex.name).goal;});
+    data.ownerPlansByGymV1[p.gym][p.plan_name]=variant;
+  }
   var arr=data.ownerPlansByGymV1[p.gym][p.plan_name],buckets=data.planOverridesByGym||(data.planOverridesByGym={});
   var gym=buckets[p.gym]||(buckets[p.gym]={}),goals=gym[p.plan_name]||(gym[p.plan_name]={});
   prepared.forEach(function(x){
@@ -22712,18 +22776,46 @@ function applyLocal(p,prepared){
   data.glCoachAppliedProposalIds[p.id]=new Date().toISOString();
   if(typeof gl113ApplyOwnerPlans==='function')gl113ApplyOwnerPlans();
   safeSave();
+  if(localStorage.getItem(STORE)!==JSON.stringify(data))throw Error('Nie udało się trwale zapisać planu na urządzeniu. Zwolnij miejsce i spróbuj ponownie.');
+  }catch(e){
+    data=before;
+    try{if(typeof gl113ApplyOwnerPlans==='function')gl113ApplyOwnerPlans();}catch(_e){}
+    throw e;
+  }
 }
 async function mark(p,status){
+  if(!me()||p.user_id!==uid())throw Error('Nieprawidłowe konto.');
   var result=await glApi(TABLE+'?id=eq.'+encodeURIComponent(p.id)+'&user_id=eq.'+encodeURIComponent(uid())+'&status=eq.pending',{
     method:'PATCH',headers:{'Content-Type':'application/json','Prefer':'return=representation'},
     body:JSON.stringify({status:status,applied_at:status==='applied'?new Date().toISOString():null})
   });
-  if(!Array.isArray(result)||result.length!==1)throw Error('Propozycja została już zmieniona na serwerze. Odśwież listę.');
+  if(!Array.isArray(result)||result.length!==1){
+    // PATCH may have committed even when its response was lost. Repeating an
+    // acknowledgement is safe; never silently accept a rejected proposal.
+    if(status==='applied'){
+      var latest=await glApi(TABLE+'?id=eq.'+encodeURIComponent(p.id)+'&user_id=eq.'+encodeURIComponent(uid())+'&select=id,status');
+      if(Array.isArray(latest)&&latest.length===1&&latest[0].status==='applied')return;
+    }
+    throw Error('Propozycja została już zmieniona na serwerze. Odśwież listę.');
+  }
 }
 async function syncApplied(p){
+  var user=uid();
+  if(!me()||!p||p.user_id!==user||!localApplied(p.id))throw Error('Brak lokalnego zatwierdzenia dla tego konta.');
+  if(!navigator.onLine)throw Error('Brak połączenia. Plan pozostaje zapisany lokalnie.');
+  if(p.status!=='pending'&&p.status!=='applied')throw Error('Propozycja nie jest już aktywna. Plan lokalny zachowano; odśwież listę.');
   if(typeof GL74_SYNC_CONFLICT!=='undefined'&&GL74_SYNC_CONFLICT)throw Error('Wystąpił konflikt synchronizacji. Plany zapisano lokalnie — nie potwierdzono w chmurze.');
+  var fresh=await glApi(TABLE+'?id=eq.'+encodeURIComponent(p.id)+'&user_id=eq.'+encodeURIComponent(user)+'&select=id,status');
+  if(!me()||uid()!==user)throw Error('Konto zmieniło się podczas synchronizacji.');
+  if(!Array.isArray(fresh)||fresh.length!==1||['pending','applied'].indexOf(fresh[0].status)<0)
+    throw Error('Propozycja została odrzucona lub usunięta. Plan lokalny zachowano; odśwież listę.');
   var synced=await glPushCloudState();
   if(!synced)throw Error('Plan zapisano na urządzeniu, ale synchronizacja Supabase nie jest potwierdzona. Spróbuj ponownie po przywróceniu połączenia.');
+  if(!me()||uid()!==user)throw Error('Konto zmieniło się podczas synchronizacji.');
+  var remote=await glFetchRemoteState(user),saved=remote&&remote.state&&remote.state.glCoachAppliedProposalIds;
+  if(!me()||uid()!==user)throw Error('Konto zmieniło się podczas synchronizacji.');
+  if(!saved||saved[p.id]!==data.glCoachAppliedProposalIds[p.id])throw Error('Chmura nie potwierdziła zapisu tej propozycji. Plan jest lokalny; ponów synchronizację.');
+  if(typeof GL74_SYNC_CONFLICT!=='undefined'&&GL74_SYNC_CONFLICT)throw Error('Wystąpił konflikt synchronizacji. Plan lokalny zachowano.');
   await mark(p,'applied');
   rows=rows.filter(function(row){return row.id!==p.id;});
   notify('Propozycja zatwierdzona i zsynchronizowana. Przed kolejnym treningiem sprawdź wyświetlone cele.');paint();
@@ -22737,7 +22829,9 @@ window.glCoachApprove=async function(id){
     if(!Array.isArray(fresh)||fresh.length!==1)throw Error('Propozycja nie istnieje na serwerze.');
     p=fresh[0];if(localApplied(p.id)){await syncApplied(p);return;}
     var prepared=validate(p),unusual=prepared.filter(function(x){return x.tooBig;});
-    if(!confirm('Zatwierdzić '+prepared.length+' ćwiczeń dla '+p.gym+' / '+p.plan_name+'?\n\nWspólne ćwiczenia na wolnych ciężarach zaktualizują się także na innych siłowniach. Cele maszyn i wyciągów pozostaną osobne. Historia bez zmian.'))return;
+    var scope=p.gym==='Wyjazd'?'Zmiana dotyczy tylko planu wyjazdowego. Regularne siłownie pozostaną bez zmian.':
+      'Ćwiczenia oznaczone jako wspólne zaktualizują się także na innych regularnych siłowniach. Wyjazd pozostaje osobny.';
+    if(!confirm('Zatwierdzić '+prepared.length+' ćwiczeń dla '+p.gym+' / '+p.plan_name+'?\n\n'+scope+' Historia bez zmian.'))return;
     if(unusual.length&&!confirm('Uwaga: '+unusual.length+' ćwiczenie(a) ma(ją) wzrost ciężaru ponad 15%. Czy na pewno akceptujesz te wartości?'))return;
     applyLocal(p,prepared);await syncApplied(p);
   }catch(e){notify(String(e&&e.message||e),true);paint();}
@@ -22775,8 +22869,8 @@ function defaultShared(name){
  return /^(db\b|dumbbell\b|bench press\b|barbell\b|podciąganie\b|pull.?up\b|chin.?up\b|pompki\b|push.?up\b|przysiad ze sztangą\b|martwy ciąg\b|romanian deadlift\b|deadlift\b|hammer biceps curl\b|biceps curl\b|wyciskanie sztangi\b|wyciskanie hantli\b|wyciskanie na płaskiej\b)/.test(n);
 }
 function modes(d){return d&&d.glSharedOwnerModesV1&&typeof d.glSharedOwnerModesV1==='object'?d.glSharedOwnerModesV1:{};}
-function shared(plan,name,override){
- if(!owner())return false;
+function shared(plan,name,override,gym){
+ if(!owner()||gym==='Wyjazd')return false;
  var m=override||modes(data),k=key(plan,name);
  return existing(m,k)?m[k]==='shared':defaultShared(name);
 }
@@ -22798,7 +22892,7 @@ function initial(d,plan,name){
  // accidentally inheriting an old, disproportionate Zdrofit override.
  var order=(norm(plan)==='legs')?['Siłownia Oskara','CityFit']:['CityFit','Zdrofit Pruszków','Siłownia Oskara'];
  order=order.concat(gyms(d));
- for(var i=0;i<order.length;i++){var t=effectiveFromGym(d,order[i],plan,name);if(t)return t;}
+ for(var i=0;i<order.length;i++){if(order[i]==='Wyjazd')continue;var t=effectiveFromGym(d,order[i],plan,name);if(t)return t;}
  var base=find(d.ownerPlansV1&&d.ownerPlansV1[plan],name);
  return String(base&&base.plan||'');
 }
@@ -22812,6 +22906,7 @@ function effective(plan,name,values,gymDrafts,plans){
  return canonical(data,plan,name,values);
 }
 function setDraft(c,plan,name,text){
+ if(c.gym==='Wyjazd')return;
  if(!c.sharedDrafts)c.sharedDrafts={};
  c.sharedDrafts[key(plan,name)]=String(text||'');
 }
@@ -22846,10 +22941,11 @@ function syncOne(d,plan,name,text){
  if(!d.planOverridesByGym)d.planOverridesByGym={};
  // Do not insert a missing movement into a gym-specific plan.
  gyms(d).forEach(function(g){
+  if(g==='Wyjazd')return;
   var variant=d.ownerPlansByGymV1&&d.ownerPlansByGymV1[g]&&d.ownerPlansByGymV1[g][plan];
   var ex=find(variant,name);
   var base=find(d.ownerPlansV1&&d.ownerPlansV1[plan],name);
-  if(!ex&&!base)return;
+  if(!ex&&(Array.isArray(variant)||!base))return;
   if(ex)withTargets(ex,text);
   if(!d.planOverridesByGym[g])d.planOverridesByGym[g]={};
   if(!d.planOverridesByGym[g][plan])d.planOverridesByGym[g][plan]={};
@@ -22876,7 +22972,7 @@ function commitContext(c,d){
  });
 }
 function toggle(c,plan,name,mode){
- if(!c||!owner())return;
+ if(!c||!owner()||c.gym==='Wyjazd')return;
  var k=key(plan,name);
  if(!c.modeDrafts)c.modeDrafts={};
  c.modeDrafts[k]=mode==='gym'?'gym':'shared';
@@ -22889,7 +22985,7 @@ function toggle(c,plan,name,mode){
  }
 }
 function afterCoach(p,prepared,d){
- if(!owner()||!p||!d)return;
+ if(!owner()||!p||!d||p.gym==='Wyjazd')return;
  var gymsArr=d.ownerPlansByGymV1&&d.ownerPlansByGymV1[p.gym]&&d.ownerPlansByGymV1[p.gym][p.plan_name];
  (prepared||[]).forEach(function(x){
   var ex=gymsArr&&gymsArr[x.index];if(!ex||!shared(p.plan_name,ex.name,modes(d)))return;
@@ -22900,7 +22996,7 @@ function afterCoach(p,prepared,d){
 }
 function afterImport(d,chunks){
  if(!owner()||!d)return;
- var all=(chunks||[]).filter(function(c){return c&&c.target!=='GLOBAL';});
+ var all=(chunks||[]).filter(function(c){return c&&c.target!=='GLOBAL'&&c.target!=='Wyjazd';});
  all.sort(function(a,b){return (a.target==='CityFit'?0:1)-(b.target==='CityFit'?0:1);});
  var done={};
  all.forEach(function(c){Object.keys(c.plans||{}).forEach(function(plan){(c.plans[plan]||[]).forEach(function(ex){
@@ -22912,7 +23008,7 @@ function afterImport(d,chunks){
  });});});
 }
 function afterTextUpdate(gym,items,d){
- if(!owner()||!d)return;
+ if(!owner()||!d||gym==='Wyjazd')return;
  (items||[]).forEach(function(i){
   if(!shared(i.plan,i.exercise,modes(d)))return;
   if(!d.glSharedOwnerTargetsV1)d.glSharedOwnerTargetsV1={};
@@ -22921,6 +23017,7 @@ function afterTextUpdate(gym,items,d){
  });
 }
 function runtimeGoal(gym,plan,name,fallback){
+ if(gym==='Wyjazd')return fallback;
  if(!shared(plan,name,modes(data)))return fallback;
  return canonical(data,plan,name)||fallback;
 }
@@ -22939,7 +23036,7 @@ window.GymLogSharedOwner={shared:shared,effective:effective,setDraft:setDraft,in
   afterImport:afterImport,afterTextUpdate:afterTextUpdate,defaultShared:defaultShared,backup:saveBackup};
 window.glSharedOwnerMode=function(index,value){
  var c=window.GL127_OWNER_CTX;
- if(!c||!c.planName||!owner())return;
+ if(!c||!c.planName||!owner()||c.gym==='Wyjazd')return;
  var ex=c.plans[c.planName]&&c.plans[c.planName][index];if(!ex)return;
  // The old owner editor captures unsaved rows when switching a selector.
  var switcher=window.gl127OwnerSwitchPlan;
@@ -22950,7 +23047,7 @@ window.glSharedOwnerMode=function(index,value){
 var originalClone=clonePlanForGymV31;
 clonePlanForGymV31=function(plan,gym){
  var arr=originalClone.apply(this,arguments);
- if(!owner())return arr;
+ if(!owner()||gym==='Wyjazd')return arr;
  (arr||[]).forEach(function(ex){
   if(!ex||!shared(plan,ex.name,modes(data)))return;
   var goal=runtimeGoal(gym,plan,ex.name,ex.plan||'');
@@ -22962,6 +23059,9 @@ clonePlanForGymV31=function(plan,gym){
  return arr;
 };
 })();
+
+/* Local development candidate; not the unrecovered 0.75.16 archive. */
+VERSION="BETA 0.75.17-dev";
 
 /* 0.75.7: instant local boot. A network request must not hold the splash or
    replace a cached, resumable workout. No client data is cleared here. */

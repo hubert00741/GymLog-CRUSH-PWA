@@ -1,7 +1,9 @@
 /* GymLog CRUSH 0.75.9 — self-contained startup shell.
    The full JS needed to boot is in index.html, preventing a single delayed
    external module from blocking the app. Optional assets never block install. */
-const CACHE='gymlog-crush-multiuser-test-v07517-dev';
+const CACHE='gymlog-crush-multiuser-test-v07900';
+const RELEASE_VERSION='BETA 0.79.0';
+const RELEASE_NOTES=['Ochrona równoczesnych zapisów planów klienta.','Zapamiętywanie wpisywanej serii i cofanie pomyłek.','Przyciski − / + z własnym skokiem ciężaru.','Aktualizacja po zakończeniu treningu.','Prostszy ekran przerwy i nawigacji.'];
 const SHELL=['./index.html'];
 const OPTIONAL=['./','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png','./header-logo-female.png'];
 self.addEventListener('install',event=>{
@@ -9,8 +11,35 @@ self.addEventListener('install',event=>{
     const cache=await caches.open(CACHE);
     await cache.addAll(SHELL);
     await Promise.allSettled(OPTIONAL.map(asset=>cache.add(asset)));
-    await self.skipWaiting();
   })());
+});
+let activationJob=null;
+const replies=new Map();
+function inScope(client){return client&&typeof client.url==='string'&&client.url.startsWith(self.registration.scope);}
+self.addEventListener('message',event=>{
+  const msg=event.data||{};
+  if(msg.type==='GL79_WORKOUT_STATUS'){
+    const pending=replies.get(msg.nonce);if(!pending||!event.source||!pending.expected.has(event.source.id))return;
+    pending.status.set(event.source.id,msg.busy===false?false:true);if(pending.status.size===pending.expected.size)pending.done();return;
+  }
+  if(msg.type!=='GL79_REQUEST_ACTIVATION'||!inScope(event.source))return;
+  if(!activationJob)activationJob=(async()=>{
+    const windows=(await self.clients.matchAll({type:'window',includeUncontrolled:true})).filter(inScope);
+    const nonce=crypto.randomUUID(),expected=new Set(windows.map(c=>c.id)),status=new Map();
+    if(windows.length)await new Promise(resolve=>{
+      let timeout;const done=()=>{clearTimeout(timeout);resolve();};replies.set(nonce,{expected,status,done});timeout=setTimeout(done,2000);
+      windows.forEach(client=>client.postMessage({type:'GL79_QUERY_WORKOUT',nonce}));
+    });
+    replies.delete(nonce);
+    const current=(await self.clients.matchAll({type:'window',includeUncontrolled:true})).filter(inScope);
+    const changed=current.length!==windows.length||current.some(c=>!expected.has(c.id));
+    if(changed||status.size!==windows.length||Array.from(status.values()).some(Boolean)){
+      current.forEach(client=>client.postMessage({type:'GL79_UPDATE_BLOCKED'}));return;
+    }
+    current.forEach(client=>client.postMessage({type:'GL79_ACTIVATING',version:RELEASE_VERSION,notes:RELEASE_NOTES}));
+    await self.skipWaiting();
+  })().finally(()=>{activationJob=null;});
+  event.waitUntil(activationJob);
 });
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
@@ -36,9 +65,9 @@ self.addEventListener('fetch',event=>{
     }finally{clearTimeout(timeout);}
   };
   if(request.mode==='navigate'){
-    event.respondWith(network().catch(async()=>
-      (await caches.match(request))||(await caches.match('./index.html'))||Response.error()
-    ));return;
+    // The active worker owns its version of the shell. Downloading a waiting
+    // update must never replace the running app during a workout or reload.
+    event.respondWith((async()=>{const c=await caches.open(CACHE);return (await c.match('./index.html'))||fetch(request);})());return;
   }
   event.respondWith(network().catch(async()=> (await caches.match(request))||Response.error()));
 });
@@ -74,9 +103,9 @@ self.addEventListener('notificationclick',event=>{
     const windows=await clients.matchAll({type:'window',includeUncontrolled:true});
     for(const client of windows){
       try{
-        if('focus' in client){
+        if(inScope(client)&&'focus' in client){
           await client.focus();
-          if('navigate' in client)await client.navigate(target);
+          client.postMessage({type:'GL79_OPEN_WORKOUT'});
           return;
         }
       }catch(e){}

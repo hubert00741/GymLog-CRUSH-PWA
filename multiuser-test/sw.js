@@ -1,9 +1,9 @@
 /* GymLog CRUSH 0.75.9 — self-contained startup shell.
    The full JS needed to boot is in index.html, preventing a single delayed
    external module from blocking the app. Optional assets never block install. */
-const CACHE='gymlog-crush-multiuser-test-v07901';
-const RELEASE_VERSION='BETA 0.79.1';
-const RELEASE_NOTES=['Ochrona równoczesnych zapisów planów klienta.','Zapamiętywanie wpisywanej serii i cofanie pomyłek.','Przyciski − / + z własnym skokiem ciężaru.','Aktualizacja po zakończeniu treningu.','Prostszy ekran przerwy i nawigacji.'];
+const CACHE='gymlog-crush-multiuser-test-v07902';
+const RELEASE_VERSION='BETA 0.79.2';
+const RELEASE_NOTES=["Naprawa błędu braku miejsca przy zatwierdzaniu planu trenera.","Kopie planów przenoszone do większego magazynu po weryfikacji zapisu.","Podgląd i eksport zachowanych kopii w ustawieniach."];
 const SHELL=['./index.html'];
 const OPTIONAL=['./','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./apple-touch-icon.png','./header-logo.png','./header-logo-female.png'];
 self.addEventListener('install',event=>{

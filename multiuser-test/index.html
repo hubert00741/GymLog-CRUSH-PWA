@@ -4996,7 +4996,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
     <div class="gl751-redline"></div>
     <div class="gl751-tagline">READY TO TRAIN</div>
   </div>
-  <span class="gl751-version">BETA 0.79.1</span>
+  <span class="gl751-version">BETA 0.79.2</span>
   <span class="gl751-progress"><i></i></span>
   <span class="gl753-powered">Powered by Stephan.os</span>
 </div>
@@ -5007,7 +5007,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 <script id="gl751-splash-manager">
 (function(){
   'use strict';
-  var VERSION='0.79.1';
+  var VERSION='0.79.2';
   var KEY='GYMLOG_CRUSH_LAST_SPLASH_VERSION';
   var splash=document.getElementById('gl751Splash');
   var app=document.getElementById('app');
@@ -5941,7 +5941,70 @@ body.theme-female .gl76-workspace,body.theme-female .gl76-tools{--gl76-accent:#e
     amount=Number(String(amount).replace(',','.'));if(!Number.isFinite(amount)||amount<.1||amount>100||Math.abs(Math.round(amount*1000)-amount*1000)>1e-7)throw Error('Skok ciężaru musi wynosić 0,1–100 kg (do trzech miejsc po przecinku).');
     var n=Math.round(((Number(raw)||0)+Number(direction)*amount)*1000)/1000;if(!bodyweight)n=Math.max(0,n);if(Math.abs(n)>800)throw Error('Sprawdź ciężar — przekroczono 800 kg.');return String(n);
   }
-  root.GymLogReliability={profileVersion:profileVersion,entries:entries,undo:undo,step:step,changeWeight:changeWeight,version:'BETA 0.79.1',notes:['Pole ciężaru i nagłówek korzystają z tego samego celu.','Niezależne cele maszyn dla każdej siłowni.','Odzyskiwanie synchronizacji, gdy brakuje tylko treningu.','Dosyłanie historii bez nadpisywania planów.','Rozbudowana animacja startowa, osobna dla kobiet.']};
+  root.GymLogReliability={profileVersion:profileVersion,entries:entries,undo:undo,step:step,changeWeight:changeWeight,version:'BETA 0.79.2',notes:["Naprawa błędu braku miejsca przy zatwierdzaniu planu trenera.","Kopie planów przenoszone do większego magazynu po weryfikacji zapisu.","Podgląd i eksport zachowanych kopii w ustawieniach."]};
+})(typeof window!=='undefined'?window:globalThis);
+
+</script>
+<script id="gl82-storage">
+/* Durable plan backups. Never remove a localStorage copy before IDB commit + readback. */
+(function(root){
+  'use strict';
+  var MESSAGE='Brakuje miejsca na zapis kopii planu. Plan i treningi zachowano. Wyeksportuj kopię w Ustawienia → Dane i pomoc. Nie usuwaj aplikacji ani jej danych.';
+  function quota(e){return !!e&&(e.name==='QuotaExceededError'||e.code===22||e.code===1014||/quota.*exceed|exceed.*quota/i.test(String(e.message||e)));}
+  function message(e){return quota(e)?MESSAGE:String(e&&e.message||e);}
+  function idbVault(factory){
+    var opening=null;
+    function open(){
+      if(opening)return opening;
+      opening=new Promise(function(resolve,reject){
+        var request,abandoned=false;try{request=factory.open('GymLogLocalBackups',1);}catch(e){reject(e);return;}
+        request.onupgradeneeded=function(){var db=request.result;if(!db.objectStoreNames.contains('plans')){var s=db.createObjectStore('plans',{keyPath:'id'});s.createIndex('user','user');}};
+        request.onerror=function(){opening=null;reject(request.error||Error('Nie udało się otworzyć magazynu kopii.'));};
+        request.onblocked=function(){abandoned=true;opening=null;reject(Error('Inna karta blokuje magazyn kopii. Zamknij pozostałe karty GymLog i ponów zapis.'));};
+        request.onsuccess=function(){var db=request.result;if(abandoned){db.close();return;}db.onversionchange=function(){db.close();opening=null;};resolve(db);};
+      }).catch(function(e){opening=null;throw e;});return opening;
+    }
+    async function run(mode,action){var db=await open();return new Promise(function(resolve,reject){
+      var tx,result;try{tx=db.transaction('plans',mode);var r=action(tx.objectStore('plans'));r.onsuccess=function(){result=r.result;};}catch(e){reject(e);return;}
+      tx.oncomplete=function(){resolve(result);};tx.onabort=tx.onerror=function(){reject(tx.error||r&&r.error||Error('Nie zapisano kopii planu. Dotychczasowe dane zachowano.'));};
+    });}
+    return {put:function(value){return run('readwrite',function(s){return s.put(value);});},get:function(id){return run('readonly',function(s){return s.get(id);});},list:function(user){return run('readonly',function(s){return s.index('user').getAll(user);});}};
+  }
+  function create(a){
+    function key(user){if(!user)throw Error('Brak konta do zapisu kopii.');return 'GYMLOG_CRUSH_COACH_BACKUPS_'+user;}
+    function digest(v){return root.GymLogPlanStore.digest(v);}
+    async function verified(record){await a.vault.put(record);var found=await a.vault.get(record.id);if(!found||found.user!==record.user||found.raw!==record.raw)throw Error('Nie potwierdzono kopii planu. Dotychczasowe dane zachowano.');}
+    return {
+      saveCoach:async function(user,snapshot){
+        var k=key(user),raw=a.storage.getItem(k),at=new Date(a.now()).toISOString(),body=JSON.stringify({createdAt:at,state:snapshot});
+        try{
+          if(!a.vault){
+            var list=raw?JSON.parse(raw):[];if(!Array.isArray(list))throw Error('Starsza kopia planu wymaga eksportu przed kolejną zmianą.');
+            list.unshift(JSON.parse(body));var saved=JSON.stringify(list.slice(0,3));a.storage.setItem(k,saved);
+            if(a.storage.getItem(k)!==saved)throw Error('Nie potwierdzono kopii planu.');return;
+          }
+          // Immutable keys preserve concurrent backups from another tab.
+          if(raw!==null)await verified({id:'legacy-coach:'+user+':'+digest(raw),user:user,kind:'legacy-coach',at:at,raw:raw});
+          await verified({id:'coach:'+user+':'+digest(body),user:user,kind:'coach',at:at,raw:body});
+          // A different tab may have saved another old-format backup meanwhile.
+          // Keep that newer value; it will be migrated on the next attempt.
+          if(raw!==null&&a.storage.getItem(k)===raw)a.storage.removeItem(k);
+        }catch(e){throw Error(message(e));}
+      },
+      listCoach:async function(user){
+        key(user);var records=a.vault?await a.vault.list(user):[],out=[];
+        records.filter(function(r){return r.user===user;}).forEach(function(r){
+          try{var v=JSON.parse(r.raw);(Array.isArray(v)?v:[v]).forEach(function(x,i){out.push({id:r.id+':'+i,createdAt:x.createdAt||r.at,state:x.state||null,raw:x.state?null:r.raw});});}
+          catch(e){out.push({id:r.id,createdAt:r.at,raw:r.raw});}
+        });
+        var raw=a.storage.getItem(key(user));if(raw!==null){try{var v=JSON.parse(raw);if(!Array.isArray(v))throw Error();v.forEach(function(x,i){out.push({id:'local:'+i,createdAt:x.createdAt,state:x.state});});}catch(e){out.push({id:'local-raw',raw:raw});}}
+        return out.sort(function(a,b){return String(b.createdAt||'').localeCompare(String(a.createdAt||''));});
+      }
+    };
+  }
+  var service=null;
+  function current(){if(!service)service=create({storage:root.localStorage,vault:root.indexedDB?idbVault(root.indexedDB):null,now:Date.now});return service;}
+  root.GymLogStorage={create:create,idbVault:idbVault,message:message,isQuota:quota,saveCoach:function(user,snapshot){return current().saveCoach(user,snapshot);},listCoach:function(user){return current().listCoach(user);}};
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
@@ -7128,6 +7191,7 @@ function settingsPage(){
   if(typeof window.gl112AdminInboxView==='function')admin.push(['Zgłoszenia użytkowników','gl112AdminInboxView()']);
  }else if(typeof window.gl112FeedbackView==='function')admin.push(['Zgłoś błąd lub sugestię','gl112FeedbackView()']);
  var support=[['Eksport i import kopii danych','backupView()']];
+ support.push(['Kopie planów trenera','gl82PlanBackupsView()']);
  if(typeof window.gl74RecoveryView==='function')support.push(['Kopia awaryjna treningu','gl74RecoveryView()']);
  support.push(['Synchronizacja i porównanie danych','gl76SyncView()'],['Wersja i aktualizacje','gl79UpdatesView()'],['Pomoc','helpView()']);
  var html='<main class="gl759-settings-page"><button type="button" class="gl759-back" onclick="home()">← Start</button><div class="gl759-settings-heading"><div class="gl758-kicker">GYMLOG CRUSH</div><h1>Ustawienia</h1><p>Zarządzanie kontem i aplikacją</p></div>'+
@@ -9807,7 +9871,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.79.1";
+VERSION="BETA 0.79.2";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -19025,7 +19089,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -19071,7 +19135,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.79.1";
+    VERSION="BETA 0.79.2";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -19211,7 +19275,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -19505,7 +19569,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -19808,7 +19872,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -19882,7 +19946,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -20127,7 +20191,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -20260,7 +20324,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -20422,7 +20486,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -21688,7 +21752,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -21831,7 +21895,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -21863,7 +21927,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -22273,7 +22337,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -22567,7 +22631,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -22678,7 +22742,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -22780,7 +22844,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -23050,7 +23114,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.79.1";
+  VERSION="BETA 0.79.2";
 })();
 
 
@@ -23551,17 +23615,17 @@ function validate(p){
   if(keys.size!==prepared.length)throw Error('Powtórzona pozycja ćwiczenia — nie zastosowano zmian.');
   return prepared;
 }
-function backup(){
-  var key='GYMLOG_CRUSH_COACH_BACKUPS_'+uid();
-  var list=[];try{list=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(list))list=[];}catch(e){}
+async function backup(){
   var state={};
   ['ownerPlansV1','ownerPlansByGymV1','planOverrides','planOverridesByGym',
    'glSharedOwnerTargetsV1','glSharedOwnerModesV1','glCoachAppliedProposalIds','planStoreV1','planStoreLegacyBackupV1'].forEach(function(key){if(owns(data,key))state[key]=copy(data[key]);});
-  list.unshift({createdAt:new Date().toISOString(),state:state});
-  localStorage.setItem(key,JSON.stringify(list.slice(0,3)));
+  await window.GymLogStorage.saveCoach(uid(),state);
 }
-function applyLocal(p,prepared){
-  backup();
+async function applyLocal(p,prepared){
+  var account=uid(),store=STORE,epoch=GL74_LOCAL_MUTATION;
+  await backup();
+  if(!me()||uid()!==account||STORE!==store||GL74_LOCAL_MUTATION!==epoch)throw Error('Konto lub plan zmieniły się podczas zapisu kopii. Otwórz propozycję ponownie.');
+  prepared=validate(p);
   var before=data;
   data=copy(data);
   try{
@@ -23637,7 +23701,7 @@ async function syncApplied(p){
   notify('Propozycja zatwierdzona i zsynchronizowana. Przed kolejnym treningiem sprawdź wyświetlone cele.');paint();
 }
 window.glCoachApprove=async function(id){
-  if(busy)return;busy=true;
+  if(busy)return;busy=true;window.GL82_PLAN_OPERATION=true;
   try{
     var p=proposalById(id);if(!p)throw Error('Propozycja nie istnieje.');
     await glEnsureSession();
@@ -23649,12 +23713,12 @@ window.glCoachApprove=async function(id){
       'Ćwiczenia oznaczone jako wspólne zaktualizują się także na innych regularnych siłowniach. Wyjazd pozostaje osobny.';
     if(!confirm('Zatwierdzić '+prepared.length+' ćwiczeń dla '+p.gym+' / '+p.plan_name+'?\n\n'+scope+' Historia bez zmian.'))return;
     if(unusual.length&&!confirm('Uwaga: '+unusual.length+' ćwiczenie(a) ma(ją) wzrost ciężaru ponad 15%. Czy na pewno akceptujesz te wartości?'))return;
-    applyLocal(p,prepared);await syncApplied(p);
-  }catch(e){notify(String(e&&e.message||e),true);paint();}
-  finally{busy=false;}
+    await applyLocal(p,prepared);await syncApplied(p);
+  }catch(e){notify(window.GymLogStorage.message(e),true);paint();}
+  finally{busy=false;window.GL82_PLAN_OPERATION=false;}
 };
-window.glCoachSync=async function(id){if(busy)return;busy=true;try{var p=proposalById(id);if(!p)throw Error('Brak propozycji.');await glEnsureSession();await syncApplied(p);}catch(e){notify(String(e&&e.message||e),true);}finally{busy=false;}};
-window.glCoachReject=async function(id){if(busy)return;var p=proposalById(id);if(!p||localApplied(id))return;if(!confirm('Odrzucić propozycję? Plan pozostanie bez zmian.'))return;busy=true;try{await glEnsureSession();await mark(p,'rejected');rows=rows.filter(function(x){return x.id!==id;});notify('Odrzucono. Plan bez zmian.');paint();}catch(e){notify(schemaError(e),true);}finally{busy=false;}};
+window.glCoachSync=async function(id){if(busy)return;busy=true;window.GL82_PLAN_OPERATION=true;try{var p=proposalById(id);if(!p)throw Error('Brak propozycji.');await glEnsureSession();await syncApplied(p);}catch(e){notify(String(e&&e.message||e),true);}finally{busy=false;window.GL82_PLAN_OPERATION=false;}};
+window.glCoachReject=async function(id){if(busy)return;var p=proposalById(id);if(!p||localApplied(id))return;if(!confirm('Odrzucić propozycję? Plan pozostanie bez zmian.'))return;busy=true;window.GL82_PLAN_OPERATION=true;try{await glEnsureSession();await mark(p,'rejected');rows=rows.filter(function(x){return x.id!==id;});notify('Odrzucono. Plan bez zmian.');paint();}catch(e){notify(schemaError(e),true);}finally{busy=false;window.GL82_PLAN_OPERATION=false;}};
 window.glCoachView=view;
 var originalHome=window.home;
 window.home=home=function(){opened=false;return originalHome.apply(this,arguments);};
@@ -24449,7 +24513,7 @@ clonePlanForGymV31=function(plan,gym){
     if(result&&result.profile){versions.set(result.profile,R.profileVersion(result.profile));if(source&&result.profile_version){versions.set(source,result.profile_version);if(c&&c.profile===source)c.gl79Version=result.profile_version;}}
     (result&&result.users||[]).forEach(function(profile){versions.set(profile,R.profileVersion(profile));});return result;
   };
-  function busy(){return !GL_AUTH_READY||!ready()||!!(current||data.draft||window.GymLogWorkspace.hasUnsavedChanges()||document.getElementById('tr')||['gl77Weight','gl77Sleep','gl78EditW'].some(function(id){var n=document.getElementById(id);return n&&String(n.value).trim();}));}
+  function busy(){return !GL_AUTH_READY||!ready()||!!(window.GL82_PLAN_OPERATION||current||data.draft||window.GymLogWorkspace.hasUnsavedChanges()||document.getElementById('tr')||['gl77Weight','gl77Sleep','gl78EditW'].some(function(id){var n=document.getElementById(id);return n&&String(n.value).trim();}));}
   function guardStart(fn){return function(){if(activationLock>Date.now()){warning('Trwa aktualizacja aplikacji. Poczekaj chwilę.');return;}return fn.apply(this,arguments);};}
   if(typeof window.startWorkout==='function')window.startWorkout=guardStart(window.startWorkout);
   if(typeof window.glManagedStartWorkout==='function')window.glManagedStartWorkout=glManagedStartWorkout=guardStart(window.glManagedStartWorkout);
@@ -24505,11 +24569,27 @@ clonePlanForGymV31=function(plan,gym){
     var dialog=document.createElement('section');dialog.id='gl79Release';dialog.className='gl79-release';dialog.setAttribute('role','dialog');dialog.setAttribute('aria-label','Nowości w aplikacji');dialog.innerHTML='<div class="card"><h2>'+h(r.version)+'</h2><ul>'+(r.notes||[]).map(function(n){return '<li>'+h(n)+'</li>';}).join('')+'</ul><button onclick="gl79CloseReleaseNotes()">Gotowe — przejdź do aplikacji</button></div>';document.body.appendChild(dialog);try{localStorage.removeItem(name);}catch(e){}
   },1000);});
   window.GymLogReliabilityBridge={scope:scope,capture:capture,entries:entries,undo:undos,enhance:enhance,busy:busy,requestUpdate:requestUpdate};
+  var planCopies=[],copyUser='',copyRequest=0;
+  window.gl82PlanBackupsView=async function(){
+    if(!ready())return;var user=uid(),request=++copyRequest;copyUser='';planCopies=[];
+    try{
+      var list=await window.GymLogStorage.listCoach(user);
+      if(!ready()||uid()!==user||request!==copyRequest)return;
+      copyUser=user;planCopies=list;
+      render('<main class="gl76-workspace"><button class="secondary" onclick="GymLogLeague.settings()">← Ustawienia</button><h1>Kopie planów trenera</h1><p>Kopie sprzed zatwierdzenia zmian, zachowane na tym urządzeniu. Eksport służy do analizy i odzyskania celów. Pełną kopię treningów zapiszesz w „Eksport i import kopii danych”.</p>'+(list.length?list.map(function(x,i){return '<section class="card"><p>'+h(x.createdAt?new Date(x.createdAt).toLocaleString('pl-PL'):'Starsza kopia')+'</p><button class="secondary" onclick="gl82ExportPlanBackup('+i+')">Eksportuj kopię planu</button></section>';}).join(''):'<p class="card">Nie ma jeszcze zapisanych kopii planów trenera.</p>')+'</main>'+luxBottomNav('start'));
+    }catch(e){if(uid()===user&&request===copyRequest)alert(window.GymLogStorage.message(e));}
+  };
+  window.gl82ExportPlanBackup=function(index){
+    if(!ready()||copyUser!==uid()||!planCopies[index])return;
+    var record=planCopies[index],payload={format:'GYMLOG_COACH_PLAN_BACKUP_V2',createdAt:record.createdAt,plans:record.state||null,legacyRaw:record.raw||null};
+    var blob=new Blob([JSON.stringify(payload,null,2)],{type:'text/plain'}),url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download='GymLog_KOPIA_PLANU_'+String(record.createdAt||'starsza').replace(/[^0-9A-Za-z-]/g,'_')+'.txt';document.body.appendChild(link);link.click();link.remove();setTimeout(function(){URL.revokeObjectURL(url);},1500);
+  };
 })();
 
 /* GL76_INSTALL_END */
 /* Local development candidate; not the unrecovered 0.75.16 archive. */
-VERSION="BETA 0.79.1";
+VERSION="BETA 0.79.2";
 
 /* 0.75.7: instant local boot. A network request must not hold the splash or
    replace a cached, resumable workout. No client data is cleared here. */

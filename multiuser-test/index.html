@@ -801,15 +801,6 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
 
 
 /* ===== 0.64.0 — PLAN EDITOR / MOOD FLAGS / BODY MEASUREMENTS ===== */
-.gl-weight-wrap-064{position:relative}
-.gl-weight-save-064{
-  position:absolute;right:0;bottom:0;width:42px!important;height:42px;min-height:42px!important;
-  margin:0!important;padding:0!important;border-radius:12px!important;
-  display:grid!important;place-items:center;font-size:20px!important;font-weight:950!important;
-  background:rgba(255,255,255,.055)!important;border:1px solid rgba(255,255,255,.10)!important;color:#dedee3!important
-}
-.gl-weight-wrap-064 input{padding-right:50px!important}
-.gl-weight-save-064.saved{color:#78e6a0!important;border-color:rgba(86,218,132,.38)!important;background:rgba(30,118,62,.16)!important}
 .gl-easy-plan-head-064{display:flex;gap:8px;align-items:center;margin:10px 0}
 .gl-easy-plan-head-064 select{margin:0!important;flex:1}
 .gl-easy-plan-head-064 button{width:auto!important;margin:0!important;padding:11px 12px!important}
@@ -842,7 +833,6 @@ body.theme-female .lux-muscle-title-icon{color:#ff9fc7;background:linear-gradien
 .gl-feature-item-064 label{margin-top:0!important}
 .gl-plan-user-list-064{display:grid;gap:8px}
 .gl-plan-user-list-064 button{text-align:left!important;margin:0!important}
-.theme-female .gl-weight-save-064.saved{color:#ffb1d2!important;border-color:rgba(255,177,210,.4)!important}
 @media(max-width:390px){
   .gl-plan-grid-064,.gl-measure-form-064{grid-template-columns:1fr}
   .gl-plan-grid-064 .wide,.gl-measure-form-064 .wide{grid-column:auto}
@@ -1709,11 +1699,9 @@ body.theme-female .gl086-woman-mark{
 
 
 /* =====================================================================
-   0.69.6 — workout setup header + locked interface zoom
+   0.69.6 — workout setup header
    ===================================================================== */
-html,body,#app{
-  touch-action:pan-x pan-y;
-}
+
 .gl096-setup-brand{
   display:flex;
   flex-direction:column;
@@ -4996,7 +4984,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
     <div class="gl751-redline"></div>
     <div class="gl751-tagline">READY TO TRAIN</div>
   </div>
-  <span class="gl751-version">BETA 0.79.2</span>
+  <span class="gl751-version">BETA 0.79.6</span>
   <span class="gl751-progress"><i></i></span>
   <span class="gl753-powered">Powered by Stephan.os</span>
 </div>
@@ -5007,7 +4995,7 @@ html[data-gl75-theme="neutral"] .gl751-splash{background:radial-gradient(ellipse
 <script id="gl751-splash-manager">
 (function(){
   'use strict';
-  var VERSION='0.79.2';
+  var VERSION='0.79.6';
   var KEY='GYMLOG_CRUSH_LAST_SPLASH_VERSION';
   var splash=document.getElementById('gl751Splash');
   var app=document.getElementById('app');
@@ -5146,6 +5134,92 @@ body.theme-female .gl76-workspace,body.theme-female .gl76-tools{--gl76-accent:#e
   #gl128TopEdgeShield{height:env(safe-area-inset-top,0px)!important;background:#070707!important;border:0!important;box-shadow:none!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important;-webkit-transform:none!important}
   #app{padding-top:calc(max(18px,env(safe-area-inset-top,0px)) + 12px)!important;padding-left:max(16px,env(safe-area-inset-left,0px))!important;padding-right:max(16px,env(safe-area-inset-right,0px))!important}
 }
+
+/* A focused small field makes iOS magnify the page. Layered important sizes
+   take priority over the legacy unlayered form styles in both themes. */
+@layer mobile-form-sizing {
+  @media (any-pointer: coarse) {
+    :where(input:not([type=checkbox],[type=radio],[type=range],[type=color],[type=file],[type=button],[type=submit],[type=reset],[type=image],[type=hidden]), select, textarea, [contenteditable]:not([contenteditable=false])) {
+      font-size: max(16px, 1rem) !important;
+    }
+
+    .gl78-training :is(input[inputmode], select) {
+      font-size: max(20px, 1rem) !important;
+    }
+  }
+}
+
+.gl78-training > .gl76-row-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 8px 0;
+}
+body #app .gl78-training > .gl76-row-actions > button {
+  align-self: stretch;
+  min-width: 0;
+  width: 100% !important;
+  min-height: 48px;
+  margin: 0 !important;
+  padding: 10px 6px !important;
+}
+.gl78-training > button:last-child { width: 100% !important; }
+.gl84-prior { display: block; margin: 6px 0 10px; font-size: 13px; line-height: 1.45; color: #c2bdc5; }
+
+.gl84-session-status { margin-top: 10px; font-size: 13px; }
+.gl84-session-status summary { cursor: pointer; padding: 6px 0; }
+.gl84-session-status button[hidden] { display: none !important; }
+.gl759-inline-entry:has(.gl84-session-status) { flex-wrap: wrap; }
+.gl759-inline-entry .gl84-session-status { flex: 0 0 100%; margin-top: 0; }
+
+/* Training atlas: neutral tissue stays visible independently of the heat scale. */
+.lux-muscle-stage:has(.gl85-atlas){background:linear-gradient(145deg,#191c22,#101216 72%);border:1px solid #ffffff18;padding:10px 5px;border-radius:18px}
+.gl85-atlas .gl85-skin{fill:#3c424d}
+.gl85-atlas .gl85-outline{fill:none;stroke:#75808d;stroke-width:.65;stroke-linejoin:round}
+.gl85-atlas .gl85-zone{fill:#515966;stroke:#292e37;stroke-width:.85;stroke-linejoin:round}
+.gl85-atlas .gl85-contour{fill:none;stroke:#88919e;stroke-width:.55;opacity:.65}
+.gl85-atlas .heat-l1{fill:#8b4853;stroke:#643a43;filter:none}
+.gl85-atlas .heat-l2{fill:#ba525d;stroke:#89444b;filter:none}
+.gl85-atlas .heat-l3{fill:#e45461;stroke:#aa3b4a;filter:none}
+.gl85-atlas .heat-l4{fill:#ff354b;stroke:#b82e43;filter:none}
+.gl85-atlas .gl85-map-label{font:600 8px system-ui;letter-spacing:1.5px;fill:#c9c9d0;text-anchor:middle}
+.gl85-atlas .gl85-divider{stroke:#ffffff12;stroke-width:.8}
+.lux-muscle-card .lux-muscle-leg.l1 span,.lux-muscle-card .lux-muscle-chip.l1 i{background:#8b4853}
+.lux-muscle-card .lux-muscle-leg.l2 span,.lux-muscle-card .lux-muscle-chip.l2 i{background:#ba525d}
+.lux-muscle-card .lux-muscle-leg.l3 span,.lux-muscle-card .lux-muscle-chip.l3 i{background:#e45461}
+
+body #app .gl78-training .gl85-counter {width:auto!important;min-height:42px;margin:6px 0!important;padding:6px 12px!important;border-radius:12px!important;font-size:13px!important}
+body #app .gl85-defer {margin:12px 0 0!important;min-height:42px}
+body #app .gl85-overview .gl85-ex-row {display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin:6px 0!important;padding:14px!important;text-align:left!important;text-transform:none!important}
+.gl85-ex-row small {display:block;margin-top:3px;color:#b9b6bd;font-size:12px;font-weight:450}
+.gl85-ex-row>span:last-child {font-size:12px;white-space:nowrap;color:#c9c6cd}
+.gl85-ex-row[data-state=later]>span:last-child {color:#ffc789}
+.gl85-ex-row[data-state=complete]>span:last-child {color:#99ceb1}
+.gl85-overview h2 {margin-top:22px!important}
+.gl85-overview header {margin-top:18px}
+.gl85-overview .gl85-finish {margin-top:22px!important}
+
+#app .gl085-top .gl086-profile-button {
+  box-sizing:border-box;display:inline-flex!important;align-items:center;justify-content:flex-end;
+  flex:0 1 auto!important;width:auto!important;min-width:0!important;height:44px!important;min-height:44px!important;
+  padding:3px 4px 3px 12px!important;gap:8px!important;border-radius:999px!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+#app .gl085-top .gl086-profile-button .gl085-account-copy {min-width:0!important;max-width:24vw!important;flex:0 1 auto!important}
+#app .gl085-top .gl086-profile-button .gl085-account-copy b {display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .gl085-top .gl086-profile-button .gl085-avatar {
+  box-sizing:border-box;width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;
+  flex:0 0 34px!important;border:0!important;border-radius:50%!important;display:grid;place-items:center;margin:0!important;box-shadow:none!important;
+}
+#app .gl085-top .gl086-profile-button:focus-visible {outline:2px solid currentColor;outline-offset:2px}
+#app .gl86-history details>summary {cursor:pointer;padding:4px 0;font-weight:700}
+#app .gl86-history summary small {float:right;color:var(--muted,#b9b5bc);font-weight:500}
+#app .gl86-history fieldset {min-width:0;margin:14px 0;padding:10px 12px;border:1px solid #514950;border-radius:12px}
+#app .gl86-history legend {padding:0 5px;font-weight:700}
+#app .gl86-history .gl86-pair {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#app .gl86-history .gl86-remove {display:flex;align-items:center;gap:9px;font-weight:400}
+#app .gl86-history .gl86-remove input {width:18px;height:18px;min-height:0;margin:0}
+#gl86Error {color:#ffa5ad}
 
 </style>
 <style id="gl76-launch-css">
@@ -5533,12 +5607,28 @@ body.theme-female .gl76-workspace,body.theme-female .gl76-tools{--gl76-accent:#e
     if(!state.defaultGymId||!state.gyms.some(function(g){return g.id===state.defaultGymId;}))state.defaultGymId=state.gyms[0]&&state.gyms[0].id;
     return state;
   }
-  function add(data,name){
+  function add(data,name,base){
     var s=read(data);if(/[\u0000-\u001f]/.test(String(name||'')))throw Error('Nazwa siłowni nie może zawierać znaków sterujących.');name=String(name||'').normalize('NFKC').trim().replace(/\s+/g,' ');
     if(name.length<2||name.length>60||/[\u0000-\u001f]/.test(name))throw Error('Nazwa siłowni musi mieć 2–60 znaków.');
     if(s.gyms.length>=50)throw Error('Możesz zapisać maksymalnie 50 siłowni.');
     if(s.gyms.some(function(g){return norm(g.name)===norm(name)||(g.aliases||[]).some(function(a){return norm(a)===norm(name);});}))throw Error('Ta siłownia jest już zapisana.');
-    s.gyms.push({id:legacyId(name),name:name,aliases:[],legacy:false,machineBaseline:false});return s;
+    var id=legacyId(name);
+    // The account supplies layout, rest intervals and shared goals live. Only
+    // customized machine ranges from the default gym need their own copy.
+    if(base){
+      var origin=s.gymGoals[s.defaultGymId]||{};
+      Object.keys(base.plans).forEach(function(plan){
+        M().exercises(base,plan,'GLOBAL').forEach(function(ex){
+          var k=key(plan,ex),override=origin[k],source=base.targets[ex.targetId].text;
+          if(!isMachine(s,plan,ex)||!override||override.baseText!==source)return;
+          var empty=blank(override.text);
+          if(empty===blank(source))return;
+          if(!s.gymGoals[id])s.gymGoals[id]={};
+          s.gymGoals[id][k]={baseText:source,text:empty};
+        });
+      });
+    }
+    s.gyms.push({id:id,name:name,aliases:[],legacy:false,machineBaseline:false});return s;
   }
   function setDefault(data,id){var s=read(data);if(!s.gyms.some(function(g){return g.id===id;}))throw Error('Nie znaleziono siłowni.');s.defaultGymId=id;return s;}
   function machine(ex,mode){
@@ -5591,12 +5681,12 @@ body.theme-female .gl76-workspace,body.theme-female .gl76-tools{--gl76-accent:#e
     function day(w){var value=String(w.date||''),pl=value.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})$/);if(pl)return pl[3]+'-'+pl[2].padStart(2,'0')+'-'+pl[1].padStart(2,'0');return value||String(w.finishedAt||w.createdAt||'').slice(0,10);}
     var logs=(data.logs||[]).slice().sort(function(a,b){return day(b).localeCompare(day(a))||String(b.finishedAt||b.createdAt||'').localeCompare(String(a.finishedAt||a.createdAt||''));});
     for(var i=0;i<logs.length;i++){
-      var w=logs[i];if(w.training!==plan)continue;
+      var w=logs[i];if(w.training!==plan||w.testMode)continue;
       if(separate){
         if(w.gymId){if(w.gymId!==g.id)continue;}
         else if(norm(w.gym||'CityFit')!==norm(g.name)&&!(g.aliases||[]).some(function(a){return norm(a)===norm(w.gym||'CityFit');}))continue;
       }
-      var movement=(w.exercises||[]).find(function(e){return norm(e.name)===norm(name)&&Array.isArray(e.sets)&&e.sets.some(function(t){return t&&!t.skipped&&!/pominięte|rozgrzew|warmup/i.test(String(t.s||t.type||''));});});
+      var movement=(w.exercises||[]).find(function(e){return !e.excludeProgression&&!e.isSubstitute&&norm(e.name)===norm(name)&&Array.isArray(e.sets)&&e.sets.some(function(t){return t&&!t.skipped&&!/pominięte|rozgrzew|warmup/i.test(String(t.s||t.type||''));});});
       if(movement)return movement;
     }return null;
   }
@@ -5845,7 +5935,7 @@ body.theme-female .gl76-workspace,body.theme-female .gl76-tools{--gl76-accent:#e
     if(!t.slot)return {exercise:e.name,index:i,completed:true,text:e.name+' · Planowane serie wykonane. Wybierz kolejne ćwiczenie lub zakończ trening.'};
     var weight=String(t.slot.weight||'').trim();if(/^-?\d+(?:[.,]\d+)?$/.test(weight))weight+=' kg';
     var summary=(t.slot.type==='warmup'?'Rozgrzewka':'Seria robocza')+': '+(weight||'dobierz ciężar')+' × '+t.slot.reps+' powt.';
-    return {exercise:e.name,index:i,weight:weight,reps:t.slot.reps,type:t.slot.type,completed:false,summary:summary,text:e.name+' · Teraz '+summary};
+    return {exercise:e.name,index:i,weight:weight,reps:t.slot.reps,type:t.slot.type,ordinal:t.rows.slice(0,t.count+1).filter(function(slot){return slot.type===t.slot.type;}).length,completed:false,summary:summary,text:e.name+' · Teraz '+summary};
   }
   function weekly(data,date,scope,dateOf){
     function iso(d){return d.toISOString().slice(0,10);}
@@ -5868,9 +5958,24 @@ body.theme-female .gl76-workspace,body.theme-female .gl76-tools{--gl76-accent:#e
   function previous(data,workout,ex){
     var machine=root.GymLogClientGyms.machine(ex),travel=workout.gym==='Wyjazd';
     var logs=(data.logs||[]).filter(function(w){return !w.testMode&&w.training===workout.training&&(travel?w.gym==='Wyjazd':w.gym!=='Wyjazd')&&(!machine||(workout.gymId?String(w.gymId||root.GymLogClientGyms.legacyId(w.gym))===String(workout.gymId):w.gym===workout.gym));});
-    logs.sort(function(a,b){return String(b.date).localeCompare(String(a.date))||String(b.finishedAt||b.createdAt||'').localeCompare(String(a.finishedAt||a.createdAt||''));});
+    function day(w){var d=String(w.date||''),m=d.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);return m?m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'):d;}
+    logs.sort(function(a,b){return day(b).localeCompare(day(a))||String(b.finishedAt||b.createdAt||'').localeCompare(String(a.finishedAt||a.createdAt||''));});
     for(var i=0;i<logs.length;i++){var e=(logs[i].exercises||[]).find(function(e){return e.name===ex.name&&!e.excludeProgression&&!e.isSubstitute&&(e.sets||[]).some(function(s){return !s.skipped&&!/pomini/i.test(s.s||'');});});if(e)return e;}
     return null;
+  }
+  function priorSet(ex,type,ordinal){
+    var rows=ex && Array.isArray(ex.sets)?ex.sets:[];
+    var comparable=rows.filter(function(row){
+      if(!row || row.skipped) return false;
+      var status=String(row.s||row.status||row.type||'');
+      return !/pomini/i.test(status) && (/rozgrzew|warmup/i.test(status)===(type==='warmup'));
+    });
+    var row=comparable[ordinal-1];
+    if(!row) return '';
+    var weight=String(row.w??row.weight??'').trim(),reps=String(row.r??row.reps??'').trim();
+    if(!reps) return row.line||'';
+    if(!weight) return reps+' powt.';
+    return weight+(/^-?\d+(?:[.,]\d+)?$/.test(weight)?' kg':'')+' × '+reps+' powt.';
   }
   function goalSuggestion(ex,last){
     var rows=root.GymLogPlanStore.parse(ex.plan||'').series,done=(ex.sets||[]).filter(function(s){return !s.skipped&&!/pomini/i.test(s.s||'');}).length,slot=rows[done];
@@ -5911,7 +6016,7 @@ body.theme-female .gl76-workspace,body.theme-female .gl76-tools{--gl76-accent:#e
     if(Array.from(new Set(Object.keys(lm).concat(Object.keys(rm)))).some(function(k){return M.stable(lm[k])!==M.stable(rm[k])&&(!latest||latest[k]==null||String(latest[k]).trim()===''||String(lm[k])!==String(latest[k]));}))return false;
     return true;
   }
-  root.GymLogTraining={escape:h,differences:differences,diffHTML:diffHTML,createRest:createRest,nextTarget:nextTarget,weekly:weekly,previous:previous,goalSuggestion:goalSuggestion,mergeHistory:mergeHistory,appendOnlyState:appendOnlyState};
+  root.GymLogTraining={escape:h,differences:differences,diffHTML:diffHTML,createRest:createRest,nextTarget:nextTarget,weekly:weekly,previous:previous,priorSet:priorSet,goalSuggestion:goalSuggestion,mergeHistory:mergeHistory,appendOnlyState:appendOnlyState};
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
@@ -5941,7 +6046,7 @@ body.theme-female .gl76-workspace,body.theme-female .gl76-tools{--gl76-accent:#e
     amount=Number(String(amount).replace(',','.'));if(!Number.isFinite(amount)||amount<.1||amount>100||Math.abs(Math.round(amount*1000)-amount*1000)>1e-7)throw Error('Skok ciężaru musi wynosić 0,1–100 kg (do trzech miejsc po przecinku).');
     var n=Math.round(((Number(raw)||0)+Number(direction)*amount)*1000)/1000;if(!bodyweight)n=Math.max(0,n);if(Math.abs(n)>800)throw Error('Sprawdź ciężar — przekroczono 800 kg.');return String(n);
   }
-  root.GymLogReliability={profileVersion:profileVersion,entries:entries,undo:undo,step:step,changeWeight:changeWeight,version:'BETA 0.79.2',notes:["Naprawa błędu braku miejsca przy zatwierdzaniu planu trenera.","Kopie planów przenoszone do większego magazynu po weryfikacji zapisu.","Podgląd i eksport zachowanych kopii w ustawieniach."]};
+  root.GymLogReliability={profileVersion:profileVersion,entries:entries,undo:undo,step:step,changeWeight:changeWeight,version:'BETA 0.79.6',notes:["Edycja historii seriami i zakresy dla nowych siłowni.","Lista ćwiczeń i odkładanie na później w aktualnym treningu.","Podsumowanie serii przed zakończeniem treningu.","Odświeżona mapa obciążenia mięśni.","Poprzedni wynik serii, status historii i nowy wpis snu."]};
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
@@ -7159,8 +7264,9 @@ function saveCardio(){var $=function(id){return document.getElementById(id);},d=
  api.save();if(typeof window.historyView==='function')window.historyView();else cardioHistory();
 }
 function cardioHistory(){stopRefresh();var data=api.getData();var items=(Array.isArray(data.cardioSessions)?data.cardioSessions:[]).slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
- var html=items.map(function(s){return '<div class="gl758-cardio-entry"><b>'+esc(activityName(s.type))+'</b><small>'+esc(s.date)+'</small><strong>'+Number(s.minutes||0)+' min'+(s.distanceKm!=null?' · '+esc(s.distanceKm)+' km':'')+'</strong><div class="gl758-row"><button class="secondary" onclick="GymLogLeague.cardioOpen()">Nowa sesja</button><button class="danger" onclick="GymLogLeague.deleteCardio('+JSON.stringify(String(s.id))+')">Usuń</button></div></div>';}).join('');
+ var html=items.map(function(s){return '<div class="gl758-cardio-entry" data-gl-cardio="'+esc(s.id)+'"><b>'+esc(activityName(s.type))+'</b><small>'+esc(s.date)+'</small><strong>'+Number(s.minutes||0)+' min'+(s.distanceKm!=null?' · '+esc(s.distanceKm)+' km':'')+'</strong><div class="gl758-row"><button class="secondary" onclick="GymLogLeague.cardioOpen()">Nowa sesja</button><button class="danger" onclick="GymLogLeague.deleteCardio('+JSON.stringify(String(s.id))+')">Usuń</button></div></div>';}).join('');
  api.render('<div class="gl758-league"><button class="secondary" onclick="historyView()">← Historia</button><h1>Historia cardio</h1><p class="small">Oddzielne sesje cardio. Nie zmieniają progresu ćwiczeń siłowych.</p><button onclick="GymLogLeague.cardioOpen()">+ DODAJ CARDIO</button>'+(html||'<div class="card">Brak sesji cardio.</div>')+api.nav('history')+'</div>');
+ var app=document.getElementById('app');if(app)showSessionStatus(app);
 }
 function deleteCardio(id){if(!confirm('Usunąć tę sesję cardio z historii?'))return;var inline=!!document.querySelector('.gl759-inline-cardio'),d=api.getData();d.cardioSessions=(d.cardioSessions||[]).filter(function(s){return String(s.id)!==String(id);});api.save();if(inline&&typeof window.historyView==='function')window.historyView();else cardioHistory();}
 /* 0.75.9: one simple Settings entry on Start, organized into dedicated groups. */
@@ -7194,7 +7300,7 @@ function settingsPage(){
  support.push(['Kopie planów trenera','gl82PlanBackupsView()']);
  if(typeof window.gl74RecoveryView==='function')support.push(['Kopia awaryjna treningu','gl74RecoveryView()']);
  support.push(['Synchronizacja i porównanie danych','gl76SyncView()'],['Wersja i aktualizacje','gl79UpdatesView()'],['Pomoc','helpView()']);
- var html='<main class="gl759-settings-page"><button type="button" class="gl759-back" onclick="home()">← Start</button><div class="gl759-settings-heading"><div class="gl758-kicker">GYMLOG CRUSH</div><h1>Ustawienia</h1><p>Zarządzanie kontem i aplikacją</p></div>'+
+ var html='<main class="gl759-settings-page"><div class="gl759-settings-heading"><div class="gl758-kicker">GYMLOG CRUSH</div><h1>Ustawienia</h1><p>Zarządzanie kontem i aplikacją</p></div>'+
   '<button type="button" class="gl759-account-link" onclick="glAccountView(\'start\')"><span class="gl759-settings-avatar">'+avatarMarkup(api.userId(),name)+'</span><span><b>'+esc(name)+'</b><small>Edytuj profil i zdjęcie</small></span><span class="gl759-chevron">›</span></button>'+
   settingsGroup('Konto','◉',profile)+settingsGroup('Trening i plany','▤',training)+settingsGroup('Wygląd i powiadomienia','⚙',appearance)+settingsGroup('Zarządzanie','⌘',admin)+settingsGroup('Dane i pomoc','↻',support)+
   '<button type="button" class="gl759-logout" onclick="glLogout()">Wyloguj się</button></main>'+api.nav('start');
@@ -7203,7 +7309,7 @@ function settingsPage(){
 function scrollSettings(){settingsPage();}
 function activityMenu(){
  stopRefresh();
- var html='<main class="gl759-activity-page"><button type="button" class="gl759-back" onclick="home()">← Start</button><div class="gl758-kicker">NOWA AKTYWNOŚĆ</div><h1>Co dziś trenujesz?</h1><p class="small">Wybierz rodzaj sesji, którą chcesz zapisać.</p>'+
+ var html='<main class="gl759-activity-page"><div class="gl758-kicker">NOWA AKTYWNOŚĆ</div><h1>Co dziś trenujesz?</h1><p class="small">Wybierz rodzaj sesji, którą chcesz zapisać.</p>'+
  '<button type="button" class="gl759-activity-option" onclick="glWorkoutSetupView()"><span class="gl759-option-glyph">'+leagueIcon()+'</span><span><b>Trening siłowy</b><small>Serie, ciężary, powtórzenia i timer</small></span><span>›</span></button>'+
  '<button type="button" class="gl759-activity-option" onclick="GymLogLeague.cardioOpen()"><span class="gl759-option-glyph gl759-cardio-glyph">'+cardioIcon()+'</span><span><b>Sesja cardio</b><small>Bieżnia, rowerek, schody i inne</small></span><span>›</span></button>'+
  '<button type="button" class="secondary" onclick="GymLogLeague.cardioHistory()">Historia cardio →</button></main>'+api.nav('workout');
@@ -7215,7 +7321,72 @@ function inlineCardioHistory(){
  var d=api.getData(),ss=(Array.isArray(d&&d.cardioSessions)?d.cardioSessions:[]);
  if(!ss.length)return '';
  var v=ss.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).slice(0,12);
- return '<section class="gl759-inline-cardio"><div class="gl759-history-subhead"><h2>Sesje cardio</h2><span>'+ss.length+' zapisanych</span></div>'+v.map(function(x){return '<article class="gl759-inline-entry"><span class="gl759-cardio-mini">'+cardioIcon()+'</span><span><b>'+esc(activityName(x.type))+'</b><small>'+esc(x.date||'')+'</small></span><strong>'+Number(x.minutes||0)+' min</strong><button type="button" class="gl759-inline-delete" aria-label="Usuń cardio" onclick="GymLogLeague.deleteCardio('+JSON.stringify(String(x.id))+')">×</button></article>';}).join('')+'</section>';
+ return '<section class="gl759-inline-cardio"><div class="gl759-history-subhead"><h2>Sesje cardio</h2><span>'+ss.length+' zapisanych</span></div>'+v.map(function(x){return '<article class="gl759-inline-entry" data-gl-cardio="'+esc(x.id)+'"><span class="gl759-cardio-mini">'+cardioIcon()+'</span><span><b>'+esc(activityName(x.type))+'</b><small>'+esc(x.date||'')+'</small></span><strong>'+Number(x.minutes||0)+' min</strong><button type="button" class="gl759-inline-delete" aria-label="Usuń cardio" onclick="GymLogLeague.deleteCardio('+JSON.stringify(String(x.id))+')">×</button></article>';}).join('')+'</section>';
+}
+function sessionKey(record){return String(record.workoutId||record.id||'');}
+function cloudStatus(local, records){
+  var key=sessionKey(local),stable=root.GymLogPlanStore.stable;
+  var matches=records.filter(function(record){return key?sessionKey(record)===key:stable(record)===stable(local);});
+  if(!matches.length)return 'local';
+  return matches.length===1 && stable(matches[0])===stable(local)?'confirmed':'different';
+}
+function showSessionStatus(app){
+  var user=api.historyAccount();
+  if(!user)return;
+  var data=api.getData(),cards=Array.from(app.querySelectorAll('[data-gl-log],[data-gl-cardio]'));
+  if(!cards.length)return;
+  var snapshot=api.readHistoryCloud(user).catch(function(){return null;});
+  cards.forEach(function(card){
+    var cardio=card.hasAttribute('data-gl-cardio'), field=cardio?'cardioSessions':'logs';
+    var session=cardio?(data[field]||[]).find(function(w){return String(w.id)===card.dataset.glCardio;}):(data.logs||[])[Number(card.dataset.glLog)];
+    if(!session)return;
+    var panel=document.createElement('details'),title=document.createElement('summary'),points=document.createElement('p'),action=document.createElement('button');
+    panel.className='gl84-session-status';title.textContent='Zapisany na telefonie · sprawdzam chmurę…';
+    points.setAttribute('aria-live','polite');action.type='button';action.className='secondary';action.hidden=true;
+    panel.append(title,points,action);card.appendChild(panel);
+    function active(){
+      if(!panel.isConnected || api.historyAccount()!==user)return false;
+      var records=api.getData()[field]||[];
+      return records.includes(session)||records.some(function(w){
+        return sessionKey(w)===sessionKey(session)&&root.GymLogPlanStore.stable(w)===root.GymLogPlanStore.stable(session);
+      });
+    }
+    var mode='unknown',busy=false,request=0;
+    async function check(promise){
+      var turn=++request;
+      try{
+        var row=await promise;
+        if(!active()||turn!==request)return;
+        mode=row && row.state && (row.state[field]==null || Array.isArray(row.state[field]))?cloudStatus(session,row.state[field]||[]):'unknown';
+      }catch(e){if(!active()||turn!==request)return;mode='unknown';}
+      title.textContent={confirmed:'Potwierdzony w chmurze',local:'Zapisany na telefonie · czeka na synchronizację',different:'Zapis na telefonie różni się od chmury',unknown:'Zapisany na telefonie · brak potwierdzenia chmury'}[mode];
+      action.textContent=mode==='different'?'Porównaj wersje':mode==='unknown'?'Sprawdź ponownie':'Ponów synchronizację';
+      action.hidden=mode==='confirmed';
+    }
+    action.onclick=async function(){
+      if(!active()||busy)return;
+      if(mode==='different'||api.hasConflict()){root.gl76SyncView();return;}
+      busy=true;action.disabled=true;
+      try{
+        if(mode==='local')await api.retryHistorySync();
+        if(active()){await check(api.readHistoryCloud(user));if(active()&&panel.open)await readPoints();}
+      }catch(e){if(active())points.textContent='Nie udało się odświeżyć. Spróbuj ponownie.';}
+      finally{busy=false;action.disabled=false;}
+    };
+    var pointsRead=0;
+    async function readPoints(){
+      var seq=++pointsRead,key=sessionKey(session);
+      if(!key){points.textContent='Starszy zapis bez identyfikatora. Szczegóły punktów znajdziesz w rankingu.';return;}
+      points.textContent='Sprawdzam punkty…';
+      try{
+        var path='/rest/v1/crush_league_point_history?select=total_points&user_id=eq.'+encodeURIComponent(user)+'&session_type=eq.'+(cardio?'cardio':'strength')+'&session_key=eq.'+encodeURIComponent(key)+'&limit=2';
+        var rows=await api.request(path,{method:'GET'});
+        if(active()&&seq===pointsRead)points.textContent=Array.isArray(rows)&&rows.length===1?'Ranking: '+num(rows[0].total_points)+' pkt':Array.isArray(rows)&&rows.length===0?'Ranking: brak wpisu punktowego.':'Nie udało się potwierdzić punktacji.';
+      }catch(e){if(active()&&seq===pointsRead)points.textContent='Punktacja chwilowo niedostępna.';}
+    }
+    panel.ontoggle=function(){if(panel.open&&active())readPoints();};
+    check(snapshot);
+  });
 }
 function install(host){api=host;
   api.wrapNav(function(base){return function(tab){
@@ -7252,6 +7423,7 @@ function install(host){api=host;
       var holder=document.createElement('div');holder.id='gl759HistoryCardio';holder.innerHTML=inlineCardioHistory();
       if(holder.firstElementChild)list.insertAdjacentElement('afterend',holder);
     }
+    if(list)showSessionStatus(app);
     return res;
   };});
   var css=document.createElement('style');css.id='gl758-css';css.textContent=''+
@@ -9871,7 +10043,7 @@ window.makeReport = makeReport;
 
 
 /* ===== PWA migration layer ===== */
-VERSION="BETA 0.79.2";
+VERSION="BETA 0.79.6";
 
 /* Scriptable patches are not executed in the PWA. */
 runInstalledAppUpdates = function(){};
@@ -9887,7 +10059,7 @@ getSuggestion = function(ex){
 };
 
 /* Correct latest-history rebuild and ignore skipped exercises. */
-recomputeLastByExercise = function(){
+recomputeLastByExercise = function(persist){
   ensureGymDataV31();
   var globalLast={}, globalSets={}, byGymLast={}, byGymSets={};
   GYMS_V31.forEach(function(g){byGymLast[g]={};byGymSets[g]={};});
@@ -9921,7 +10093,7 @@ recomputeLastByExercise = function(){
   });
   data.lastByExercise=globalLast;data.lastSetsByExercise=globalSets;
   data.lastByExerciseByGym=byGymLast;data.lastSetsByExerciseByGym=byGymSets;
-  safeSave();
+  if(persist!==false)safeSave();
 };
 
 function pwaBrandHtml(){
@@ -10830,7 +11002,7 @@ window.historyView=function(filter,page){
     "<div class='lux-kicker' style='margin:4px 1px 10px'>OSTATNIE TRENINGI</div><div class='lux-history-list'>";
   visible.forEach(function(item){
     var l=item.log,i=item.index,gym=getLogGymV31(l),real=0;try{real=realWorkingSetsCount(l)||0;}catch(e){}
-    html+="<article class='lux-history-card'><div class='lux-history-main'><div class='lux-history-icon'>II</div><div><div class='lux-history-name'>"+esc(l.training)+"</div><div class='lux-history-meta'>"+esc(gym)+" • "+esc(l.date)+"</div></div></div>"+
+    html+="<article class='lux-history-card' data-gl-log='"+i+"'><div class='lux-history-main'><div class='lux-history-icon'>II</div><div><div class='lux-history-name'>"+esc(l.training)+"</div><div class='lux-history-meta'>"+esc(gym)+" • "+esc(l.date)+"</div></div></div>"+
       "<div class='lux-history-stats'><span>⚖ "+esc(l.weight||"—")+" kg</span><span>☾ "+esc(l.sleep||"—")+" h</span><span>Serie: "+real+"</span><span>Paluch: "+esc(l.footWalk||"—")+" / "+esc(l.footPush||"—")+"</span></div>"+
       "<div class='lux-history-actions'><button onclick='historyDetailsView("+i+",\""+esc(filter)+"\")'>Szczegóły</button><button class='secondary' onclick='editHistory("+i+")'>Edytuj</button><button class='danger' onclick='deleteHistory("+i+")'>Usuń</button></div></article>";
   });
@@ -11027,147 +11199,53 @@ function luxMuscleZoneV502(key,loads){
 
 
 function luxMuscleSvgV502(log){
-  var m=luxMuscleLoadsV502(log);
-
-  function c(k){return luxMuscleZoneV502(k,m);}
-
-  return `
-  <svg class="lux-muscle-svg" viewBox="0 0 760 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mapa obciążenia mięśni">
-    <defs>
-      <filter id="luxMuscleGlowSoft" x="-40%" y="-40%" width="180%" height="180%">
-        <feGaussianBlur stdDeviation="3.2" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <filter id="luxMuscleGlowStrong" x="-55%" y="-55%" width="210%" height="210%">
-        <feGaussianBlur stdDeviation="5.3" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <linearGradient id="luxBodyGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#202126"/>
-        <stop offset=".52" stop-color="#101116"/>
-        <stop offset="1" stop-color="#08090c"/>
-      </linearGradient>
-    </defs>
-
-    <!-- FRONT -->
-    <g transform="translate(10,8)">
-      <text class="lux-muscle-label" x="175" y="26">PRZÓD</text>
-
-      <!-- base body -->
-      <ellipse class="body" cx="175" cy="76" rx="40" ry="48"/>
-      <path class="body" d="M151 113 L139 143 Q108 149 91 175 Q78 195 80 229 L94 332 Q99 359 117 374 L126 453 L112 627 Q111 672 129 711 L160 711 L169 530 L181 530 L190 711 L221 711 Q239 672 238 627 L224 453 L233 374 Q251 359 256 332 L270 229 Q272 195 259 175 Q242 149 211 143 L199 113 Z"/>
-      <path class="body-soft" d="M92 183 Q60 198 57 238 L52 348 Q49 384 66 405 L83 394 L91 329 L105 219 Z"/>
-      <path class="body-soft" d="M258 183 Q290 198 293 238 L298 348 Q301 384 284 405 L267 394 L259 329 L245 219 Z"/>
-      <path class="body-soft" d="M119 452 Q96 492 99 569 L103 685 Q105 713 121 733 L146 725 L155 543 L166 465 Z"/>
-      <path class="body-soft" d="M231 452 Q254 492 251 569 L247 685 Q245 713 229 733 L204 725 L195 543 L184 465 Z"/>
-
-      <!-- shoulders -->
-      <path class="${c("shoulders")}" d="M99 173 C108 151 126 140 148 147 C151 164 151 188 146 204 C128 208 111 202 97 189 C94 184 95 177 99 173 Z"/>
-      <path class="${c("shoulders")}" d="M251 173 C242 151 224 140 202 147 C199 164 199 188 204 204 C222 208 239 202 253 189 C256 184 255 177 251 173 Z"/>
-
-      <!-- chest -->
-      <path class="${c("chest")}" d="M149 153 C133 156 120 165 111 180 L111 223 C124 237 147 243 171 239 L171 165 C164 157 156 153 149 153 Z"/>
-      <path class="${c("chest")}" d="M201 153 C217 156 230 165 239 180 L239 223 C226 237 203 243 179 239 L179 165 C186 157 194 153 201 153 Z"/>
-
-      <!-- biceps + forearms -->
-      <path class="${c("biceps")}" d="M90 209 C78 225 74 249 76 282 C79 303 88 320 103 324 C108 311 109 283 107 255 C104 230 98 217 90 209 Z"/>
-      <path class="${c("biceps")}" d="M260 209 C272 225 276 249 274 282 C271 303 262 320 247 324 C242 311 241 283 243 255 C246 230 252 217 260 209 Z"/>
-      <path class="${c("biceps")}" d="M86 319 C75 340 73 365 78 391 C84 405 91 412 101 414 C107 397 106 373 101 349 C98 334 92 325 86 319 Z"/>
-      <path class="${c("biceps")}" d="M264 319 C275 340 277 365 272 391 C266 405 259 412 249 414 C243 397 244 373 249 349 C252 334 258 325 264 319 Z"/>
-
-      <!-- abs + obliques -->
-      <g class="${c("abs")}">
-        <path d="M150 252 h21 a9 9 0 0 1 9 9 v26 a9 9 0 0 1-9 9 h-21 a9 9 0 0 1-9-9 v-26 a9 9 0 0 1 9-9 Z"/>
-        <path d="M179 252 h21 a9 9 0 0 1 9 9 v26 a9 9 0 0 1-9 9 h-21 a9 9 0 0 1-9-9 v-26 a9 9 0 0 1 9-9 Z"/>
-        <path d="M150 297 h21 a9 9 0 0 1 9 9 v26 a9 9 0 0 1-9 9 h-21 a9 9 0 0 1-9-9 v-26 a9 9 0 0 1 9-9 Z"/>
-        <path d="M179 297 h21 a9 9 0 0 1 9 9 v26 a9 9 0 0 1-9 9 h-21 a9 9 0 0 1-9-9 v-26 a9 9 0 0 1 9-9 Z"/>
-        <path d="M150 342 h21 a9 9 0 0 1 9 9 v28 a9 9 0 0 1-9 9 h-21 a9 9 0 0 1-9-9 v-28 a9 9 0 0 1 9-9 Z"/>
-        <path d="M179 342 h21 a9 9 0 0 1 9 9 v28 a9 9 0 0 1-9 9 h-21 a9 9 0 0 1-9-9 v-28 a9 9 0 0 1 9-9 Z"/>
-        <path d="M140 257 C126 271 122 289 122 318 C123 347 128 364 138 380 L146 350 L145 274 Z"/>
-        <path d="M210 257 C224 271 228 289 228 318 C227 347 222 364 212 380 L204 350 L205 274 Z"/>
-      </g>
-
-      <!-- quads -->
-      <path class="${c("quads")}" d="M126 410 C110 441 108 478 110 524 C114 559 126 582 141 592 C152 566 157 528 159 472 L159 422 Z"/>
-      <path class="${c("quads")}" d="M224 410 C240 441 242 478 240 524 C236 559 224 582 209 592 C198 566 193 528 191 472 L191 422 Z"/>
-      <path class="${c("quads")}" d="M159 423 L171 423 L170 552 C166 580 158 593 150 600 C145 565 147 525 150 483 Z"/>
-      <path class="${c("quads")}" d="M191 423 L179 423 L180 552 C184 580 192 593 200 600 C205 565 203 525 200 483 Z"/>
-
-      <!-- adductors — medial thigh (schematic) -->
-      <path class="${c("adductors")}" aria-label="Przywodziciele uda" d="M164 427 C169 442 171 467 169 495 L165 527 C159 509 158 469 160 446 Z"/>
-      <path class="${c("adductors")}" aria-label="Przywodziciele uda" d="M186 427 C181 442 179 467 181 495 L185 527 C191 509 192 469 190 446 Z"/>
-
-      <!-- calves -->
-      <path class="${c("calves")}" d="M121 584 C111 609 111 640 116 670 C121 685 128 692 137 694 C146 676 146 648 144 621 C141 603 133 591 121 584 Z"/>
-      <path class="${c("calves")}" d="M229 584 C239 609 239 640 234 670 C229 685 222 692 213 694 C204 676 204 648 206 621 C209 603 217 591 229 584 Z"/>
-
-      <!-- structure -->
-      <path class="line" d="M175 126 L175 399"/>
-      <path class="line" d="M112 227 Q175 254 239 227"/>
-      <path class="line" d="M122 392 Q175 414 228 392"/>
-    </g>
-
-    <!-- BACK -->
-    <g transform="translate(400,8)">
-      <text class="lux-muscle-label" x="175" y="26">TYŁ</text>
-
-      <!-- base body -->
-      <ellipse class="body" cx="175" cy="76" rx="40" ry="48"/>
-      <path class="body" d="M151 113 L139 143 Q108 149 91 175 Q78 195 80 229 L94 332 Q99 359 117 374 L126 453 L112 627 Q111 672 129 711 L160 711 L169 530 L181 530 L190 711 L221 711 Q239 672 238 627 L224 453 L233 374 Q251 359 256 332 L270 229 Q272 195 259 175 Q242 149 211 143 L199 113 Z"/>
-      <path class="body-soft" d="M92 183 Q60 198 57 238 L52 348 Q49 384 66 405 L83 394 L91 329 L105 219 Z"/>
-      <path class="body-soft" d="M258 183 Q290 198 293 238 L298 348 Q301 384 284 405 L267 394 L259 329 L245 219 Z"/>
-      <path class="body-soft" d="M119 452 Q96 492 99 569 L103 685 Q105 713 121 733 L146 725 L155 543 L166 465 Z"/>
-      <path class="body-soft" d="M231 452 Q254 492 251 569 L247 685 Q245 713 229 733 L204 725 L195 543 L184 465 Z"/>
-
-      <!-- rear delts and shoulder caps -->
-      <path class="${c("rearDelts")}" d="M99 173 C108 151 126 140 148 147 C151 164 151 187 146 202 C128 206 111 200 97 188 C95 184 95 177 99 173 Z"/>
-      <path class="${c("rearDelts")}" d="M251 173 C242 151 224 140 202 147 C199 164 199 187 204 202 C222 206 239 200 253 188 C255 184 255 177 251 173 Z"/>
-      <path class="${c("shoulders")}" d="M98 178 C88 190 84 205 84 222 C93 219 101 214 108 208 L114 176 Z"/>
-      <path class="${c("shoulders")}" d="M252 178 C262 190 266 205 266 222 C257 219 249 214 242 208 L236 176 Z"/>
-
-      <!-- traps + back -->
-      <path class="${c("back")}" d="M160 118 C167 130 183 130 190 118 L216 160 L194 188 L175 171 L156 188 L134 160 Z"/>
-      <path class="${c("back")}" d="M136 173 C117 186 107 205 104 236 C103 274 113 304 127 331 L165 308 L162 194 Z"/>
-      <path class="${c("back")}" d="M214 173 C233 186 243 205 246 236 C247 274 237 304 223 331 L185 308 L188 194 Z"/>
-
-      <!-- triceps + forearms -->
-      <path class="${c("triceps")}" d="M90 211 C78 227 74 252 77 285 C80 307 88 322 101 326 C107 312 107 286 104 257 C102 233 97 219 90 211 Z"/>
-      <path class="${c("triceps")}" d="M260 211 C272 227 276 252 273 285 C270 307 262 322 249 326 C243 312 243 286 246 257 C248 233 253 219 260 211 Z"/>
-      <path class="${c("triceps")}" d="M87 321 C77 342 75 367 80 392 C86 404 93 411 103 413 C108 398 107 374 102 349 C99 335 93 327 87 321 Z"/>
-      <path class="${c("triceps")}" d="M263 321 C273 342 275 367 270 392 C264 404 257 411 247 413 C242 398 243 374 248 349 C251 335 257 327 263 321 Z"/>
-
-      <!-- erectors -->
-      <path class="${c("erectors")}" d="M164 197 L174 186 L171 363 L155 392 L148 330 Z"/>
-      <path class="${c("erectors")}" d="M186 197 L176 186 L179 363 L195 392 L202 330 Z"/>
-
-      <!-- gluteus medius — upper/lateral -->
-      <path class="${c("gluteMedius")}" d="M124 382 C131 371 142 365 154 365 C153 379 148 391 139 400 C132 407 124 410 118 411 C117 400 119 390 124 382 Z"/>
-      <path class="${c("gluteMedius")}" d="M226 382 C219 371 208 365 196 365 C197 379 202 391 211 400 C218 407 226 410 232 411 C233 400 231 390 226 382 Z"/>
-
-      <!-- gluteus maximus — one continuous region for each side -->
-      <path class="${c("gluteMaximus")}" d="M126 389 C140 378 155 376 170 384 L170 449 C151 468 132 467 121 449 C117 440 119 429 120 416 C118 405 121 396 126 389 Z"/>
-      <path class="${c("gluteMaximus")}" d="M224 389 C210 378 195 376 180 384 L180 449 C199 468 218 467 229 449 C233 440 231 429 230 416 C232 405 229 396 224 389 Z"/>
-
-      <!-- deep gluteus minimus: schematic lateral insets, not a surface anatomy claim -->
-      <path class="${c("gluteMinimus")}" aria-label="Pośladkowy mały (warstwa głęboka)" d="M118 385 C123 380 128 377 134 378 C132 384 128 391 119 396 Z"/>
-      <path class="${c("gluteMinimus")}" aria-label="Pośladkowy mały (warstwa głęboka)" d="M232 385 C227 380 222 377 216 378 C218 384 222 391 231 396 Z"/>
-
-      <!-- hamstrings -->
-      <path class="${c("hamstrings")}" d="M124 458 C111 490 112 529 117 569 C122 593 133 605 146 610 C156 585 160 542 160 485 L160 455 Z"/>
-      <path class="${c("hamstrings")}" d="M226 458 C239 490 238 529 233 569 C228 593 217 605 204 610 C194 585 190 542 190 485 L190 455 Z"/>
-      <path class="${c("hamstrings")}" d="M160 458 H171 L169 582 C165 597 157 606 149 608 C145 577 147 538 149 501 Z"/>
-      <path class="${c("hamstrings")}" d="M190 458 H179 L181 582 C185 597 193 606 201 608 C205 577 203 538 201 501 Z"/>
-
-      <!-- calves -->
-      <path class="${c("calves")}" d="M121 592 C112 614 112 644 117 672 C122 686 129 693 138 695 C146 679 146 651 144 625 C141 607 133 598 121 592 Z"/>
-      <path class="${c("calves")}" d="M229 592 C238 614 238 644 233 672 C228 686 221 693 212 695 C204 679 204 651 206 625 C209 607 217 598 229 592 Z"/>
-
-      <path class="line" d="M175 121 L175 371"/>
-      <path class="line" d="M127 331 Q175 354 223 331"/>
-    </g>
-  </svg>`;
+  var loads=luxMuscleLoadsV502(log), female=document.body.classList.contains('theme-female');
+  // Draw one half and reflect it. Shape both the outline and the zones with the same profile.
+  var widths=[[0,1],[33,1],[54,.89],[94,.94],[110,.91],[132,1.12],[165,1.09],[205,1],[280,1]];
+  function shape(path){
+    if(!female)return path;
+    return path.replace(/(-?\d+) (-?\d+)/g,function(pair,x,y){
+      var i=1;while(i<widths.length-1 && y>widths[i][0])i++;
+      var a=widths[i-1],b=widths[i],t=Math.max(0,Math.min(1,(y-a[0])/(b[0]-a[0])));
+      return (x*(a[1]+t*(b[1]-a[1]))).toFixed(1)+' '+y;
+    });
+  }
+  var outline='M0 8 C7 8 11 13 10 21 Q11 27 6 33 L6 38 Q10 42 20 43 C31 43 36 48 37 59 Q40 68 39 77 L44 91 Q48 98 50 108 L56 128 Q60 134 60 139 L58 147 Q56 150 54 145 L53 139 Q50 141 49 137 L49 131 C43 121 39 111 38 103 Q34 98 33 90 L27 77 C26 91 20 101 20 110 Q22 120 25 129 C30 144 28 159 25 173 L21 193 Q20 200 22 206 C26 217 21 232 18 243 L16 259 L20 266 Q23 272 18 273 L9 273 Q6 270 8 264 L9 250 Q8 237 8 227 Q7 214 11 201 L10 193 C9 182 6 168 4 155 L1 144 L0 144 Z';
+  var neck='M4 35 Q5 39 12 43 M17 45 Q10 44 3 48';
+  var front={
+    shoulders:'M23 45 Q34 45 36 57 L35 65 Q31 62 27 60 Q26 52 20 49 Z',
+    chest:'M2 50 Q12 47 19 49 Q26 51 28 61 Q26 70 18 73 Q9 75 2 69 Z',
+    biceps:'M32 65 Q38 65 38 77 Q40 84 41 90 Q36 91 33 84 Q29 75 30 70 Z',
+    abs:['M2 75 Q7 76 11 75 L11 81 L2 83 Z','M2 85 L11 83 L10 90 L2 92 Z','M2 94 L10 92 L9 99 L2 101 Z','M2 103 L9 101 Q9 113 2 122 Z','M13 78 L24 72 Q24 82 20 89 L13 94 Z','M12 97 L20 91 L18 106 L11 114 Z'],
+    quads:['M16 127 C27 130 29 150 24 167 Q22 177 18 183 C19 166 14 150 16 127 Z','M12 132 Q17 148 17 167 L16 186 Q10 181 9 167 Q7 148 12 132 Z'],
+    adductors:'M5 130 L11 128 Q9 142 8 155 Q4 149 2 143 Z',
+    calves:'M18 205 Q24 212 19 229 L15 246 Q14 229 16 215 Z'
+  };
+  var back={
+    rearDelts:'M23 45 Q34 46 36 57 L35 65 Q26 63 21 55 Z',
+    back:['M2 39 Q10 44 20 45 L24 51 Q15 56 5 69 L2 75 Z','M5 73 Q15 61 26 60 L25 77 Q20 91 10 101 L7 94 Z'],
+    triceps:'M30 64 Q37 64 38 76 L41 91 Q35 90 33 85 Q29 76 30 64 Z',
+    erectors:'M2 79 L5 74 Q10 92 8 108 L3 121 Z',
+    gluteMedius:'M13 113 Q20 109 23 122 L24 126 L12 124 Z',
+    gluteMinimus:'M20 119 Q24 122 24 125 L21 124 Z',
+    gluteMaximus:'M3 119 Q12 114 22 128 Q26 138 19 143 Q10 148 2 140 Z',
+    hamstrings:['M6 146 Q11 149 15 147 L14 170 L13 187 Q8 174 6 151 Z','M17 146 L25 141 Q29 156 21 178 L17 189 Q15 166 17 146 Z'],
+    calves:'M15 201 Q20 201 22 212 Q25 224 16 237 Q11 234 10 226 Q8 213 15 201 Z'
+  };
+  function half(zones,isBack){
+    var skin='<path class="gl85-skin" d="'+shape(outline)+'"/><path class="gl85-outline" d="'+shape(outline.slice(0,-2))+'"/>';
+    var detail='<path class="gl85-contour" d="'+shape((isBack?'M3 34 Q3 40 8 43':neck)+' M37 95 Q43 108 51 128 M41 103 Q44 114 49 123 M17 189 Q20 193 17 198 M12 240 L12 259')+'"/>';
+    return skin+Object.entries(zones).map(function(entry){
+      var key=entry[0];
+      return [].concat(entry[1]).map(function(path){return '<path class="gl85-zone '+luxMuscleClassV502(loads[key])+'" d="'+shape(path)+'"><title>'+luxMuscleDisplayNameV502(key)+' · '+Number(loads[key]||0)+'</title></path>';}).join('');
+    }).join('')+detail;
+  }
+  function figure(x,label,zones,isBack){
+    var side=half(zones,isBack);
+    return '<g transform="translate('+x+' 25)"><g>'+side+'</g><g transform="scale(-1 1)">'+side+'</g></g><text class="gl85-map-label" x="'+x+'" y="19">'+label+'</text>';
+  }
+  return '<svg class="lux-muscle-svg gl85-atlas" viewBox="0 0 300 307" role="img" aria-label="Mapa obciążenia mięśni, przód i tył"><path class="gl85-divider" d="M150 32 V291"/>'+figure(75,'PRZÓD',front,false)+figure(225,'TYŁ',back,true)+'</svg>';
 }
-
 window.muscleMannequinSvg = function(log){ return luxMuscleSvgV502(log); };
 
 window.muscleVisualHtml = function(log){
@@ -12696,22 +12774,6 @@ function gl064LatestMeasurement(){
     return glDateStorage(b.date||"").localeCompare(glDateStorage(a.date||"")) || String(b.updatedAt||b.createdAt||"").localeCompare(String(a.updatedAt||a.createdAt||""));
   })[0]||null;
 }
-window.glSaveQuickWeight=function(btn){
-  gl064EnsureMeasurements();
-  var input=document.getElementById("weight"),dateEl=document.getElementById("date");
-  var weight=String(input&&input.value||"").trim(),date=glDateStorage(String(dateEl&&dateEl.value||today()).trim()||today());
-  if(!weight){alert("Najpierw wpisz wagę.");return;}
-  var rec=data.bodyMeasurements.find(function(x){return x&&x.date===date;});
-  if(!rec){
-    rec={id:"bm_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),date:date,createdAt:new Date().toISOString(),source:"quickWeight"};
-    data.bodyMeasurements.push(rec);
-  }
-  rec.weight=weight;rec.updatedAt=new Date().toISOString();
-  if(!data.lastMeta)data.lastMeta={};
-  data.lastMeta.weight=weight;
-  safeSave();
-  if(btn){btn.classList.add("saved");btn.textContent="✓";setTimeout(function(){btn.classList.remove("saved");},1200);}
-};
 window.glBodyMeasurementsView=function(){
   stopTimer();luxStopWorkoutClock();gl064EnsureMeasurements();
   var arr=data.bodyMeasurements.slice().sort(function(a,b){
@@ -12780,17 +12842,7 @@ window.glBodyMeasurementDelete=function(id){
   data.bodyMeasurements=data.bodyMeasurements.filter(function(x){return x&&x.id!==id;});safeSave();glBodyMeasurementsView();
 };
 
-/* Add a tiny ✓ next to weight and hide mood when the account has mood disabled. */
 function gl064EnhanceHome(){
-  var weight=document.getElementById("weight");
-  if(weight&&!document.getElementById("glQuickWeightSave064")){
-    var copy=weight.parentElement;if(copy){
-      copy.classList.add("gl-weight-wrap-064");
-      var b=document.createElement("button");b.id="glQuickWeightSave064";b.type="button";b.className="gl-weight-save-064";b.textContent="✓";
-      b.setAttribute("aria-label","Zapisz wagę teraz");b.onclick=function(ev){ev.preventDefault();glSaveQuickWeight(b);};
-      copy.appendChild(b);
-    }
-  }
   if(glIsManagedUser()&&!gl064MoodEnabled()){
     var mood=document.getElementById("mood"),row=mood&&mood.closest(".lux-field-row");if(row)row.style.display="none";
   }
@@ -14887,18 +14939,6 @@ window.glWorkoutSetupView=function(){
   }finally{
     GL085_SETUP_MODE=false;
   }
-  try{
-    var app=document.getElementById("app");
-    if(!app)return;
-    var back=document.createElement("button");
-    back.type="button";
-    back.className="secondary gl085-setup-back";
-    back.textContent="← Start";
-    back.onclick=function(){home();};
-    var card=app.querySelector(".lux-start-card");
-    if(card)app.insertBefore(back,card);
-    else app.insertBefore(back,app.firstChild);
-  }catch(e){}
 };
 
 window.home=function(){
@@ -15420,7 +15460,7 @@ window.gl097DeleteDraftFromStart=function(){
     visible.forEach(function(x){
       var l=x.log,real=0;try{real=realWorkingSetsCount(l)||0;}catch(e){}
       var gym=getLogGymV31(l),dur=gl0698DurationText(l.duration||l.time||l.durationText||"");
-      html+="<article class='lux-history-card gl0698-history-card'><div class='lux-history-head'>"+
+      html+="<article class='lux-history-card gl0698-history-card' data-gl-log='"+x.index+"'><div class='lux-history-head'>"+
         "<div><h3>"+esc(l.training||"Trening")+"</h3><div class='lux-history-meta'>"+esc(gym||"")+(gym?" • ":"")+esc(l.date||"")+"</div></div></div>"+
         "<div class='gl0698-list-stats'>"+
           "<span class='gl0698-stat-chip'>⚖ "+esc(l.weight||"—")+" kg</span>"+
@@ -16609,6 +16649,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     var result=gl110BaseSaveSet.apply(this,arguments);
     var after=gl110PerformedSetCount(e);
     var saved=after>before;
+    if(saved&&target&&before<target&&after>=target&&beforeIdx===idx && window.gl85AutoAdvance && window.gl85AutoAdvance())return result;
     if(saved&&target&&before<target&&after>=target&&beforeIdx===idx&&idx<current.exercises.length-1){
       /* The normal save already started the rest countdown. Keep its deadline,
          foreground interval and cloud notification during the screen change. */
@@ -19089,7 +19130,7 @@ if(typeof window.glAdminExportWorkout==="function"){
    0.71.9 — FINAL BUILD VERSION + HEADER CLEANUP
    ====================================================================== */
 (function(){
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 
   function gl119RoleLabel(){
     var p=window.GL_PROFILE||{};
@@ -19135,7 +19176,7 @@ if(typeof window.glAdminExportWorkout==="function"){
 
   var gl119BaseHome=window.home;
   window.home=home=function(){
-    VERSION="BETA 0.79.2";
+    VERSION="BETA 0.79.6";
     var r=gl119BaseHome.apply(this,arguments);
     requestAnimationFrame(function(){
       requestAnimationFrame(gl119FixStartHeader);
@@ -19275,7 +19316,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   /* Keep the final runtime version stable. */
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -19569,7 +19610,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -19872,7 +19913,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl122IsImpersonating=gl122IsImpersonating;
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -19946,7 +19987,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   });
 
   window.gl123ApplyPortrait=gl123ApplyPortrait;
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -20191,7 +20232,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return r;
   };
 
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -20324,7 +20365,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     try{glScheduleAuthRetry(400);}catch(e){}
   });
 
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -20486,7 +20527,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return gl126BaseDownload.call(this,log,logs,index,profile);
   };
 
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -21752,7 +21793,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   window.gl113OwnerPlanEditor=gl127OwnerPlanEditor;
   window.gl114OwnerPlanEditor=gl127OwnerPlanEditor;
 
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -21895,7 +21936,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl128ApplyOwnerPlanLast=gl128ApplyOwnerPlanLast;
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -21927,7 +21968,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   };
 
   window.gl129RemoveOwnerDuplicateLast=gl129RemoveOwnerDuplicateLast;
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -22337,7 +22378,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   /* The structured 0.72.7 code importer already calls glPlanTextToConfig,
      so it automatically receives first-class warmups after this override. */
 
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -22631,7 +22672,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
   };
 
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -22742,7 +22783,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     return list;
   };
 
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -22844,7 +22885,7 @@ if(typeof window.glAdminExportWorkout==="function"){
   // Diagnostic helpers: no persistent state and no backend writes.
   window.gl133RepositionBottomNav=gl133OnResume;
   window.gl133PortalBottomNav=gl133PortalNav;
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -23114,7 +23155,7 @@ if(typeof window.glAdminExportWorkout==="function"){
     }
     return saveSubBase.apply(this,arguments);
   };
-  VERSION="BETA 0.79.2";
+  VERSION="BETA 0.79.6";
 })();
 
 
@@ -23445,6 +23486,9 @@ if(window.GymLogLeague){
       luxBottomNav=make(luxBottomNav);window.luxBottomNav=luxBottomNav;
     },
     wrapHome:function(make){home=make(home);window.home=home;},
+    historyAccount:function(){var id=glSession()?.user?.id;return id && STORE===glUserStore(id) && window.GL_PROFILE?.id===id?id:null;},
+    readHistoryCloud:function(id){return glFetchRemoteState(id);},
+    retryHistorySync:function(){return glPushCloudState();},
     wrapHistory:function(make){historyView=make(historyView);window.historyView=historyView;}
   });
 }
@@ -23545,11 +23589,17 @@ function paint(){
   box.innerHTML=rows.map(function(p){
     var applied=localApplied(p.id), items=Array.isArray(p.items)?p.items:[],entries='',hasErrors=false;
     items.forEach(function(x){
-      var err='',warning=false,actual=null;
-      try{actual=getGymExercise(p.gym,p.plan_name,x.exercise_index,x.exercise_name).goal;}catch(e){}
+      var err='',warning=false,actual=null,scope='';
+      try{var resolved=getGymExercise(p.gym,p.plan_name,x.exercise_index,x.exercise_name);
+        actual=resolved.goal;
+        if(resolved.exercise._gl76TargetId){
+          var kind=JSON.parse(resolved.exercise._gl76TargetId)[1];
+          scope=kind==='SHARED' && p.gym!=='Wyjazd'?'Wspólny cel · regularne siłownie':'Tylko '+p.gym;
+        }}catch(e){}
       try{var ready=proposalItem(p,x);warning=ready.tooBig;}catch(e){err=String(e.message||e);}
       if(err)hasErrors=true;
       entries+='<section class="glcoach-ex"><h3>'+h(x.exercise_name||'Ćwiczenie')+'</h3>'+
+        (scope?'<small>'+h(scope)+'</small>':'')+
         (err?'<p class="glcoach-warning">'+h(err)+'</p>':'')+
         (actual===null?'<p>Nie udało się odczytać aktualnego celu.</p>':window.GymLogTraining.diffHTML(actual,x.proposed_goal||''))+
         (actual===null||clean(actual)!==clean(x.expected_goal)?'<details class="glcoach-analysis"><summary>Cel użyty do analizy — starsza wersja</summary><pre>'+h(x.expected_goal||'')+'</pre></details>':'')+
@@ -24127,11 +24177,27 @@ clonePlanForGymV31=function(plan,gym){
   var previousGoals=window.goalsView;
   window.goalsView=goalsView=function(){return accountReady()&&gl064PlanEditEnabled()?window.gl76OpenPlans():previousGoals.apply(this,arguments);};
   window.gl74ConflictView=window.gl76SyncView;
+  window.gl84MeasurementDate=function(kind){
+    var sleep=kind==='Sleep',prefix='gl77'+kind;
+    if(!accountReady()||(sleep?sleepFormUser:weightFormUser)!==user())return;
+    var date=document.getElementById(prefix+'Date'),field=document.getElementById(prefix);
+    if(!date||!field)return;
+    var row=sleep?sleepRecords().find(function(r){return r.date===date.value;}):
+      (data.bodyMeasurements||[]).find(function(r){return r.date===date.value && Number(r.weight)>0;});
+    var minutes=document.getElementById('gl84Minutes'),button=document.getElementById(prefix+'Save');
+    if(sleep){
+      var total=row?Math.round(row.hours*60):0;
+      field.value=row?String(Math.floor(total/60)):'';
+      if(minutes)minutes.value=row?String(total%60):'';
+    }else field.value=row?row.weight:'';
+    if(button)button.textContent=row?'Zapisz zmianę':sleep?'Zapisz sen':'Zapisz wagę';
+  };
   window.gl77WeightEntry=function(){
     if(!accountReady())return;
     if(!glIsAdmin()&&glFlags().bodyWeight===false)return;
     weightFormUser=user();
-    render('<main class="gl76-workspace"><button class="secondary" onclick="home()">← Start</button><h1>Nowa waga</h1><div class="card"><label for="gl77Weight">Waga (kg)</label><input id="gl77Weight" inputmode="decimal" placeholder="np. 80,5" autocomplete="off"><label for="gl77WeightDate">Data pomiaru</label><input id="gl77WeightDate" type="date" value="'+h(today())+'"><p id="gl77WeightError" class="error" role="status"></p><button onclick="gl77SaveWeight()">ZAPISZ WAGĘ</button></div></main>'+luxBottomNav('start'));
+    render('<main class="gl76-workspace"><button class="secondary" onclick="home()">← Start</button><h1>Nowa waga</h1><div class="card"><label for="gl77Weight">Waga (kg)</label><input id="gl77Weight" inputmode="decimal" placeholder="np. 80,5" autocomplete="off"><label for="gl77WeightDate">Data pomiaru</label><input id="gl77WeightDate" onchange="gl84MeasurementDate(&quot;Weight&quot;)" type="date" value="'+h(today())+'"><p id="gl77WeightError" class="error" role="status"></p><button id="gl77WeightSave" onclick="gl77SaveWeight()">ZAPISZ WAGĘ</button></div></main>'+luxBottomNav('start'));
+    window.gl84MeasurementDate('Weight');
     requestAnimationFrame(function(){var el=document.getElementById('gl77Weight');if(el)el.focus();});
   };
   window.gl77SaveWeight=function(){
@@ -24165,14 +24231,17 @@ clonePlanForGymV31=function(plan,gym){
   window.gl77SleepRecords=function(){return M.copy(sleepRecords());};
   window.gl77SleepEntry=function(){
     if(!accountReady())return;
-    sleepFormUser=user();render('<main class="gl76-workspace"><button class="secondary" onclick="home()">← Start</button><h1>Nowy wpis snu</h1><div class="card"><label for="gl77Sleep">Sen (godziny)</label><input id="gl77Sleep" inputmode="decimal" placeholder="np. 7,5" autocomplete="off"><label for="gl77SleepDate">Data</label><input id="gl77SleepDate" type="date" value="'+h(today())+'"><p id="gl77SleepError" class="error" role="status"></p><button onclick="gl77SaveSleep()">ZAPISZ SEN</button></div></main>'+luxBottomNav('start'));
+    sleepFormUser=user();render('<main class="gl76-workspace"><button class="secondary" onclick="home()">← Start</button><h1>Nowy wpis snu</h1><div class="card"><label for="gl77Sleep">Godziny snu</label><input id="gl77Sleep" inputmode="numeric" placeholder="np. 7" autocomplete="off"><label for="gl84Minutes">Minuty</label><input id="gl84Minutes" inputmode="numeric" placeholder="0" autocomplete="off"><label for="gl77SleepDate">Data</label><input id="gl77SleepDate" onchange="gl84MeasurementDate(&quot;Sleep&quot;)" type="date" value="'+h(today())+'"><p id="gl77SleepError" class="error" role="status"></p><button id="gl77SleepSave" onclick="gl77SaveSleep()">ZAPISZ SEN</button></div></main>'+luxBottomNav('start'));
+    window.gl84MeasurementDate('Sleep');
     requestAnimationFrame(function(){var el=document.getElementById('gl77Sleep');if(el)el.focus();});
   };
   window.gl77SaveSleep=function(){
     try{
       if(!sleepFormUser||sleepFormUser!==user())throw Error('Konto zmieniło się. Otwórz formularz ponownie.');
-      var raw=String((document.getElementById('gl77Sleep')||{}).value||'').trim(),hours=Number(raw.replace(',','.')),date=String((document.getElementById('gl77SleepDate')||{}).value||'');
-      if(!raw||!Number.isFinite(hours)||hours<0||hours>24)throw Error('Wpisz liczbę godzin od 0 do 24.');
+      var raw=String((document.getElementById('gl77Sleep')||{}).value||'').trim(),minuteRaw=String((document.getElementById('gl84Minutes')||{}).value||'').trim(),date=String((document.getElementById('gl77SleepDate')||{}).value||'');
+      if((!raw&&!minuteRaw)||(raw&&!/^\d{1,2}$/.test(raw))||(minuteRaw&&!/^\d{1,2}$/.test(minuteRaw))||Number(minuteRaw)>59)throw Error('Podaj godziny i minuty od 0 do 59.');
+      var hours=Number(raw)+Number(minuteRaw)/60;
+      if(hours>24)throw Error('Wpis nie może przekraczać 24 godzin.');
       if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||new Date(date+'T12:00:00Z').toISOString().slice(0,10)!==date)throw Error('Wpisz poprawną datę.');
       localTransaction(function(d){
         if(!Array.isArray(d.sleepEntriesV1))d.sleepEntriesV1=[];
@@ -24197,10 +24266,10 @@ clonePlanForGymV31=function(plan,gym){
     gymFormUser=user();var s=C.read(data),base=managedModel(glManagedPlans());
     var choices=[];Object.keys(base.plans).forEach(function(p){M.exercises(base,p,'GLOBAL').forEach(function(e,i){choices.push({plan:p,exercise:e,index:i});});});
     window.GL77_GYM_EQUIPMENT=choices;
-    render('<main class="gl76-workspace"><button class="secondary" onclick="GymLogLeague.settings()">← Ustawienia</button><h1>Moje siłownie</h1><p>Wolne ciężary mają wspólne cele i ostatnie wyniki między Twoimi siłowniami. Maszyny mają osobne obciążenia dla każdej siłowni.</p><div id="gl77GymMessage" role="status" class="gl76-message"></div><section class="card"><label for="gl77GymName">Nazwa nowej siłowni</label><input id="gl77GymName" maxlength="60" placeholder="np. Siłownia przy pracy"><button onclick="gl77AddGym()">DODAJ SIŁOWNIĘ</button></section><section class="card"><h2>Twoje miejsca</h2>'+s.gyms.map(function(g){return '<div class="gl77-gym-row"><span>'+h(g.name)+'</span>'+(g.id===s.defaultGymId?'<small>Domyślna</small>':'<button class="secondary" onclick="gl77DefaultGym(\''+h(g.id)+'\')">Ustaw domyślną</button>')+'</div>';}).join('')+'</section><details class="card"><summary>Rodzaj sprzętu w planie</summary><p class="small">Sprawdź przypisanie dla ćwiczeń z własnymi nazwami. Zmiana nie usuwa wyników treningów.</p>'+choices.map(function(x,i){var separate=C.isMachine(s,x.plan,x.exercise);return '<label>'+h(x.plan+' · '+x.exercise.name)+'<select aria-label="Sprzęt: '+h(x.exercise.name)+'" onchange="gl77Equipment('+i+',this.value)"><option value="shared"'+(!separate?' selected':'')+'>Wolne ciężary / masa ciała — wspólne</option><option value="machine"'+(separate?' selected':'')+'>Maszyna / wyciąg — osobno dla siłowni</option></select></label>';}).join('')+'</details></main>'+luxBottomNav('start'));
+    render('<main class="gl76-workspace"><button class="secondary" onclick="GymLogLeague.settings()">← Ustawienia</button><h1>Moje siłownie</h1><p>Nowa siłownia korzysta z Twojego planu i zakresów powtórzeń z domyślnej siłowni. Ciężar na maszynie wpiszesz przy pierwszym treningu. Cele i wyniki dla wolnych ciężarów są wspólne.</p><div id="gl77GymMessage" role="status" class="gl76-message"></div><section class="card"><label for="gl77GymName">Nazwa nowej siłowni</label><input id="gl77GymName" maxlength="60" placeholder="np. Siłownia przy pracy"><button onclick="gl77AddGym()">DODAJ SIŁOWNIĘ</button></section><section class="card"><h2>Twoje miejsca</h2>'+s.gyms.map(function(g){return '<div class="gl77-gym-row"><span>'+h(g.name)+'</span>'+(g.id===s.defaultGymId?'<small>Domyślna</small>':'<button class="secondary" onclick="gl77DefaultGym(\''+h(g.id)+'\')">Ustaw domyślną</button>')+'</div>';}).join('')+'</section><details class="card"><summary>Rodzaj sprzętu w planie</summary><p class="small">Sprawdź przypisanie dla ćwiczeń z własnymi nazwami. Zmiana nie usuwa wyników treningów.</p>'+choices.map(function(x,i){var separate=C.isMachine(s,x.plan,x.exercise);return '<label>'+h(x.plan+' · '+x.exercise.name)+'<select aria-label="Sprzęt: '+h(x.exercise.name)+'" onchange="gl77Equipment('+i+',this.value)"><option value="shared"'+(!separate?' selected':'')+'>Wolne ciężary / masa ciała — wspólne</option><option value="machine"'+(separate?' selected':'')+'>Maszyna / wyciąg — osobno dla siłowni</option></select></label>';}).join('')+'</details></main>'+luxBottomNav('start'));
   };
   function gymError(e){var n=document.getElementById('gl77GymMessage');if(n)n.textContent=String(e.message||e);}
-  window.gl77AddGym=function(){try{var name=(document.getElementById('gl77GymName')||{}).value;gymMutation(function(d){return C.add(d,name);});window.gl77GymsView();}catch(e){gymError(e);}};
+  window.gl77AddGym=function(){try{var name=(document.getElementById('gl77GymName')||{}).value;gymMutation(function(d){return C.add(d,name,managedModel(glManagedPlans()));});window.gl77GymsView();}catch(e){gymError(e);}};
   window.gl77DefaultGym=function(id){try{gymMutation(function(d){return C.setDefault(d,id);});window.gl77GymsView();}catch(e){gymError(e);}};
   window.gl77Equipment=function(i,mode){try{var x=(window.GL77_GYM_EQUIPMENT||[])[i];if(!x)throw Error('Otwórz plan ponownie.');gymMutation(function(d){return C.setEquipment(d,x.plan,x.exercise,mode);});window.gl77GymsView();}catch(e){gymError(e);}};
   window.gl77SelectGym=function(){if(window.glManagedRefreshPlanPreview)window.glManagedRefreshPlanPreview();};
@@ -24361,8 +24430,8 @@ clonePlanForGymV31=function(plan,gym){
   var rest=T.createRest({now:Date.now,storage:localStorage,context:context,paint:clockPaint,
     active:function(){return !document.hidden&&!!document.getElementById('timer');},
     warning:function(message){var node=document.getElementById('gl78SetMessage');if(node)node.textContent=message;},
-    cancelPush:function(){gl070CancelActiveRestPush();},schedulePush:function(sec,end){gl070ScheduleRestPush(sec,end,T.nextTarget(current,idx,true).text);},
-    alert:function(){gl070ClearActiveLocal();var next=T.nextTarget(current,idx,false);gl0683ForegroundAlert(next.exercise);var node=document.querySelector('#glRestAlert0683 .gl-rest-alert-sub-0683');if(node)node.innerHTML=next.reps?'<span>'+h(next.exercise)+'</span><strong class="gl78-rest-load">'+h(next.weight||'Dobierz ciężar')+' × '+h(next.reps)+' powt.</strong><small>'+h(next.type==='warmup'?'Rozgrzewka':'Seria robocza')+'</small>':h(next.text);var button=document.querySelector('#glRestAlert0683 button');if(button&&next.completed)button.textContent='OK — WRACAM DO TRENINGU';}
+    cancelPush:function(){gl070CancelActiveRestPush();},schedulePush:function(sec,end){gl070ScheduleRestPush(sec,end,pushTarget());},
+    alert:function(){gl070ClearActiveLocal();var next=T.nextTarget(current,idx,false);gl0683ForegroundAlert(next.exercise);var node=document.querySelector('#glRestAlert0683 .gl-rest-alert-sub-0683');if(node)node.innerHTML=next.reps?'<span>'+h(next.exercise)+'</span><strong class="gl78-rest-load">'+h(next.weight||'Dobierz ciężar')+' × '+h(next.reps)+' powt.</strong><small>'+h(next.type==='warmup'?'Rozgrzewka':'Seria robocza')+'</small>'+priorLine(next):h(next.text);var button=document.querySelector('#glRestAlert0683 button');if(button&&next.completed)button.textContent='OK — WRACAM DO TRENINGU';}
   });
   window.GL78_REST=rest;
   // stopTimer is called by many historical navigation routes. It now pauses
@@ -24380,7 +24449,110 @@ clonePlanForGymV31=function(plan,gym){
   function validScreen(){if(!ready()||!current||uid()!==screenUser||workoutKey(current)!==screenWorkout||idx!==screenIndex)throw Error('Trening lub konto zmieniło się. Otwórz ćwiczenie ponownie.');return current.exercises[idx];}
   function get(id){var n=document.getElementById(id);return n?String(n.value).trim():'';}
   function setText(s){return s.line||getSetLine(s);}
+  function previousExercise(e){
+    if(glIsManagedUser() && current.gymId) return C.previous(data,current.training,e.name,current.gymId,e);
+    return T.previous(data,current,e);
+  }
+  function priorLine(next){
+    if(!next.reps || next.completed) return '';
+    var e=current.exercises[next.index];
+    var label=(next.type==='warmup'?'Rozgrzewka ':'Seria ')+next.ordinal;
+    var result=T.priorSet(previousExercise(e),next.type,next.ordinal);
+    return '<small class="gl84-prior">'+h(label+' · Ostatnio: '+(result||'brak wyniku'))+'</small>';
+  }
   function planned(e){return M.parse(e.plan||'').series;}
+  function exerciseProgress(e){
+    var source=e.substituteOriginal||e,slots=planned(source);
+    var goal=slots.filter(function(s){return s.type==='work';}).length;
+    if(!slots.length){
+      var targets=source.managedWorkTargets||source.workTargets;
+      var warm=(source.managedWarmupTargets||source.warmupTargets||[]).length;
+      goal=Number(targets?.length||source.managedWorkSets||source.ownerSets||Math.max(0,(source.managedSets||0)-warm))||0;
+    }
+    var sets=Array.isArray(e.sets)?e.sets:[],done=0,skipped=false;
+    sets.forEach(function(s){
+      if(!s)return;
+      var status=String(s.s||s.status||s.type||'');
+      if(s.skipped||/pomi[ńn]/i.test(status)){skipped=true;return;}
+      if(/rozgrzew|warmup/i.test(status)||/rozgrzew/i.test(s.line||''))return;
+      if(String(s.r??s.reps??s.line??'').trim())done++;
+    });
+    var remaining=Math.max(0,goal-done);
+    var complete=goal>0?remaining===0:done>0;
+    var state=skipped?'skipped':complete?'complete':e.deferredInWorkout?'later':'open';
+    return {goal:goal,done:done,remaining:remaining,state:state};
+  }
+  function nextAvailable(from){
+    var list=current.exercises;
+    for(var offset=1;offset<list.length;offset++){
+      var i=(from+offset)%list.length;
+      if(exerciseProgress(list[i]).state==='open')return i;
+    }
+    return -1;
+  }
+  window.gl85AutoAdvance=function(){
+    if(!current?.flexibleExerciseOrder)return false;
+    var next=nextAvailable(idx);
+    if(next>=0)jumpTo(next,false);
+    else showOverview(true);
+    return true;
+  };
+  function pushTarget(){
+    var next=T.nextTarget(current,idx,false);
+    if(!current?.flexibleExerciseOrder || !next.completed)return T.nextTarget(current,idx,true).text;
+    var index=nextAvailable(idx);
+    return index>=0?T.nextTarget(current,index,false).text:'Sprawdź podsumowanie treningu.';
+  }
+  function bindWorkoutView(){
+    screenUser=uid();screenWorkout=workoutKey(current);screenIndex=idx;
+  }
+  function jumpTo(index,defer){
+    try{
+      validScreen();
+      if(!Number.isInteger(index)||index<0||index>=current.exercises.length)return;
+      var before=current,oldDraft=data.draft,oldIndex=idx;
+      current=M.copy(current);data.draft=current;
+      current.flexibleExerciseOrder=true;
+      if(defer)current.exercises[oldIndex].deferredInWorkout=true;
+      else delete current.exercises[index].deferredInWorkout;
+      current.index=index;idx=index;
+      if(!safeSave()||localStorage.getItem(STORE)!==JSON.stringify(data)){
+        current=before;data.draft=oldDraft;idx=oldIndex;throw Error('Nie zapisano zmiany. Spróbuj ponownie.');
+      }
+      if(defer&&index===oldIndex){bindWorkoutView();showOverview(false);}else exercise();
+    }catch(e){error(e);}
+  }
+  window.gl85Jump=function(i){jumpTo(i,false);};
+  window.gl85Later=function(){
+    try{var e=validScreen();if(exerciseProgress(e).state!=='open')return;
+      var next=nextAvailable(idx);jumpTo(next<0?idx:next,true);
+    }catch(e){error(e);}
+  };
+  function progressRow(e,i,p){
+    var badge={open:i===idx?'Teraz':'Do zrobienia',later:'Odłożone',skipped:'Pominięte',complete:'Gotowe'}[p.state];
+    var count='Serie robocze: '+p.done+(p.goal?' / '+p.goal:' · cel otwarty');
+    if(p.remaining && p.state!=='skipped')count+=' · pozostało: '+p.remaining;
+    return '<button type="button" class="gl85-ex-row secondary" data-state="'+p.state+'" onclick="gl85Jump('+i+')"><span><b>'+h(e.name)+'</b><small>'+h(count)+'</small></span><span>'+badge+' ›</span></button>';
+  }
+  function showOverview(finishing){
+    if(!current)return home();
+    if(!ready())return;
+    bindWorkoutView();
+    var pending=[],skips=[],done=0,total=0,rows='';
+    current.exercises.forEach(function(e,i){
+      var p=exerciseProgress(e),row=progressRow(e,i,p);
+      rows+=row;done+=Math.min(p.done,p.goal);total+=p.goal;
+      if(p.state==='skipped')skips.push(row);
+      else if(p.state!=='complete')pending.push(row);
+    });
+    var summary=total?'Planowane serie robocze: '+done+' z '+total+' wykonanych.':'Trening bez określonej liczby serii roboczych.';
+    var body=finishing?(pending.length?'<h2>Do zrobienia</h2>'+pending.join(''):'<p>Wszystkie zaplanowane ćwiczenia rozliczone.</p>')+(skips.length?'<h2>Celowo pominięte</h2>'+skips.join(''):'')+
+      '<button class="gl85-finish" onclick="gl85Finish()">Zakończ trening</button>':rows;
+    render('<main class="gl78-training gl85-overview"><button class="secondary" onclick="exercise()">← Wróć do ćwiczenia</button><header><div class="lux-kicker">'+h(current.training)+' · '+h(current.gym||'')+'</div><h1>'+(finishing?'Podsumowanie treningu':'Ćwiczenia w treningu')+'</h1><p>'+summary+'</p></header>'+body+'</main>'+luxBottomNav('start'));
+  }
+  window.gl85Overview=function(){try{validScreen();showOverview(false);}catch(e){error(e);}};
+  window.gl85Finish=function(){try{validScreen();finishWorkout();}catch(e){error(e);}};
+  window.confirmFinishWorkout=function(){showOverview(true);};
   function lastSet(e){for(var i=(e.sets||[]).length-1;i>=0;i--)if(!e.sets[i].skipped&&e.sets[i].s!=='pominięte')return e.sets[i];return null;}
   window.gl78CopySet=function(){try{var e=validScreen(),s=lastSet(e);if(!s)throw Error('Nie ma serii do powtórzenia.');['w','r','n'].forEach(function(k){var el=document.getElementById('s'+k);if(el)el.value=String(s[k]??(k==='w'?s.weight:k==='r'?s.reps:'')??'');});var status=document.getElementById('ss'),slot=planned(e)[(e.sets||[]).filter(function(x){return !x.skipped;}).length];if(status)status.value=slot&&slot.type==='warmup'?'rozgrzewka':'';var n=document.getElementById('gl78SetMessage');if(n)n.textContent='Pola uzupełnione. Sprawdź i zapisz serię.';}catch(e){error(e);}};
   window.gl78EditSet=function(index){try{var e=validScreen(),s=e.sets[index];if(!s||s.skipped)throw Error('Tej pozycji nie można edytować jako serii.');editing={user:uid(),workout:workoutKey(current),exercise:idx,index:index,original:M.stable(s)};
@@ -24399,25 +24571,20 @@ clonePlanForGymV31=function(plan,gym){
     if(!current||!current.exercises||!current.exercises[idx])return home();
     if(!ready())return;current.index=idx;data.draft=current;safeSave();
     var e=current.exercises[idx],sets=e.sets||[],sg=getSuggestion(e)||{},all=planned(e),count=sets.filter(function(s){return !s.skipped&&s.s!=='pominięte';}).length,slot=all[count],last=null;
-    try{var previous=glFindPreviousExercise(current.training,e.name);last=previous;}catch(err){}
-    var previousSets=last&&last.sets||[],lastResult=previousSets.filter(function(s){return !s.skipped&&s.s!=='rozgrzewka';}).map(setText).join('\n')||'Brak porównywalnego wyniku.';
+    last=previousExercise(e);
+    var lastResult=(last&&last.sets||[]).filter(function(s){return !s.skipped && s.s!=='rozgrzewka';}).map(setText).join('\n')||'Brak porównywalnego wyniku.';
     screenUser=uid();screenWorkout=workoutKey(current);screenIndex=idx;
     var target=slot?((slot.type==='warmup'?'Rozgrzewka':'Seria robocza')+' · '+(slot.weight||'dobierz ciężar')+' × '+slot.reps):all.length?'Planowane serie wykonane — kolejna seria jest dodatkowa.':e.plan||'Dobierz ciężar i powtórzenia na treningu.';
     var statuses=['','rozgrzewka','zapas 2-3','zapas 1','zapas 0-1','upadek techniczny','FAIL','ból / przerwane'];
-    if(!glIsManagedUser()){
-      var same=(data.logs||[]).filter(function(w){return w.training===current.training&&!w.testMode&&(current.gym==='Wyjazd'?w.gym==='Wyjazd':w.gym!=='Wyjazd')&&(C.machine(e)?w.gym===current.gym:true);}).slice().sort(function(a,b){return String(glDateStorage(b.date)).localeCompare(String(glDateStorage(a.date)))||String(b.finishedAt||b.createdAt||'').localeCompare(String(a.finishedAt||a.createdAt||''));});
-      var match=null;same.some(function(w){match=(w.exercises||[]).find(function(x){return x.name===e.name&&!x.excludeProgression&&!x.isSubstitute&&(x.sets||[]).some(function(s){return !s.skipped&&s.s!=='rozgrzewka';});});return !!match;});
-      lastResult=match?(match.sets||[]).filter(function(s){return !s.skipped&&s.s!=='rozgrzewka';}).map(setText).join('\n'):'Brak porównywalnego wyniku.';
-    }
     var extraTimer=(current.training==='CORE'||e.timed||e.exerciseTimer)?'<details class="card"><summary>Timer ćwiczenia</summary><div id="exerciseTimer" class="timer">00:00</div><input id="exerciseTimerCustom" aria-label="Czas ćwiczenia w sekundach" inputmode="numeric"><button onclick="startExerciseTimer(0)">Start</button><button class="secondary" onclick="stopExerciseTimer()">Stop</button></details>':'';
-    render('<main class="gl78-training"><header><div class="lux-kicker">'+h(current.training)+' · '+h(current.gym||'')+'</div><p>Ćwiczenie '+(idx+1)+' / '+current.exercises.length+'</p><h1>'+h(e.name)+'</h1><p>Przerwa: '+h(restDescription(e))+' · Czas treningu: <span id="luxWorkoutClock">'+h(luxElapsedText())+'</span></p></header>'+(current.testMode?'<p class="card">TRYB TESTOWY — bez zapisu historii.</p>':'')+extraTimer+'<section class="card"><details><summary>Ostatni wynik</summary><pre>'+h(lastResult)+'</pre></details><h2>Teraz: '+h(target)+'</h2><details><summary>Cały cel i wskazówki</summary><pre>'+h(e.plan||'')+'</pre>'+(e.autoRestRecord?'<p>Automatyczna przerwa zależy od ciężaru.</p>':'')+(isBodyweightExercise(e)?'<p>0 = masa ciała; plus = dodatkowy ciężar; minus = asysta.</p>':'')+'</details></section><section class="card"><div class="gl78-entry"><label>Ciężar (kg)<input id="sw" inputmode="decimal" value="'+h(sg.w||'')+'"></label><label>Powtórzenia<input id="sr" inputmode="numeric" value="'+h(sg.r||'')+'"></label></div><label>Status<select id="ss">'+statuses.map(function(s){var status=slot&&slot.type==='warmup'?'rozgrzewka':sg.s||'';return '<option'+(s===status?' selected':'')+'>'+h(s)+'</option>';}).join('')+'</select></label><details><summary>Notatka do serii</summary><input id="sn" aria-label="Notatka do serii" value="'+h(sg.n||'')+'"></details><p id="gl78SetMessage" role="status" aria-live="polite"></p><button class="gl78-save" onclick="saveSet()">ZAPISZ SERIĘ + PRZERWA</button>'+(lastSet(e)?'<button class="secondary" onclick="gl78CopySet()">Powtórz poprzednią serię</button>':'')+'<div id="timer" class="timer" aria-live="off">00:00</div></section><section class="card"><h2>Zapisane serie ('+sets.length+')</h2>'+sets.map(function(s,i){return '<div class="gl78-saved"><span>'+h((i+1)+'. '+setText(s))+'</span>'+(!s.skipped?'<button class="secondary" aria-label="Edytuj serię '+(i+1)+'" onclick="gl78EditSet('+i+')">Edytuj</button>':'')+'</div>';}).join('')+(sets.length?'<button class="secondary" onclick="deleteLastSet()">Usuń ostatnią serię</button>':'')+'</section><div class="gl76-row-actions"><button class="secondary" onclick="skipExerciseView()">Pomiń ćwiczenie</button><button class="secondary" onclick="substituteExerciseView()">Zamień ćwiczenie</button></div><div class="gl76-row-actions"><button class="secondary" onclick="prevExercise()">Poprzednie</button><button onclick="nextExercise()">Następne</button></div><button onclick="confirmFinishWorkout()">Zakończ trening</button></main>'+luxBottomNav('start'));
+    render('<main class="gl78-training"><header><div class="lux-kicker">'+h(current.training)+' · '+h(current.gym||'')+'</div><button class="gl85-counter secondary" onclick="gl85Overview()">Ćwiczenie '+(idx+1)+' z '+current.exercises.length+' · Lista ›</button><h1>'+h(e.name)+'</h1><p>Przerwa: '+h(restDescription(e))+' · Czas treningu: <span id="luxWorkoutClock">'+h(luxElapsedText())+'</span></p></header>'+(current.testMode?'<p class="card">TRYB TESTOWY — bez zapisu historii.</p>':'')+extraTimer+'<section class="card"><details><summary>Ostatni wynik</summary><pre>'+h(lastResult)+'</pre></details><h2>Teraz: '+h(target)+'</h2>'+priorLine(T.nextTarget(current,idx,false))+'<details><summary>Cały cel i wskazówki</summary><pre>'+h(e.plan||'')+'</pre>'+(e.autoRestRecord?'<p>Automatyczna przerwa zależy od ciężaru.</p>':'')+(isBodyweightExercise(e)?'<p>0 = masa ciała; plus = dodatkowy ciężar; minus = asysta.</p>':'')+'</details>'+(exerciseProgress(e).state==='open'?'<button class="secondary gl85-defer" onclick="gl85Later()">Odłóż ćwiczenie na później</button>':'')+'</section><section class="card"><div class="gl78-entry"><label>Ciężar (kg)<input id="sw" inputmode="decimal" value="'+h(sg.w||'')+'"></label><label>Powtórzenia<input id="sr" inputmode="numeric" value="'+h(sg.r||'')+'"></label></div><label>Status<select id="ss">'+statuses.map(function(s){var status=slot&&slot.type==='warmup'?'rozgrzewka':sg.s||'';return '<option'+(s===status?' selected':'')+'>'+h(s)+'</option>';}).join('')+'</select></label><details><summary>Notatka do serii</summary><input id="sn" aria-label="Notatka do serii" value="'+h(sg.n||'')+'"></details><p id="gl78SetMessage" role="status" aria-live="polite"></p><button class="gl78-save" onclick="saveSet()">ZAPISZ SERIĘ + PRZERWA</button>'+(lastSet(e)?'<button class="secondary" onclick="gl78CopySet()">Powtórz poprzednią serię</button>':'')+'<div id="timer" class="timer" aria-live="off">00:00</div></section><section class="card"><h2>Zapisane serie ('+sets.length+')</h2>'+sets.map(function(s,i){return '<div class="gl78-saved"><span>'+h((i+1)+'. '+setText(s))+'</span>'+(!s.skipped?'<button class="secondary" aria-label="Edytuj serię '+(i+1)+'" onclick="gl78EditSet('+i+')">Edytuj</button>':'')+'</div>';}).join('')+(sets.length?'<button class="secondary" onclick="deleteLastSet()">Usuń ostatnią serię</button>':'')+'</section><div class="gl76-row-actions"><button class="secondary" onclick="skipExerciseView()">Pomiń ćwiczenie</button><button class="secondary" onclick="substituteExerciseView()">Zamień ćwiczenie</button></div><div class="gl76-row-actions"><button class="secondary" onclick="prevExercise()">Poprzednie</button><button onclick="nextExercise()">Następne</button></div><button onclick="confirmFinishWorkout()">Zakończ trening</button></main>'+luxBottomNav('start'));
     rest.tick();luxStartWorkoutClock();
   };
   var save=window.saveSet;
   window.saveSet=saveSet=function(){try{validScreen();return save.apply(this,arguments);}catch(e){error(e);}};
   window.gl78WeeklyReport=function(){
     if(!ready())return;var state=C.read(data);
-    var report=T.weekly(data,today(),function(w,e){var p=w.training||'',machine=C.isMachine(state,p,e),gym=w.gymId||C.legacyId(w.gym||'CityFit');return JSON.stringify([p,String(e.name).trim().toLocaleLowerCase('pl'),machine?gym:(w.gym==='Wyjazd'?'Wyjazd':'SHARED')]);},function(v){return typeof glDateStorage==='function'?glDateStorage(v):v;});
+    var report=T.weekly(data,today(),function(w,e){var p=w.training||'',machine=C.isMachine(state,p,e),gym=w.gymId||C.legacyId(w.gym||'CityFit');return JSON.stringify([p,String(e.name).trim().toLocaleLowerCase('pl'),machine?gym:(!glIsManagedUser()&&w.gym==='Wyjazd'?'Wyjazd':'SHARED')]);},function(v){return typeof glDateStorage==='function'?glDateStorage(v):v;});
     var sleep=window.gl77SleepRecords().filter(function(x){return x.date>=report.from&&x.date<report.to;}),weight=(data.bodyMeasurements||[]).filter(function(x){return x.date>=report.from&&x.date<report.to&&Number(x.weight)>0;}).slice().sort(function(a,b){return a.date.localeCompare(b.date);});
     var sleepText=sleep.length?(sleep.reduce(function(n,x){return n+x.hours;},0)/sleep.length).toFixed(1)+' h · '+sleep.length+' dni z wpisem':'Brak wpisów w tym tygodniu';
     var weightText=weight.length?weight[0].weight+' → '+weight[weight.length-1].weight+' kg · '+weight.length+' pomiarów':'Brak pomiarów w tym tygodniu';
@@ -24513,7 +24680,7 @@ clonePlanForGymV31=function(plan,gym){
     if(result&&result.profile){versions.set(result.profile,R.profileVersion(result.profile));if(source&&result.profile_version){versions.set(source,result.profile_version);if(c&&c.profile===source)c.gl79Version=result.profile_version;}}
     (result&&result.users||[]).forEach(function(profile){versions.set(profile,R.profileVersion(profile));});return result;
   };
-  function busy(){return !GL_AUTH_READY||!ready()||!!(window.GL82_PLAN_OPERATION||current||data.draft||window.GymLogWorkspace.hasUnsavedChanges()||document.getElementById('tr')||['gl77Weight','gl77Sleep','gl78EditW'].some(function(id){var n=document.getElementById(id);return n&&String(n.value).trim();}));}
+  function busy(){return !GL_AUTH_READY||!ready()||!!(window.GL82_PLAN_OPERATION||current||data.draft||window.GymLogWorkspace.hasUnsavedChanges()||document.getElementById('tr')||document.getElementById('gl86History')||['gl77Weight','gl77Sleep','gl78EditW'].some(function(id){var n=document.getElementById(id);return n&&String(n.value).trim();}));}
   function guardStart(fn){return function(){if(activationLock>Date.now()){warning('Trwa aktualizacja aplikacji. Poczekaj chwilę.');return;}return fn.apply(this,arguments);};}
   if(typeof window.startWorkout==='function')window.startWorkout=guardStart(window.startWorkout);
   if(typeof window.glManagedStartWorkout==='function')window.glManagedStartWorkout=glManagedStartWorkout=guardStart(window.glManagedStartWorkout);
@@ -24587,9 +24754,130 @@ clonePlanForGymV31=function(plan,gym){
   };
 })();
 
+/* Structured corrections to a completed workout. The draft lives in the form. */
+(function(){
+  'use strict';
+  var M=window.GymLogPlanStore,h=window.GymLogTraining.escape,editor;
+  var statuses=['','rozgrzewka','zapas 2-3','zapas 1','zapas 0-1','upadek techniczny','FAIL','ból / przerwane','pominięte'];
+  var aliases={w:'weight',r:'reps',s:'status',n:'note'};
+  function account(){var session=glSession();return session&&session.user&&session.user.id;}
+  function selected(){return window.GL_ADMIN_SELECTED;}
+  function logs(c){return c.mode==='admin'?selected().state.logs:data.logs;}
+  function input(label,value,attrs){
+    return '<label>'+label+'<input '+attrs+' value="'+h(String(value??''))+'"></label>';
+  }
+  function fields(set,ex){
+    var parsed=parseSetLine(getSetLine(set),ex),result={};
+    Object.keys(aliases).forEach(function(k){result[k]=String(set?.[k]??set?.[aliases[k]]??parsed[k]??'');});
+    if(set?.skipped)result.s='pominięte';
+    return result;
+  }
+  function row(ex,set,index){
+    var f=fields(set,ex),options=statuses.includes(f.s)?statuses:statuses.concat(f.s);
+    return '<fieldset data-index="'+index+'"><legend>Seria '+(index+1)+'</legend><div class="gl86-pair">'+
+      input('Ciężar (kg)',f.w,'data-field="w" inputmode="decimal"')+input('Powtórzenia',f.r,'data-field="r" inputmode="numeric"')+
+      '</div><label>Status<select data-field="s">'+options.map(function(s){return '<option value="'+h(s)+'"'+(s===f.s?' selected':'')+'>'+h(s||'Seria robocza')+'</option>';}).join('')+
+      '</select></label>'+input('Notatka',f.n,'data-field="n"')+'<label class="gl86-remove"><input type="checkbox" data-remove> Usuń tę serię przy zapisie</label></fieldset>';
+  }
+  function open(mode,index,filter,page){
+    var uid=account(),remote=selected();
+    if(!uid||STORE!==glUserStore(uid)||window.GL_PROFILE?.id!==uid)return;
+    if(mode==='admin'&&(!glIsAdmin()||!remote?.profile))return;
+    var c={mode:mode,index:index,filter:filter||'Wszystkie',page:Number(page)||0,uid:uid,store:STORE,target:remote?.profile?.id};
+    var log=logs(c)?.[index];if(!log)return;
+    c.original=M.copy(log);c.busy=false;editor=c;
+    var specs=[['date','Data'],['training','Nazwa treningu'],['sleep','Sen']];
+    var flags=mode==='admin'?remote.profile.feature_flags||{}:glFlags()||{};
+    if(mode==='owner'||flags.bodyWeight!==false)specs.push(['weight','Waga']);
+    if(mode==='owner'||flags.mood!==false)specs.push(['mood','Samopoczucie']);
+    if(mode==='owner')specs.push(['footWalk','Paluch chodzenie'],['footPush','Paluch wybicie'],['rehab','Rehabilitacja stopy']);
+    specs.push(['notes','Uwagi']);
+    var meta=specs.map(function(pair){
+      var k=pair[0],label=pair[1],value=log[k]??'';
+      if(k==='notes'||k==='rehab')return '<label>'+label+'<textarea data-meta="'+k+'">'+h(String(value))+'</textarea></label>';
+      return input(label,value,'data-meta="'+k+'"');
+    }).join('');
+    var exercises=(log.exercises||[]).map(function(ex,i){
+      var sets=ex.sets||[];
+      return '<details class="card gl86-ex"><summary>'+h(ex.name)+' <small>Serie: <span data-count>'+sets.length+'</span></small></summary>'+
+        (mode==='owner'?'':input('Nazwa ćwiczenia',ex.name,'data-name'))+
+        '<div data-sets>'+sets.map(function(set,j){return row(ex,set,j);}).join('')+'</div><button type="button" class="secondary" onclick="gl86AddSet('+i+')">+ Dodaj serię</button></details>';
+    }).join('');
+    render('<main class="gl76-workspace gl86-history" id="gl86History"><h1>Edytuj trening</h1><p>'+h(log.training)+' · '+h(log.date)+'</p>'+
+      '<details class="card"><summary>Dane treningu</summary>'+meta+'</details>'+exercises+
+      '<p id="gl86Error" role="alert"></p><button onclick="gl86SaveHistory()">'+(mode==='admin'?'Zapisz zmiany w chmurze':'Zapisz zmiany')+
+      '</button><button class="secondary" onclick="gl86CancelHistory()">Anuluj</button></main>'+luxBottomNav(mode==='admin'?'more':'history'));
+  }
+  function matches(c){
+    return c.uid===account()&&c.store===STORE&&window.GL_PROFILE?.id===c.uid&&
+      (c.mode!=='admin'||glIsAdmin()&&selected()?.profile?.id===c.target);
+  }
+  function back(c){
+    if(c.mode==='admin')return glAdminWorkoutDetails(c.index,c.page);
+    if(c.mode==='managed')return glManagedHistoryDetails(c.index,c.filter,c.page);
+    return historyDetailsView(c.index,c.filter,c.page);
+  }
+  window.gl86CancelHistory=function(){if(editor&&!editor.busy&&matches(editor))back(editor);};
+  window.gl86AddSet=function(i){
+    var root=document.getElementById('gl86History');if(!root||!editor||editor.busy)return;
+    var details=root.querySelectorAll('.gl86-ex')[i],list=details.querySelector('[data-sets]'),index=list.children.length;
+    list.insertAdjacentHTML('beforeend',row(editor.original.exercises[i],{},index));
+    details.querySelector('[data-count]').textContent=String(index+1);
+    list.lastElementChild.querySelector('input').focus();
+  };
+  function readRow(node,old,ex){
+    if(node.querySelector('[data-remove]').checked)return null;
+    var before=fields(old,ex),next={};
+    Object.keys(aliases).forEach(function(k){next[k]=node.querySelector('[data-field="'+k+'"]').value.trim();});
+    if(old!=null&&Object.keys(aliases).every(function(k){return next[k]===before[k];}))return old;
+    if(old==null&&!next.w&&!next.r&&!next.s&&!next.n)return null;
+    if(next.s!=='pominięte'){
+      if((old==null||next.r!==before.r||before.s==='pominięte')&&(!/^\d{1,3}$/.test(next.r)||Number(next.r)<1))throw Error('Wpisz liczbę powtórzeń dla '+ex.name+'.');
+      if(next.w&&next.w!==before.w&&!/^[+-]?\d+(?:[.,]\d+)?$/.test(next.w))throw Error('Sprawdź ciężar dla '+ex.name+'.');
+    }
+    var result=Object.assign({},typeof old==='object'?old:{},next);
+    Object.keys(aliases).forEach(function(k){if(Object.hasOwn(result,aliases[k]))result[aliases[k]]=next[k];});
+    if(next.s==='pominięte'||Object.hasOwn(result,'skipped'))result.skipped=next.s==='pominięte';
+    result.line=result.skipped?'Pominięte'+(next.n?' — '+next.n:''):makeSetLine(ex,next.w,next.r,next.s,next.n);
+    return result;
+  }
+  window.gl86SaveHistory=async function(){
+    var c=editor,root=document.getElementById('gl86History');if(!c||c.busy||!root)return;
+    c.busy=true;
+    try{
+      if(!matches(c)||M.stable(logs(c)[c.index]||null)!==M.stable(c.original))throw Error('Trening lub konto zmieniło się. Otwórz ponownie edycję.');
+      var log=M.copy(c.original);
+      root.querySelectorAll('[data-meta]').forEach(function(el){var k=el.dataset.meta;if(el.value!==String(log[k]??''))log[k]=k==='date'?glDateStorage(el.value):el.value;});
+      root.querySelectorAll('.gl86-ex').forEach(function(details,i){
+        var ex=log.exercises[i],name=details.querySelector('[data-name]');
+        if(name&&name.value.trim())ex.name=name.value.trim();
+        var sets=Array.from(details.querySelectorAll('fieldset')).map(function(node,j){return readRow(node,ex.sets?.[j],ex);}).filter(function(s){return s!==null;});
+        if(sets.length||Array.isArray(ex.sets))ex.sets=sets;
+      });
+      if(M.stable(log)!==M.stable(c.original)){
+        if(c.mode==='admin'){
+          var remote=selected(),original=remote.state;
+          remote.state=M.copy(original);remote.state.logs[c.index]=log;
+          try{await glAdminWriteSelectedState('admin_edit_workout');}catch(error){remote.state=original;throw error;}
+        }else{
+          var previous=data;
+          data=M.copy(previous);data.logs[c.index]=log;
+          try{recomputeLastByExercise(false);if(!safeSave()||localStorage.getItem(STORE)!==JSON.stringify(data))throw Error('Nie zapisano treningu. Sprawdź miejsce na urządzeniu.');}
+          catch(error){data=previous;throw error;}
+        }
+      }
+      if(matches(c)&&document.getElementById('gl86History')===root)back(c);
+    }catch(error){root.querySelector('#gl86Error').textContent=String(error.message||error);}
+    finally{c.busy=false;}
+  };
+  window.editHistory=function(i){open(glIsManagedUser()?'managed':'owner',i,window._historyCurrentFilter,0);};
+  window.glManagedEditWorkout=function(i,filter,page){open('managed',i,filter,page);};
+  window.glAdminEditWorkout=function(i,page){open('admin',i,'',page);};
+})();
+
 /* GL76_INSTALL_END */
 /* Local development candidate; not the unrecovered 0.75.16 archive. */
-VERSION="BETA 0.79.2";
+VERSION="BETA 0.79.6";
 
 /* 0.75.7: instant local boot. A network request must not hold the splash or
    replace a cached, resumable workout. No client data is cleared here. */
